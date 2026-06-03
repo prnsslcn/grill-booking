@@ -34,13 +34,265 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          amount: number
+          booking_number: string
+          created_at: string
+          facility_snapshot: Json
+          guest_count: number
+          guest_name: string
+          guest_phone: string
+          id: string
+          slot_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          booking_number: string
+          created_at?: string
+          facility_snapshot: Json
+          guest_count?: number
+          guest_name: string
+          guest_phone: string
+          id?: string
+          slot_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          booking_number?: string
+          created_at?: string
+          facility_snapshot?: Json
+          guest_count?: number
+          guest_name?: string
+          guest_phone?: string
+          id?: string
+          slot_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: true
+            referencedRelation: "slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facilities: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          total_units: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          total_units: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          total_units?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      facility_units: {
+        Row: {
+          facility_id: string
+          id: string
+          is_active: boolean
+          unit_label: string
+        }
+        Insert: {
+          facility_id: string
+          id?: string
+          is_active?: boolean
+          unit_label: string
+        }
+        Update: {
+          facility_id?: string
+          id?: string
+          is_active?: boolean
+          unit_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_units_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          booking_id: string
+          channel: string
+          created_at: string
+          id: string
+          payload: Json | null
+          sent_at: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          booking_id: string
+          channel?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sent_at?: string | null
+          status?: string
+          type: string
+        }
+        Update: {
+          booking_id?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sent_at?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          booking_id: string
+          cancelled_at: string | null
+          created_at: string
+          id: string
+          method: string | null
+          raw_response: Json | null
+          status: string
+          toss_order_id: string
+          toss_payment_key: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          booking_id: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          method?: string | null
+          raw_response?: Json | null
+          status?: string
+          toss_order_id: string
+          toss_payment_key?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          booking_id?: string
+          cancelled_at?: string | null
+          created_at?: string
+          id?: string
+          method?: string | null
+          raw_response?: Json | null
+          status?: string
+          toss_order_id?: string
+          toss_payment_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slots: {
+        Row: {
+          created_at: string
+          date: string
+          facility_unit_id: string
+          id: string
+          part: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          facility_unit_id: string
+          id?: string
+          part: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          facility_unit_id?: string
+          id?: string
+          part?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slots_facility_unit_id_fkey"
+            columns: ["facility_unit_id"]
+            isOneToOne: false
+            referencedRelation: "facility_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
