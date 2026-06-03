@@ -1,19 +1,16 @@
 import 'server-only';
 
+import { toReservationError, ReservationError } from '@/lib/booking/errors';
+import { createAdminClient } from '@/lib/supabase/admin';
+
 /**
- * 슬롯 선점 → pending_payment 예약 생성 (트랜잭션).
+ * 슬롯 선점 → pending_payment 예약 생성.
  *
- * ⚠️ 스켈레톤. 다음 단계에서 Postgres 함수(RPC) 또는 트랜잭션으로 구현한다.
+ * 실제 정합성 로직은 Postgres 함수 reserve_slot(0010 마이그레이션)이 단일 트랜잭션으로 수행한다:
+ *   슬롯 FOR UPDATE 잠금 → 상태확인/지연회수 → 가격·스냅샷 → 예약 INSERT → 슬롯 booked.
+ * 동시 요청은 FOR UPDATE로 직렬화되고, bookings_active_slot_unique가 최종 백스톱.
  *
- * 정합성 순서(schema.md §동시성):
- *   1. 트랜잭션 시작
- *   2. 대상 slot을 `SELECT ... FOR UPDATE`로 잠금, status='open' 확인
- *   3. bookings를 pending_payment로 INSERT (slot_id UNIQUE가 최종 방어선)
- *   4. slots.status를 'booked'로 변경
- *   5. 커밋 → 호출 측에서 토스 결제창 진행
- *
- * 동시에 두 요청이 와도 slot_id UNIQUE 제약 덕분에 하나만 성공한다.
- * service_role(admin 클라이언트)로 실행 — RLS 우회는 서버 라우트에 한정.
+ * service_role(admin 클라이언트)로 호출 — RLS 우회는 이 서버 경로에 한정.
  */
 
 export interface ReserveInput {
@@ -30,8 +27,30 @@ export interface ReserveResult {
   amount: number;
 }
 
-export async function reserveSlot(_input: ReserveInput): Promise<ReserveResult> {
-  // TODO: createAdminClient()로 RPC(예: reserve_slot) 호출.
-  //       슬롯 잠금·상태확인·예약생성·슬롯상태변경을 단일 트랜잭션으로.
-  throw new Error('reserveSlot: 미구현 (스켈레톤)');
+export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase.rpc('reserve_slot', {
+    p_slot_id: input.slotId,
+    p_guest_name: input.guestName,
+    p_guest_phone: input.guestPhone,
+    p_guest_count: input.guestCount,
+  });
+
+  if (error) {
+    throw toReservationError(error);
+  }
+
+  // reserve_slot은 table을 반환 → 첫 행 사용
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) {
+    throw new ReservationError('UNKNOWN', '예약 결과가 비어 있습니다.');
+  }
+
+  return {
+    bookingId: row.booking_id,
+    bookingNumber: row.booking_number,
+    orderId: row.order_id,
+    amount: row.amount,
+  };
 }

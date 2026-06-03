@@ -96,7 +96,7 @@ export type Database = {
           {
             foreignKeyName: "bookings_slot_id_fkey"
             columns: ["slot_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "slots"
             referencedColumns: ["id"]
           },
@@ -292,7 +292,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_pending_bookings: { Args: { p_timeout?: string }; Returns: number }
+      generate_slots: {
+        Args: { p_from: string; p_to: string }
+        Returns: number
+      }
       is_admin: { Args: never; Returns: boolean }
+      pending_payment_timeout: { Args: never; Returns: string }
+      reserve_slot: {
+        Args: {
+          p_guest_count?: number
+          p_guest_name: string
+          p_guest_phone: string
+          p_slot_id: string
+        }
+        Returns: {
+          amount: number
+          booking_id: string
+          booking_number: string
+          order_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
