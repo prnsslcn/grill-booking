@@ -1,18 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import {
-  PAYMENTS_FAKE,
-  PayError,
-  payAndConfirm,
-  reserveSlotClient,
-} from '@/lib/client/pay';
-import { initTossWidgets, type TossWidgets } from '@/lib/client/toss-widget';
+import { PAYMENTS_FAKE, PayError, payAndConfirm, reserveSlotClient } from '@/lib/client/pay';
+import { requestTossPayment } from '@/lib/client/toss-payment';
 import { formatDateKorean, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
@@ -33,32 +28,8 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const widgetsRef = useRef<TossWidgets | null>(null);
-  const [widgetReady, setWidgetReady] = useState(false);
 
-  // real 모드: 위젯 렌더
-  useEffect(() => {
-    if (PAYMENTS_FAKE) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const widgets = await initTossWidgets(selected.price);
-        if (cancelled) return;
-        widgetsRef.current = widgets;
-        await Promise.all([
-          widgets.renderPaymentMethods({ selector: '#payment-method', variantKey: 'DEFAULT' }),
-          widgets.renderAgreement({ selector: '#agreement', variantKey: 'AGREEMENT' }),
-        ]);
-        if (!cancelled) setWidgetReady(true);
-      } catch {
-        if (!cancelled) setError('결제 위젯을 불러오지 못했습니다. 키 설정을 확인해 주세요.');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selected.price]);
-
+  // fake 모드: reserve → fake confirm → 완료
   async function payFake() {
     setSubmitting(true);
     setError('');
@@ -79,34 +50,35 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
     }
   }
 
+  // real 모드: reserve → 토스 결제창 → (successUrl) 서버 confirm
   async function payReal() {
-    const widgets = widgetsRef.current;
-    if (!widgets) return;
     setSubmitting(true);
     setError('');
     try {
-      // 1) 선점 → orderId 확보
       const { orderId } = await reserveSlotClient({
         slotId: selected.slotId,
         guestName: guest.name,
         guestPhone: guest.phone,
         guestCount: guest.count,
       });
-      // 2) 토스 결제창 호출(성공 시 successUrl로 리다이렉트 → 서버 confirm)
-      await widgets.requestPayment({
+      await requestTossPayment({
+        amount: selected.price,
         orderId,
         orderName: `${selected.facilityName} ${formatDateKorean(date)} ${PARTS[selected.part].label}`,
-        successUrl: `${window.location.origin}/booking/success`,
-        failUrl: `${window.location.origin}/booking/fail`,
         customerName: guest.name,
         customerMobilePhone: guest.phone.replace(/\D/g, ''),
       });
+      // 결제창이 successUrl로 리다이렉트하므로 여기 도달은 보통 없음
     } catch (err) {
-      // 예약 실패(SLOT_TAKEN 등) 또는 사용자가 결제창을 닫음
-      const code = err instanceof PayError ? err.code : '';
-      if (code) {
-        setError(mapError(code));
-        if (code === 'SLOT_TAKEN') onSlotTaken();
+      if (err instanceof PayError) {
+        setError(mapError(err.code));
+        if (err.code === 'SLOT_TAKEN') onSlotTaken();
+      } else {
+        const code = (err as { code?: string }).code;
+        // 사용자가 결제창을 닫은 경우(USER_CANCEL)는 조용히 무시
+        if (code && code !== 'USER_CANCEL') {
+          setError('결제가 취소되었거나 실패했습니다. 다시 시도해 주세요.');
+        }
       }
       setSubmitting(false);
     }
@@ -125,26 +97,16 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
         </div>
       </Card>
 
+      {PAYMENTS_FAKE && (
+        <div className="rounded-xl bg-[#fff5e5] px-4 py-3 text-sm text-[#c2780f]">
+          <Badge tone="warning">개발 모드</Badge> 실제 결제 대신 테스트 결제로 진행됩니다.
+        </div>
+      )}
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      {PAYMENTS_FAKE ? (
-        <>
-          <div className="rounded-xl bg-[#fff5e5] px-4 py-3 text-sm text-[#c2780f]">
-            <Badge tone="warning">개발 모드</Badge> 실제 결제 대신 테스트 결제로 진행됩니다.
-          </div>
-          <Button size="lg" onClick={payFake} disabled={submitting}>
-            {submitting ? '처리 중…' : `${formatWon(selected.price)} 결제하기`}
-          </Button>
-        </>
-      ) : (
-        <>
-          <div id="payment-method" />
-          <div id="agreement" />
-          <Button size="lg" onClick={payReal} disabled={submitting || !widgetReady}>
-            {submitting ? '결제창 여는 중…' : widgetReady ? `${formatWon(selected.price)} 결제하기` : '위젯 불러오는 중…'}
-          </Button>
-        </>
-      )}
+      <Button size="lg" onClick={PAYMENTS_FAKE ? payFake : payReal} disabled={submitting}>
+        {submitting ? '처리 중…' : `${formatWon(selected.price)} 결제하기`}
+      </Button>
     </div>
   );
 }
