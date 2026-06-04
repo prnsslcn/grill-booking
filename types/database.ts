@@ -292,6 +292,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_booking_tx: {
+        Args: {
+          p_amount: number
+          p_approved_at: string
+          p_method: string
+          p_order_id: string
+          p_payment_key: string
+          p_raw: Json
+        }
+        Returns: {
+          booking_id: string
+          booking_number: string
+          outcome: string
+        }[]
+      }
       expire_pending_bookings: { Args: { p_timeout?: string }; Returns: number }
       generate_slots: {
         Args: { p_from: string; p_to: string }
