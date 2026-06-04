@@ -308,12 +308,35 @@ export type Database = {
         }[]
       }
       expire_pending_bookings: { Args: { p_timeout?: string }; Returns: number }
+      finalize_refund_tx: {
+        Args: {
+          p_booking_id: string
+          p_did_toss_cancel: boolean
+          p_is_partial: boolean
+          p_raw: Json
+          p_refund_amount: number
+        }
+        Returns: {
+          booking_id: string
+          refunded_amount: number
+        }[]
+      }
       generate_slots: {
         Args: { p_from: string; p_to: string }
         Returns: number
       }
       is_admin: { Args: never; Returns: boolean }
       pending_payment_timeout: { Args: never; Returns: string }
+      request_cancel_tx: {
+        Args: { p_order_id: string }
+        Returns: {
+          booking_id: string
+          outcome: string
+          paid_amount: number
+          payment_key: string
+          slot_date: string
+        }[]
+      }
       reserve_slot: {
         Args: {
           p_guest_count?: number
