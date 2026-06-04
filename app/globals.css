@@ -1,26 +1,42 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  토스 결제위젯과 이질감 없는 모던 미니멀 톤.
+  밝은 화이트 배경 · 토스 계열 그레이 · 블루 악센트 · 둥근 카드 · 여백.
+*/
+@theme {
+  --color-canvas: #f9fafb;
+  --color-surface: #ffffff;
+  --color-ink: #191f28;
+  --color-muted: #6b7684;
+  --color-subtle: #8b95a1;
+  --color-line: #e5e8eb;
+  --color-line-soft: #f2f4f6;
+  --color-accent: #3182f6;
+  --color-accent-strong: #1b64da;
+  --color-accent-soft: #e8f3ff;
+  --color-success: #16a34a;
+  --color-danger: #e5484d;
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  line-height: 1.5;
+}
+
+/* 한국어 가독성 기본값 */
+h1, h2, h3, h4 {
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
