@@ -1,0 +1,139 @@
+###############################################################################
+# API 테스트 시나리오 (VS Code "REST Client" 확장에서 Send Request 클릭)
+#
+# 사용법:
+#   1) VS Code 확장 "REST Client"(humao.rest-client) 설치
+#   2) dev 서버 실행:  NEXT_PUBLIC_PAYMENTS_FAKE=1 TOSS_FAKE=1 pnpm dev
+#   3) 아래 각 요청 위의 "Send Request" 클릭 → 오른쪽에 HTTP 200 OK 와 응답 표시
+#
+# ⬇︎ 응답값이 다음 요청으로 자동 연결됩니다(예약번호 복붙 불필요).
+#   ※ 시나리오 A를 위에서부터 순서대로 보내세요(availability→reserve→confirm→…).
+###############################################################################
+
+@base = http://localhost:3000
+@date = 2026-06-12
+@phone = 010-1234-5678
+
+
+### ────────────────────────────────────────────────────────────────────────
+### 시나리오 A. 정상 예약 흐름 (위→아래 순서대로 클릭)
+### ────────────────────────────────────────────────────────────────────────
+
+### A1. 가용성 조회 — 그 날짜의 시설×부 빈자리
+# @name availability
+GET {{base}}/api/availability?date={{date}}
+
+### A2. 슬롯 선점 (A1의 첫 시설·1부 슬롯 자동 사용) → pending_payment
+# @name reserve
+POST {{base}}/api/bookings/reserve
+Content-Type: application/json
+
+{
+  "slotId": "{{availability.response.body.$.availability[0].parts[0].slotId}}",
+  "guestName": "김테스트",
+  "guestPhone": "{{phone}}",
+  "guestCount": 2
+}
+
+### A3. 결제 확정 (A2의 orderId·amount 자동 사용, 개발용 fake 결제) → confirmed
+# @name confirm
+POST {{base}}/api/payments/confirm
+Content-Type: application/json
+
+{
+  "paymentKey": "fakepay_{{reserve.response.body.$.orderId}}",
+  "orderId": "{{reserve.response.body.$.orderId}}",
+  "amount": {{reserve.response.body.$.amount}}
+}
+
+### A4. 예약 조회 (예약번호+연락처) → 상태·환불 미리보기
+POST {{base}}/api/bookings/lookup
+Content-Type: application/json
+
+{
+  "bookingNumber": "{{reserve.response.body.$.orderId}}",
+  "phone": "{{phone}}"
+}
+
+### A5. 예약 취소·환불 → refunded (슬롯 다시 open)
+POST {{base}}/api/bookings/cancel
+Content-Type: application/json
+
+{
+  "bookingNumber": "{{reserve.response.body.$.orderId}}",
+  "phone": "{{phone}}"
+}
+
+
+### ────────────────────────────────────────────────────────────────────────
+### 시나리오 B. 멱등 — A3를 한 번 더 보내면 (이미 확정) 200 ALREADY_CONFIRMED
+### ────────────────────────────────────────────────────────────────────────
+
+### B1. 같은 confirm 재전송 (A3 직후 클릭)
+POST {{base}}/api/payments/confirm
+Content-Type: application/json
+
+{
+  "paymentKey": "fakepay_{{reserve.response.body.$.orderId}}",
+  "orderId": "{{reserve.response.body.$.orderId}}",
+  "amount": {{reserve.response.body.$.amount}}
+}
+
+
+### ────────────────────────────────────────────────────────────────────────
+### 시나리오 C. 실패/검증 케이스 (의도적으로 200이 아닌 응답)
+### ────────────────────────────────────────────────────────────────────────
+
+### C1. 금액 위변조 → 422 AMOUNT_MISMATCH (보상 환불 동작)
+#      먼저 새 reserve가 필요: A1·A2를 다른 슬롯으로 다시 한 뒤 amount를 1000으로.
+# @name reserve2
+POST {{base}}/api/bookings/reserve
+Content-Type: application/json
+
+{
+  "slotId": "{{availability.response.body.$.availability[0].parts[1].slotId}}",
+  "guestName": "위변조테스트",
+  "guestPhone": "{{phone}}",
+  "guestCount": 2
+}
+
+### C2. 위 reserve2에 틀린 금액으로 confirm → 422
+POST {{base}}/api/payments/confirm
+Content-Type: application/json
+
+{
+  "paymentKey": "fakepay_{{reserve2.response.body.$.orderId}}",
+  "orderId": "{{reserve2.response.body.$.orderId}}",
+  "amount": 1000
+}
+
+### C3. 잘못된 연락처로 조회 → 404 NOT_FOUND (정보 노출 안 함)
+POST {{base}}/api/bookings/lookup
+Content-Type: application/json
+
+{
+  "bookingNumber": "{{reserve.response.body.$.orderId}}",
+  "phone": "010-0000-0000"
+}
+
+### C4. 잘못된 휴대폰 형식으로 예약 → 400 VALIDATION_FAILED
+POST {{base}}/api/bookings/reserve
+Content-Type: application/json
+
+{
+  "slotId": "00000000-0000-0000-0000-000000000000",
+  "guestName": "홍길동",
+  "guestPhone": "123",
+  "guestCount": 2
+}
+
+
+### ────────────────────────────────────────────────────────────────────────
+### 시나리오 D. 관리자 가드 — 미인증 접근 차단
+### ────────────────────────────────────────────────────────────────────────
+
+### D1. 미인증으로 /admin 접근 → 307 리다이렉트(/admin/login)
+GET {{base}}/admin
+
+### D2. 운영일 아닌 날짜 가용성 → 빈 목록(available=false)
+GET {{base}}/api/availability?date=2026-06-10

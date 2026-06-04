@@ -14,6 +14,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.106.2
         version: 2.106.2
+      '@tosspayments/tosspayments-sdk':
+        specifier: ^2.7.0
+        version: 2.7.0
       next:
         specifier: 16.2.7
         version: 16.2.7(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -617,6 +620,9 @@ packages:
 
   '@tailwindcss/postcss@4.3.0':
     resolution: {integrity: sha512-Jm05Tjx+9yCLGv5qw1c+84Psds8MnyrEQYCB+FFk2lgGiUjlRqdxke4mVTuYrj2xnVZqKim2Apr5ySuQRYAw/w==}
+
+  '@tosspayments/tosspayments-sdk@2.7.0':
+    resolution: {integrity: sha512-qpVIMpxdmKNOKwOZuSbkyGO5CpbF3+kqJcHLjGsTdyOsNex8ai+ceQc7zyCJhq+qZf9jglJpx9Q0bGVWwGjcbQ==}
 
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
@@ -2562,6 +2568,8 @@ snapshots:
       '@tailwindcss/oxide': 4.3.0
       postcss: 8.5.15
       tailwindcss: 4.3.0
+
+  '@tosspayments/tosspayments-sdk@2.7.0': {}
 
   '@tybys/wasm-util@0.10.2':
     dependencies:

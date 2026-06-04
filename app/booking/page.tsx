@@ -1,15 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { Badge } from '@/components/ui/Badge';
+import { PaymentStep } from '@/components/booking/PaymentStep';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { payAndConfirm, PayError } from '@/lib/client/pay';
 import { upcomingOperatingDates } from '@/lib/dates';
 import { formatDateKorean, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
@@ -37,7 +35,6 @@ const STEPS = ['슬롯 선택', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
 
 export default function BookingPage() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
 
   const [date, setDate] = useState<string>('');
@@ -50,9 +47,6 @@ export default function BookingPage() {
   const [count, setCount] = useState('2');
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const [submitting, setSubmitting] = useState(false);
-  const [payError, setPayError] = useState<string>('');
 
   async function selectDate(iso: string) {
     setDate(iso);
@@ -77,33 +71,6 @@ export default function BookingPage() {
     return Object.keys(e).length === 0;
   }
 
-  async function pay() {
-    if (!selected) return;
-    setSubmitting(true);
-    setPayError('');
-    try {
-      const { bookingNumber } = await payAndConfirm({
-        slotId: selected.slotId,
-        guestName: name.trim(),
-        guestPhone: phone.trim(),
-        guestCount: Number(count),
-      });
-      router.push(`/booking/complete?n=${encodeURIComponent(bookingNumber)}`);
-    } catch (err) {
-      const code = err instanceof PayError ? err.code : 'UNKNOWN';
-      if (code === 'SLOT_TAKEN') {
-        setPayError('선택하신 슬롯이 방금 마감되었습니다. 다시 선택해 주세요.');
-        setStep(1);
-        if (date) void selectDate(date);
-      } else if (code === 'PRICE_NOT_SET') {
-        setPayError('해당 시설은 현재 예약을 받지 않습니다.');
-      } else {
-        setPayError('결제 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
@@ -251,45 +218,22 @@ export default function BookingPage() {
 
         {/* 3단계: 결제 */}
         {step === 3 && selected && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-bold text-ink">결제</h2>
-            <Card className="divide-y divide-line">
-              <Row label="시설" value={selected.facilityName} />
-              <Row label="일시" value={`${formatDateKorean(date)} · ${PARTS[selected.part].label}`} />
-              <Row label="예약자" value={`${name} (${count}명)`} />
-              <div className="flex items-center justify-between p-5">
-                <span className="font-semibold text-ink">결제 금액</span>
-                <span className="text-xl font-extrabold text-ink">{formatWon(selected.price)}</span>
-              </div>
-            </Card>
-
-            {process.env.NEXT_PUBLIC_PAYMENTS_FAKE === '1' && (
-              <div className="rounded-xl bg-[#fff5e5] px-4 py-3 text-sm text-[#c2780f]">
-                <Badge tone="warning">개발 모드</Badge> 실제 결제 대신 테스트 결제로 진행됩니다.
-              </div>
-            )}
-            {payError && <p className="text-sm text-danger">{payError}</p>}
-
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => setStep(2)} className="flex-1" disabled={submitting}>
-                이전
-              </Button>
-              <Button className="flex-1" onClick={pay} disabled={submitting}>
-                {submitting ? '처리 중…' : `${formatWon(selected.price)} 결제하기`}
-              </Button>
-            </div>
+          <div className="space-y-4">
+            <PaymentStep
+              selected={selected}
+              date={date}
+              guest={{ name: name.trim(), phone: phone.trim(), count: Number(count) }}
+              onSlotTaken={() => {
+                setStep(1);
+                if (date) void selectDate(date);
+              }}
+            />
+            <Button variant="ghost" onClick={() => setStep(2)} className="w-full">
+              이전
+            </Button>
           </div>
         )}
       </main>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between p-5">
-      <span className="text-sm text-muted">{label}</span>
-      <span className="text-sm font-medium text-ink">{value}</span>
     </div>
   );
 }
