@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/admin/auth';
 
 const NAV = [
   { href: '/admin', label: '예약 현황' },
+  { href: '/admin/sales', label: '매출' },
   { href: '/admin/slots', label: '슬롯 관리' },
   { href: '/admin/facilities', label: '가격 관리' },
 ];

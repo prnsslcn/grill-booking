@@ -23,6 +23,7 @@ interface SnapshotShape {
 export async function listBookings(filter: {
   date?: string;
   status?: string;
+  q?: string;
 }): Promise<AdminBooking[]> {
   const supabase = createAdminClient();
 
@@ -35,6 +36,14 @@ export async function listBookings(filter: {
     .limit(200);
 
   if (filter.status) query = query.eq('status', filter.status);
+
+  // 검색: 예약번호·이름·연락처 부분일치(.or 구문 깨지는 문자 제거)
+  const q = filter.q?.replace(/[(),%]/g, ' ').trim();
+  if (q) {
+    query = query.or(
+      `booking_number.ilike.%${q}%,guest_name.ilike.%${q}%,guest_phone.ilike.%${q}%`,
+    );
+  }
 
   const { data } = await query;
   let rows = data ?? [];

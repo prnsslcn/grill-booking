@@ -29,10 +29,14 @@ const STATUS_FILTERS = [
 export default async function AdminBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; status?: string }>;
+  searchParams: Promise<{ date?: string; status?: string; q?: string }>;
 }) {
-  const { date = '', status = '' } = await searchParams;
-  const bookings = await listBookings({ date: date || undefined, status: status || undefined });
+  const { date = '', status = '', q = '' } = await searchParams;
+  const bookings = await listBookings({
+    date: date || undefined,
+    status: status || undefined,
+    q: q || undefined,
+  });
   const now = new Date();
 
   return (
@@ -40,6 +44,16 @@ export default async function AdminBookingsPage({
       <h1 className="text-xl font-bold text-ink">예약 현황</h1>
 
       <form className="mt-5 flex flex-wrap items-end gap-3" method="get">
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-ink">검색</span>
+          <input
+            type="text"
+            name="q"
+            defaultValue={q}
+            placeholder="이름·연락처·예약번호"
+            className="h-11 w-52 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
+          />
+        </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-ink">이용일</span>
           <input
@@ -68,7 +82,13 @@ export default async function AdminBookingsPage({
         </button>
         {date && (
           <Link
-            href={status ? `/admin?status=${status}` : '/admin'}
+            href={`/admin${(() => {
+              const sp = new URLSearchParams();
+              if (status) sp.set('status', status);
+              if (q) sp.set('q', q);
+              const s = sp.toString();
+              return s ? `?${s}` : '';
+            })()}`}
             className="flex h-11 items-center rounded-xl border border-line px-4 text-sm font-medium text-muted hover:bg-line-soft"
           >
             전체 기간
