@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { formatWon } from '@/lib/format';
+import { formatPhone, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
 interface PartAvailability {
@@ -32,6 +32,8 @@ interface Selected {
 
 const STEPS = ['슬롯 선택', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
+const BASE_GUESTS = 6; // 기본 포함 인원
+const MAX_EXTRA = 2; // 추가 가능 인원
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
@@ -43,7 +45,7 @@ export default function BookingPage() {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [count, setCount] = useState('2');
+  const [extra, setExtra] = useState(0); // 기본 6인 + 추가 인원(0~2)
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -64,7 +66,6 @@ export default function BookingPage() {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = '이름을 입력하세요.';
     if (!PHONE_RE.test(phone.trim())) e.phone = '휴대폰 번호 형식이 올바르지 않습니다.';
-    if (!(Number(count) >= 1)) e.count = '인원은 1명 이상이어야 합니다.';
     if (!agree) e.agree = '환불 규정에 동의해 주세요.';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -160,18 +161,29 @@ export default function BookingPage() {
             <Field label="휴대폰 번호" error={errors.phone} hint="예약 조회·알림에 사용됩니다.">
               <Input
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
                 placeholder="010-1234-5678"
                 inputMode="numeric"
+                maxLength={13}
               />
             </Field>
-            <Field label="인원" error={errors.count}>
-              <Input
-                type="number"
-                min={1}
-                value={count}
-                onChange={(e) => setCount(e.target.value)}
-              />
+            <Field label="인원" hint={`기본 ${BASE_GUESTS}인 포함, 최대 +${MAX_EXTRA}명까지 추가할 수 있습니다.`}>
+              <div className="flex gap-2">
+                {Array.from({ length: MAX_EXTRA + 1 }, (_, n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setExtra(n)}
+                    className={`h-12 flex-1 rounded-xl border text-sm font-medium transition-colors ${
+                      extra === n
+                        ? 'border-accent bg-accent-soft text-accent'
+                        : 'border-line bg-surface text-muted hover:border-accent/40'
+                    }`}
+                  >
+                    {BASE_GUESTS + n}인{n > 0 ? ` (+${n})` : ''}
+                  </button>
+                ))}
+              </div>
             </Field>
 
             <label className="flex items-start gap-2.5 rounded-xl bg-line-soft p-4">
@@ -209,7 +221,7 @@ export default function BookingPage() {
             <PaymentStep
               selected={selected}
               date={date}
-              guest={{ name: name.trim(), phone: phone.trim(), count: Number(count) }}
+              guest={{ name: name.trim(), phone: phone.trim(), count: BASE_GUESTS + extra }}
               onSlotTaken={() => {
                 setStep(1);
                 if (date) void selectDate(date);
