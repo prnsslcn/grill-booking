@@ -9,8 +9,9 @@ import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { FacilityType } from '@/types/domain';
 
-// DB(가격)를 요청 시 읽는다 — 빌드 시점 DB 접속·가격 고착을 피한다.
-export const dynamic = 'force-dynamic';
+// 랜딩은 ISR로 캐시(거의 정적). 가격 변경 시 관리자 액션의 revalidatePath('/')로 즉시 갱신,
+// 그 외엔 60초마다 백그라운드 갱신.
+export const revalidate = 60;
 
 const FACILITY_DESC: Record<FacilityType, string> = {
   tarp_tent: '오픈형 타프 텐트에서 즐기는 숯불 바비큐',
