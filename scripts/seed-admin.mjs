@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const email = process.argv[2] || process.env.ADMIN_EMAIL || 'admin@asea.local';
-const password = process.argv[3] || process.env.ADMIN_PASSWORD || 'asea-admin-1234';
+const email = process.argv[2] || process.env.ADMIN_EMAIL || 'admin@abcwg.local';
+const password = process.argv[3] || process.env.ADMIN_PASSWORD || 'change-me-1234';
 
 if (!url || !serviceKey) {
   console.error('환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
