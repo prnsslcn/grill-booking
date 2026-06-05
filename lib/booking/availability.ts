@@ -24,6 +24,19 @@ export interface FacilityAvailability {
 export async function getAvailability(date: string): Promise<FacilityAvailability[]> {
   const supabase = createAdminClient();
 
+  // 지연 생성: 운영일(금=5·토=6)인데 해당 날짜 슬롯이 아직 없으면 즉석 생성(idempotent).
+  // → 슬롯을 미리 만들어두는 스케줄러 없이, 고객이 조회하는 순간 채운다.
+  const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
+  if (dow === 5 || dow === 6) {
+    const { count } = await supabase
+      .from('slots')
+      .select('*', { count: 'exact', head: true })
+      .eq('date', date);
+    if ((count ?? 0) === 0) {
+      await supabase.rpc('generate_slots', { p_from: date, p_to: date });
+    }
+  }
+
   const [{ data: facilities }, { data: slots }] = await Promise.all([
     supabase
       .from('facilities')

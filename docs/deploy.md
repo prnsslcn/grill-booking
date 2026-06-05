@@ -29,7 +29,8 @@ pnpm exec supabase db push               # 0001~0013 적용(테이블·제약·R
 #   SUPABASE_SERVICE_ROLE_KEY=<service_role>
 node --env-file=.env.prod scripts/seed-admin.mjs admin@도메인 <비밀번호>
 ```
-슬롯은 배포 후 **관리자 페이지 → 슬롯 관리**에서 기간 생성(또는 SQL editor에서 `select generate_slots('YYYY-MM-DD','YYYY-MM-DD')`).
+슬롯은 **지연 생성**이라 별도 작업 불필요 — 고객이 금·토 날짜를 조회하는 순간 자동 생성된다.
+(관리자가 특정 동을 미리 닫거나 휴무 처리하려면 **슬롯 관리**에서 해당 날짜를 한 번 조회→생성 후 토글.)
 
 ---
 
