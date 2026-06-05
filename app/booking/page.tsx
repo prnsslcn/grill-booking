@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 
+import { Calendar } from '@/components/booking/Calendar';
 import { PaymentStep } from '@/components/booking/PaymentStep';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { upcomingOperatingDates } from '@/lib/dates';
-import { formatDateKorean, formatWon } from '@/lib/format';
+import { formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
 interface PartAvailability {
@@ -30,7 +30,6 @@ interface Selected {
   part: Part;
 }
 
-const DATES = upcomingOperatingDates(8);
 const STEPS = ['슬롯 선택', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
 
@@ -85,21 +84,9 @@ export default function BookingPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
-              <p className="mt-1 text-sm text-muted">금·토만 운영합니다.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {DATES.map((d) => (
-                  <button
-                    key={d.iso}
-                    onClick={() => selectDate(d.iso)}
-                    className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                      date === d.iso
-                        ? 'border-accent bg-accent-soft text-accent'
-                        : 'border-line bg-surface text-muted hover:border-accent/40'
-                    }`}
-                  >
-                    {formatDateKorean(d.iso)}
-                  </button>
-                ))}
+              <p className="mt-1 text-sm text-muted">금·토만 운영합니다. 월 이동으로 원하는 날짜를 고르세요.</p>
+              <div className="mt-3">
+                <Calendar value={date} onSelect={selectDate} />
               </div>
             </div>
 
