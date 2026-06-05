@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { CancelButton } from '@/components/admin/CancelButton';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -64,9 +66,19 @@ export default async function AdminBookingsPage({
         <button className="h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white">
           조회
         </button>
+        {date && (
+          <Link
+            href={status ? `/admin?status=${status}` : '/admin'}
+            className="flex h-11 items-center rounded-xl border border-line px-4 text-sm font-medium text-muted hover:bg-line-soft"
+          >
+            전체 기간
+          </Link>
+        )}
       </form>
 
-      <p className="mt-5 text-sm text-muted">{bookings.length}건</p>
+      <p className="mt-5 text-sm text-muted">
+        {date ? formatDateKorean(date) : '전체 기간'} · {bookings.length}건
+      </p>
 
       <div className="mt-2 space-y-2">
         {bookings.map((b) => {

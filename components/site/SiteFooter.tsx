@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-line bg-surface">
@@ -8,7 +10,12 @@ export function SiteFooter() {
           <br />
           전액 선결제 · 환불 규정은 예약 시 안내됩니다.
         </p>
-        <p className="mt-4 text-xs text-subtle">© 2026 ABC Works Global. All rights reserved.</p>
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-xs text-subtle">© 2026 ABC Works Global. All rights reserved.</p>
+          <Link href="/admin/login" className="text-xs text-subtle hover:text-muted hover:underline">
+            관리자 로그인
+          </Link>
+        </div>
       </div>
     </footer>
   );

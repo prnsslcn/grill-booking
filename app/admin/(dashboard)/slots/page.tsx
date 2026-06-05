@@ -28,8 +28,11 @@ export default async function AdminSlotsPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold text-ink">슬롯 생성</h1>
-        <p className="mt-1 text-sm text-muted">기간 내 금·토에 대해 모든 동×2부 슬롯을 생성합니다(중복은 건너뜀).</p>
+        <h1 className="text-xl font-bold text-ink">슬롯 미리 생성</h1>
+        <p className="mt-1 text-sm text-muted">
+          평소엔 고객이 날짜를 조회하면 슬롯이 자동 생성되므로 생성은 필수가 아닙니다.
+          특정 날짜의 동을 <strong>미리 닫거나 휴무 처리</strong>하려면, 먼저 이 기능으로 해당 기간을 생성한 뒤 아래에서 관리하세요.
+        </p>
         <div className="mt-4">
           <GenerateSlotsForm />
         </div>
