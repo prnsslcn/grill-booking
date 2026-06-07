@@ -48,6 +48,11 @@ export const noopSender: NotificationSender = {
  * → 키가 없는 개발/프리뷰에서는 자동으로 발송을 건너뛰고 이력만 기록한다.
  */
 export function getNotificationSender(): NotificationSender {
+  // 점검·테스트 중 발송 일시 정지(킬 스위치). 키가 있어도 실제 발송만 막고,
+  // 이력(notifications)은 그대로 기록된다. 테스트 후 이 값을 지우면 다시 발송된다.
+  if (process.env.NOTIFICATIONS_DISABLED === '1') {
+    return noopSender;
+  }
   if (
     process.env.SOLAPI_API_KEY &&
     process.env.SOLAPI_API_SECRET &&
