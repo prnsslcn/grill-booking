@@ -21,6 +21,7 @@ export const fakeTossClient: TossClient = {
       orderId: input.orderId,
       status: 'DONE',
       totalAmount: input.amount,
+      balanceAmount: input.amount,
       method: '간편결제',
       approvedAt: '2026-01-01T00:00:00+09:00',
       raw: { fake: true, ...input },
@@ -34,9 +35,24 @@ export const fakeTossClient: TossClient = {
       orderId: '',
       status: 'CANCELED',
       totalAmount: input.cancelAmount ?? 0,
+      balanceAmount: 0,
       method: null,
       approvedAt: null,
       raw: { fake: true, canceled: true, ...input },
+    };
+  },
+
+  // 웹훅은 프로덕션에서만 오므로 fake는 인터페이스 충족용(취소 아님 → 동기화 no-op).
+  async get(paymentKey): Promise<TossPaymentResult> {
+    return {
+      paymentKey,
+      orderId: '',
+      status: 'DONE',
+      totalAmount: 0,
+      balanceAmount: 0,
+      method: null,
+      approvedAt: null,
+      raw: { fake: true, get: true },
     };
   },
 };

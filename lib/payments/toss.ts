@@ -21,6 +21,8 @@ const TOSS_API_BASE = 'https://api.tosspayments.com/v1';
 export interface TossClient {
   confirm(input: ConfirmPaymentInput): Promise<TossPaymentResult>;
   cancel(input: CancelPaymentInput): Promise<TossPaymentResult>;
+  /** 결제 단건 조회. 웹훅의 상태변경을 토스 원천에서 재확인할 때 사용. */
+  get(paymentKey: string): Promise<TossPaymentResult>;
 }
 
 /** 시크릿 키로 Basic 인증 헤더 생성 (토스 규격: `secretKey:` base64). */
@@ -35,6 +37,7 @@ function parseResult(body: Record<string, unknown>): TossPaymentResult {
     orderId: String(body.orderId ?? ''),
     status: String(body.status ?? ''),
     totalAmount: Number(body.totalAmount ?? 0),
+    balanceAmount: Number(body.balanceAmount ?? body.totalAmount ?? 0),
     method: body.method != null ? String(body.method) : null,
     approvedAt: body.approvedAt != null ? String(body.approvedAt) : null,
     raw: body,
@@ -70,6 +73,18 @@ export const realTossClient: TossClient = {
           ...(input.cancelAmount != null ? { cancelAmount: input.cancelAmount } : {}),
         }),
       },
+    );
+    const body = (await res.json()) as Record<string, unknown>;
+    if (!res.ok) {
+      throw new PaymentError('TOSS_CONFIRM_FAILED', String(body.message ?? res.status));
+    }
+    return parseResult(body);
+  },
+
+  async get(paymentKey) {
+    const res = await fetch(
+      `${TOSS_API_BASE}/payments/${encodeURIComponent(paymentKey)}`,
+      { method: 'GET', headers: { Authorization: authHeader() } },
     );
     const body = (await res.json()) as Record<string, unknown>;
     if (!res.ok) {

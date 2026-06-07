@@ -16,6 +16,8 @@ export interface TossPaymentResult {
   orderId: string;
   status: string;
   totalAmount: number;
+  /** 취소 후 남은 금액. 외부 취소 동기화 시 환불액 계산(totalAmount - balanceAmount). */
+  balanceAmount: number;
   method: string | null;
   approvedAt: string | null;
   raw: unknown;
