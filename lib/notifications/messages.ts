@@ -9,6 +9,8 @@ import { formatDateKorean, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
 const BRAND = '알펜시아 BBQ';
+/** 고객 문자 말미 안내. 매장 공식 문의처(SiteFooter와 동일). */
+const CONTACT = '문의 033-339-0616 (11:00~19:00)';
 
 export interface BookingInfo {
   bookingNumber: string;
@@ -38,9 +40,12 @@ function whenLine(info: BookingInfo): string {
   return `${formatDateKorean(info.dateIso)} · ${p.label} ${p.start}~${p.end}`;
 }
 
-/** "타프텐트 A동" — unit_label이 비면 시설명만. */
+/** "타프 텐트 1호" — unit_label이 이미 시설명을 포함하면 중복 제거. */
 function placeLine(info: BookingInfo): string {
-  return [info.facilityName, info.unitLabel].filter(Boolean).join(' ');
+  const { facilityName, unitLabel } = info;
+  if (!unitLabel) return facilityName;
+  if (!facilityName) return unitLabel;
+  return unitLabel.startsWith(facilityName) ? unitLabel : `${facilityName} ${unitLabel}`;
 }
 
 export function buildMessages(
@@ -63,6 +68,7 @@ function confirmMessages(info: BookingInfo): RenderedMessages {
     `· 결제금액 ${formatWon(info.amount)}`,
     '',
     '예약 시간에 맞춰 방문해 주세요. 변경·취소는 예약조회에서 가능합니다.',
+    CONTACT,
   ].join('\n');
 
   const admin = [
@@ -90,6 +96,7 @@ function cancelMessages(info: BookingInfo, extra: MessageExtra): RenderedMessage
     `· 일시 ${whenLine(info)}`,
     `· 장소 ${placeLine(info)}`,
     refundLine,
+    CONTACT,
   ].join('\n');
 
   const admin = [

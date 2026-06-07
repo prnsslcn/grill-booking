@@ -64,7 +64,16 @@ export default async function BookingDetailPage({
 
       {/* 예약 정보 */}
       <Card className="divide-y divide-line">
-        <Row label="시설" value={`${b.facilityName}${b.unitLabel ? ` (${b.unitLabel})` : ''}`} />
+        <Row
+          label="시설"
+          value={
+            b.unitLabel
+              ? b.unitLabel.startsWith(b.facilityName)
+                ? b.unitLabel
+                : `${b.facilityName} (${b.unitLabel})`
+              : b.facilityName
+          }
+        />
         {b.meatLabel && <Row label="구성" value={`${b.meatLabel} 세트`} />}
         {b.addons.length > 0 && (
           <Row label="추가 메뉴" value={b.addons.map((a) => `${a.label} × ${a.qty}`).join(', ')} />
