@@ -23,6 +23,7 @@ export interface LookupResult {
   facilityName: string;
   unitLabel: string;
   meatLabel: string;
+  addons: { label: string; qty: number }[];
   date: string;
   part: Part;
   partLabel: string;
@@ -42,6 +43,7 @@ interface SnapshotShape {
   facility_name?: string;
   unit_label?: string;
   meat?: string;
+  addons?: { label: string; qty: number; price: number }[];
 }
 
 const MEAT_LABEL: Record<string, string> = { pork: '돼지', beef: '소' };
@@ -103,6 +105,7 @@ export async function lookupBooking(params: {
     facilityName: snapshot.facility_name ?? '',
     unitLabel: snapshot.unit_label ?? '',
     meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
+    addons: (snapshot.addons ?? []).map((a) => ({ label: a.label, qty: a.qty })),
     date: slot.date,
     part,
     partLabel: partInfo.label,

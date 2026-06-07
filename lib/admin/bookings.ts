@@ -16,10 +16,16 @@ export interface AdminBooking {
   createdAt: string;
 }
 
+interface SnapshotAddon {
+  label: string;
+  qty: number;
+  price: number;
+}
 interface SnapshotShape {
   facility_name?: string;
   unit_label?: string;
   meat?: string;
+  addons?: SnapshotAddon[];
 }
 
 const MEAT_LABEL: Record<string, string> = { pork: '돼지', beef: '소' };
@@ -33,6 +39,7 @@ export interface BookingDetail {
   facilityName: string;
   unitLabel: string;
   meatLabel: string;
+  addons: SnapshotAddon[];
   date: string | null;
   part: Part | null;
   amount: number;
@@ -87,6 +94,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     facilityName: snapshot.facility_name ?? '',
     unitLabel: snapshot.unit_label ?? '',
     meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
+    addons: snapshot.addons ?? [],
     date: data.slots?.date ?? null,
     part: (data.slots?.part as Part) ?? null,
     amount: data.amount,

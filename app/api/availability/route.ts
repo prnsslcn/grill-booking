@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getAvailability } from '@/lib/booking/availability';
+import { getAddons, getAvailability } from '@/lib/booking/availability';
 
 /**
  * 날짜별 예약 가능 현황. GET ?date=YYYY-MM-DD.
@@ -14,6 +14,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'INVALID_DATE' }, { status: 400 });
   }
 
-  const availability = await getAvailability(date);
-  return NextResponse.json({ date, availability }, { status: 200 });
+  const [availability, addons] = await Promise.all([getAvailability(date), getAddons()]);
+  return NextResponse.json({ date, availability, addons }, { status: 200 });
 }

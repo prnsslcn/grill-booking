@@ -21,6 +21,7 @@ export interface ReserveInput {
   guestPhone: string;
   guestCount: number;
   meat: MeatType;
+  addons?: Record<string, number>;
 }
 
 export interface ReserveResult {
@@ -39,6 +40,7 @@ export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
     p_guest_phone: input.guestPhone,
     p_guest_count: input.guestCount,
     p_meat: input.meat,
+    p_addons: input.addons ?? {},
   });
 
   if (error) {

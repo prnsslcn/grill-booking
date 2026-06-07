@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      addons: {
+        Row: {
+          is_active: boolean
+          key: string
+          label: string
+          price: number
+          sort: number
+        }
+        Insert: {
+          is_active?: boolean
+          key: string
+          label: string
+          price: number
+          sort?: number
+        }
+        Update: {
+          is_active?: boolean
+          key?: string
+          label?: string
+          price?: number
+          sort?: number
+        }
+        Relationships: []
+      }
       admins: {
         Row: {
           created_at: string
@@ -113,6 +137,7 @@ export type Database = {
           price_pork: number
           total_units: number
           type: string
+          weather_dependent: boolean
         }
         Insert: {
           capacity?: number
@@ -124,6 +149,7 @@ export type Database = {
           price_pork?: number
           total_units: number
           type: string
+          weather_dependent?: boolean
         }
         Update: {
           capacity?: number
@@ -135,6 +161,7 @@ export type Database = {
           price_pork?: number
           total_units?: number
           type?: string
+          weather_dependent?: boolean
         }
         Relationships: []
       }
@@ -345,6 +372,7 @@ export type Database = {
       }
       reserve_slot: {
         Args: {
+          p_addons?: Json
           p_guest_count: number
           p_guest_name: string
           p_guest_phone: string

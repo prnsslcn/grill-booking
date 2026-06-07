@@ -19,6 +19,8 @@ interface Selected {
   amount: number;
   meat: 'pork' | 'beef';
   meatLabel: string;
+  addons: Record<string, number>;
+  addonLines: { label: string; price: number; qty: number }[];
 }
 
 interface Props {
@@ -45,6 +47,7 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
     guestPhone: guest.phone,
     guestCount: selected.capacity,
     meat: selected.meat,
+    addons: selected.addons,
   };
 
   async function payFake() {
@@ -95,6 +98,21 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
         <Row label="시설" value={`${selected.facilityName} · ${selected.capacity}인`} />
         <Row label="일시" value={`${formatDateKorean(date)} · ${PARTS[selected.part].label}`} />
         <Row label="구성" value={`${selected.meatLabel} 세트`} />
+        {selected.addonLines.length > 0 && (
+          <div className="p-5">
+            <span className="text-sm text-muted">추가 메뉴</span>
+            <ul className="mt-1.5 space-y-1">
+              {selected.addonLines.map((a) => (
+                <li key={a.label} className="flex justify-between text-sm text-ink">
+                  <span>
+                    {a.label} × {a.qty}
+                  </span>
+                  <span>{formatWon(a.price * a.qty)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Row label="예약자" value={guest.name} />
         <div className="flex items-center justify-between p-5">
           <span className="font-semibold text-ink">결제 금액</span>

@@ -25,6 +25,7 @@ interface FacilityAvailability {
   capacity: number;
   pricePork: number;
   priceBeef: number;
+  weatherDependent: boolean;
   parts: PartAvailability[];
 }
 interface Selected {
@@ -34,6 +35,11 @@ interface Selected {
   part: Part;
   pricePork: number;
   priceBeef: number;
+}
+interface Addon {
+  key: string;
+  label: string;
+  price: number;
 }
 
 const STEPS = ['시설·시간', '정보 입력', '결제'];
@@ -48,13 +54,27 @@ export default function BookingPage() {
   const [loadingAvail, setLoadingAvail] = useState(false);
   const [selected, setSelected] = useState<Selected | null>(null);
   const [meat, setMeat] = useState<Meat | ''>('');
+  const [addonsCatalog, setAddonsCatalog] = useState<Addon[]>([]);
+  const [addonQty, setAddonQty] = useState<Record<string, number>>({});
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const amount = selected && meat ? (meat === 'pork' ? selected.pricePork : selected.priceBeef) : 0;
+  const setPrice = selected && meat ? (meat === 'pork' ? selected.pricePork : selected.priceBeef) : 0;
+  const addonTotal = addonsCatalog.reduce((sum, a) => sum + a.price * (addonQty[a.key] ?? 0), 0);
+  const amount = setPrice + addonTotal;
+  const addonLines = addonsCatalog
+    .filter((a) => (addonQty[a.key] ?? 0) > 0)
+    .map((a) => ({ label: a.label, price: a.price, qty: addonQty[a.key] }));
+
+  function setQty(key: string, delta: number) {
+    setAddonQty((q) => {
+      const next = Math.max(0, (q[key] ?? 0) + delta);
+      return { ...q, [key]: next };
+    });
+  }
 
   async function selectDate(iso: string) {
     setDate(iso);
@@ -62,8 +82,9 @@ export default function BookingPage() {
     setLoadingAvail(true);
     try {
       const res = await fetch(`/api/availability?date=${iso}`);
-      const body = (await res.json()) as { availability: FacilityAvailability[] };
+      const body = (await res.json()) as { availability: FacilityAvailability[]; addons: Addon[] };
       setAvail(body.availability ?? []);
+      setAddonsCatalog(body.addons ?? []);
     } finally {
       setLoadingAvail(false);
     }
@@ -121,6 +142,11 @@ export default function BookingPage() {
                             돼지 {formatWon(f.pricePork)} · 소 {formatWon(f.priceBeef)}
                           </span>
                         </div>
+                        {f.weatherDependent && (
+                          <p className="mt-1.5 text-xs text-[#c2780f]">
+                            ☔ 우천 시 운영이 제한될 수 있습니다.
+                          </p>
+                        )}
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           {f.parts.map((p) => {
                             const info = PARTS[p.part];
@@ -187,6 +213,51 @@ export default function BookingPage() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {/* 추가메뉴 (선택) */}
+            {selected && meat && addonsCatalog.length > 0 && (
+              <div>
+                <h2 className="text-lg font-bold text-ink">추가 메뉴 <span className="text-sm font-normal text-subtle">(선택)</span></h2>
+                <div className="mt-3 space-y-2">
+                  {addonsCatalog.map((a) => {
+                    const qty = addonQty[a.key] ?? 0;
+                    return (
+                      <Card key={a.key} className="flex items-center justify-between p-4">
+                        <div>
+                          <span className="block text-sm font-medium text-ink">{a.label}</span>
+                          <span className="text-sm text-muted">{formatWon(a.price)}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setQty(a.key, -1)}
+                            disabled={qty === 0}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-muted disabled:opacity-30"
+                          >
+                            −
+                          </button>
+                          <span className="w-6 text-center text-sm font-semibold text-ink">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQty(a.key, 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selected && meat && (
+              <div className="flex items-center justify-between rounded-xl bg-line-soft px-4 py-3">
+                <span className="text-sm text-muted">합계</span>
+                <span className="text-lg font-extrabold text-ink">{formatWon(amount)}</span>
               </div>
             )}
 
@@ -257,6 +328,8 @@ export default function BookingPage() {
                 amount,
                 meat,
                 meatLabel: MEAT_LABEL[meat],
+                addons: addonQty,
+                addonLines,
               }}
               date={date}
               guest={{ name: name.trim(), phone: phone.trim() }}

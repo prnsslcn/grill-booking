@@ -18,6 +18,18 @@ interface ReserveBody {
   guestPhone?: unknown;
   guestCount?: unknown;
   meat?: unknown;
+  addons?: unknown;
+}
+
+/** 추가메뉴 입력 정규화: {key: 양의 정수}만 통과. */
+function parseAddons(raw: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (raw && typeof raw === 'object') {
+    for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+      if (typeof v === 'number' && Number.isInteger(v) && v > 0) out[k] = v;
+    }
+  }
+  return out;
 }
 
 export async function POST(request: Request) {
@@ -37,6 +49,7 @@ export async function POST(request: Request) {
       ? body.guestCount
       : 1;
   const meat = body.meat === 'pork' || body.meat === 'beef' ? body.meat : '';
+  const addons = parseAddons(body.addons);
 
   const fieldErrors: Record<string, string> = {};
   if (!slotId) fieldErrors.slotId = '슬롯을 선택하세요.';
@@ -59,6 +72,7 @@ export async function POST(request: Request) {
       guestPhone,
       guestCount,
       meat: meat as 'pork' | 'beef',
+      addons,
     });
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

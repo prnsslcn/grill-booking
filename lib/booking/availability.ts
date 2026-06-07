@@ -20,7 +20,24 @@ export interface FacilityAvailability {
   capacity: number;
   pricePork: number;
   priceBeef: number;
+  weatherDependent: boolean;
   parts: PartAvailability[];
+}
+
+export interface Addon {
+  key: string;
+  label: string;
+  price: number;
+}
+
+export async function getAddons(): Promise<Addon[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('addons')
+    .select('key, label, price')
+    .eq('is_active', true)
+    .order('sort', { ascending: true });
+  return data ?? [];
 }
 
 export async function getAvailability(date: string): Promise<FacilityAvailability[]> {
@@ -36,7 +53,7 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
   const [{ data: facilities }, { data: slots }] = await Promise.all([
     supabase
       .from('facilities')
-      .select('id, type, name, capacity, price_pork, price_beef')
+      .select('id, type, name, capacity, price_pork, price_beef, weather_dependent')
       .eq('is_active', true)
       .order('capacity', { ascending: true }),
     supabase
@@ -71,6 +88,7 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
       capacity: f.capacity,
       pricePork: f.price_pork,
       priceBeef: f.price_beef,
+      weatherDependent: f.weather_dependent,
       parts: partAvail,
     };
   });
