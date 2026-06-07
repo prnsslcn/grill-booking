@@ -12,15 +12,22 @@ function toIso(y: number, m: number, d: number): string {
 }
 
 /**
- * 월 단위 캘린더. 운영일(금·토)만 선택 가능, 지난 날짜·평일은 비활성.
- * 월 이동(◀ ▶)으로 먼 미래(예: 8월)도 선택할 수 있다.
+ * 월 단위 캘린더. 옵션으로 선택 가능 요일·과거 허용 여부를 제어.
+ * - 고객 예약: allowedDows=[5,6](금·토), disablePast (지난 날짜·평일 비활성)
+ * - 관리자 필터: 옵션 미지정 → 모든 요일·과거 포함 선택 가능
  */
 export function Calendar({
   value,
   onSelect,
+  allowedDows,
+  disablePast = false,
+  hint,
 }: {
   value: string;
   onSelect: (iso: string) => void;
+  allowedDows?: number[];
+  disablePast?: boolean;
+  hint?: string;
 }) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -34,7 +41,8 @@ export function Calendar({
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
-  const canPrev = view.y > today.getFullYear() || view.m > today.getMonth();
+  // 과거 비활성일 때만 현재 달 이전으로 이동 제한
+  const canPrev = !disablePast || view.y > today.getFullYear() || view.m > today.getMonth();
   function move(delta: number) {
     setView((v) => {
       const d = new Date(v.y, v.m + delta, 1);
@@ -72,7 +80,7 @@ export function Calendar({
           <div
             key={w}
             className={`py-1 text-xs font-medium ${
-              i === 5 || i === 6 ? 'text-accent' : 'text-subtle'
+              i === 0 ? 'text-[#e5484d]/80' : i === 6 ? 'text-accent' : 'text-subtle'
             }`}
           >
             {w}
@@ -83,9 +91,9 @@ export function Calendar({
           if (d === null) return <div key={`b${i}`} />;
           const date = new Date(view.y, view.m, d);
           const dow = date.getDay();
-          const isOperating = dow === 5 || dow === 6;
+          const dowOk = allowedDows ? allowedDows.includes(dow) : true;
           const isPast = date < today;
-          const disabled = !isOperating || isPast;
+          const disabled = !dowOk || (disablePast && isPast);
           const dstr = toIso(view.y, view.m, d);
           const selected = dstr === value;
 
@@ -109,7 +117,7 @@ export function Calendar({
         })}
       </div>
 
-      <p className="mt-3 text-center text-xs text-subtle">금·토만 예약 가능합니다.</p>
+      {hint && <p className="mt-3 text-center text-xs text-subtle">{hint}</p>}
     </div>
   );
 }

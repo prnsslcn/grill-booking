@@ -2,6 +2,7 @@ import { CloseDateButton } from '@/components/admin/CloseDateButton';
 import { GenerateSlotsForm } from '@/components/admin/GenerateSlotsForm';
 import { SlotToggle } from '@/components/admin/SlotToggle';
 import { Card } from '@/components/ui/Card';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { listSlotsByDate } from '@/lib/admin/slots';
 import { formatDateKorean } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
@@ -44,15 +45,10 @@ export default async function AdminSlotsPage({
           {date && slots.length > 0 && <CloseDateButton date={date} />}
         </div>
         <form className="mt-4 flex items-end gap-3" method="get">
-          <label className="text-sm">
+          <div className="text-sm">
             <span className="mb-1 block font-medium text-ink">날짜 선택</span>
-            <input
-              type="date"
-              name="date"
-              defaultValue={date}
-              className="h-11 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
-            />
-          </label>
+            <DatePicker name="date" defaultValue={date} />
+          </div>
           <button className="h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white">
             조회
           </button>

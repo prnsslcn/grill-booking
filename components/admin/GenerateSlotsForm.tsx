@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Field';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { adminGenerateSlots } from '@/lib/admin/actions';
 
 export function GenerateSlotsForm() {
@@ -22,14 +22,14 @@ export function GenerateSlotsForm() {
 
   return (
     <div className="flex flex-wrap items-end gap-3">
-      <label className="text-sm">
+      <div className="text-sm">
         <span className="mb-1 block font-medium text-ink">시작일</span>
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-11 w-44" />
-      </label>
-      <label className="text-sm">
+        <DatePicker defaultValue={from} onChange={setFrom} />
+      </div>
+      <div className="text-sm">
         <span className="mb-1 block font-medium text-ink">종료일</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-11 w-44" />
-      </label>
+        <DatePicker defaultValue={to} onChange={setTo} />
+      </div>
       <Button onClick={submit} disabled={pending || !from || !to}>
         {pending ? '생성 중…' : '슬롯 생성'}
       </Button>

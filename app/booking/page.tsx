@@ -87,7 +87,13 @@ export default function BookingPage() {
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
               <p className="mt-1 text-sm text-muted">금·토만 운영합니다. 월 이동으로 원하는 날짜를 고르세요.</p>
               <div className="mt-3">
-                <Calendar value={date} onSelect={selectDate} />
+                <Calendar
+                  value={date}
+                  onSelect={selectDate}
+                  allowedDows={[5, 6]}
+                  disablePast
+                  hint="금·토만 예약 가능합니다."
+                />
               </div>
             </div>
 

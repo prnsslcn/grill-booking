@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { CancelButton } from '@/components/admin/CancelButton';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { listBookings } from '@/lib/admin/bookings';
@@ -54,15 +55,10 @@ export default async function AdminBookingsPage({
             className="h-11 w-52 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
           />
         </label>
-        <label className="text-sm">
+        <div className="text-sm">
           <span className="mb-1 block font-medium text-ink">이용일</span>
-          <input
-            type="date"
-            name="date"
-            defaultValue={date}
-            className="h-11 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
-          />
-        </label>
+          <DatePicker name="date" defaultValue={date} allowClear />
+        </div>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-ink">상태</span>
           <select

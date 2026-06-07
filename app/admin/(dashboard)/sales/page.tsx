@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/Card';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { getSalesSummary } from '@/lib/admin/sales';
 import { formatDateKorean, formatWon } from '@/lib/format';
 
@@ -25,14 +26,14 @@ export default async function AdminSalesPage({
       <p className="mt-1 text-sm text-muted">결제 승인일(KST) 기준. 순매출은 환불되지 않은 유효 결제 합계입니다.</p>
 
       <form className="mt-5 flex flex-wrap items-end gap-3" method="get">
-        <label className="text-sm">
+        <div className="text-sm">
           <span className="mb-1 block font-medium text-ink">시작일</span>
-          <input type="date" name="from" defaultValue={from} className="h-11 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent" />
-        </label>
-        <label className="text-sm">
+          <DatePicker name="from" defaultValue={from} />
+        </div>
+        <div className="text-sm">
           <span className="mb-1 block font-medium text-ink">종료일</span>
-          <input type="date" name="to" defaultValue={to} className="h-11 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent" />
-        </label>
+          <DatePicker name="to" defaultValue={to} />
+        </div>
         <button className="h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white">조회</button>
       </form>
 
