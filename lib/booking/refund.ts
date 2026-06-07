@@ -1,12 +1,10 @@
 import 'server-only';
 
-import { noopSender } from '@/lib/notifications';
+import { dispatchBookingNotification } from '@/lib/notifications/dispatch';
 import { refundAmount } from '@/lib/policy/refund';
 import { getTossClient, type TossClient } from '@/lib/payments/toss';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { Json } from '@/types/database';
-
-type AdminClient = ReturnType<typeof createAdminClient>;
 
 /**
  * 환불 처리: 토스 취소 성공 → DB 갱신 (순서 엄수).
@@ -140,45 +138,13 @@ export async function refundBooking(
 
   const fin = Array.isArray(finData) ? finData[0] : finData;
 
-  // 5) 취소 알림(best-effort)
-  await notifyCancelled(supabase, req.booking_id, input.bookingNumber);
+  // 5) 취소 알림(고객+관리자, best-effort) — 실제 환불액을 문구에 반영
+  const refundedAmount = fin?.refunded_amount ?? refund;
+  await dispatchBookingNotification(supabase, req.booking_id, 'cancel', { refundedAmount });
 
   return {
     bookingId: req.booking_id,
-    refundedAmount: fin?.refunded_amount ?? refund,
+    refundedAmount,
     outcome: 'REFUNDED',
   };
-}
-
-async function notifyCancelled(
-  supabase: AdminClient,
-  bookingId: string,
-  bookingNumber: string,
-): Promise<void> {
-  try {
-    const { data: booking } = await supabase
-      .from('bookings')
-      .select('guest_phone')
-      .eq('id', bookingId)
-      .maybeSingle();
-
-    const result = await noopSender.send({
-      bookingId,
-      to: booking?.guest_phone ?? '',
-      type: 'cancel',
-      channel: 'sms',
-      payload: { bookingNumber },
-    });
-
-    await supabase.from('notifications').insert({
-      booking_id: bookingId,
-      type: 'cancel',
-      channel: 'sms',
-      status: result.status,
-      sent_at: result.status === 'sent' ? new Date().toISOString() : null,
-      payload: { bookingNumber } as Json,
-    });
-  } catch {
-    // best-effort
-  }
 }

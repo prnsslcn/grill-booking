@@ -56,6 +56,7 @@ export interface BookingDetail {
   notifications: {
     type: string;
     channel: string;
+    recipient: string;
     status: string;
     sentAt: string | null;
   }[];
@@ -66,7 +67,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
   const { data } = await supabase
     .from('bookings')
     .select(
-      'booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, updated_at, slots(date, part), payments(status, method, amount, approved_at, cancelled_at, toss_payment_key, created_at), notifications(type, channel, status, sent_at)',
+      'booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, updated_at, slots(date, part), payments(status, method, amount, approved_at, cancelled_at, toss_payment_key, created_at), notifications(type, channel, recipient, status, sent_at)',
     )
     .eq('booking_number', bookingNumber)
     .maybeSingle();
@@ -104,6 +105,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     notifications: (data.notifications ?? []).map((n) => ({
       type: n.type,
       channel: n.channel,
+      recipient: n.recipient,
       status: n.status,
       sentAt: n.sent_at,
     })),

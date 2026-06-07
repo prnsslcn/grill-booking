@@ -201,6 +201,7 @@ export type Database = {
           created_at: string
           id: string
           payload: Json | null
+          recipient: string
           sent_at: string | null
           status: string
           type: string
@@ -211,6 +212,7 @@ export type Database = {
           created_at?: string
           id?: string
           payload?: Json | null
+          recipient?: string
           sent_at?: string | null
           status?: string
           type: string
@@ -221,6 +223,7 @@ export type Database = {
           created_at?: string
           id?: string
           payload?: Json | null
+          recipient?: string
           sent_at?: string | null
           status?: string
           type?: string

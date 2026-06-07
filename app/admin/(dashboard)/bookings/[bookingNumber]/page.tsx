@@ -26,6 +26,7 @@ const PAYMENT_LABEL: Record<string, string> = {
 };
 
 const NOTI_LABEL: Record<string, string> = { confirm: '확정', reminder: '리마인더', cancel: '취소' };
+const RECIPIENT_LABEL: Record<string, string> = { customer: '고객', admin: '관리자' };
 
 export default async function BookingDetailPage({
   params,
@@ -116,7 +117,9 @@ export default async function BookingDetailPage({
           {b.notifications.length === 0 && <p className="p-4 text-sm text-subtle">발송 기록 없음</p>}
           {b.notifications.map((n, i) => (
             <div key={i} className="flex items-center justify-between gap-2 p-4 text-sm">
-              <span className="text-ink">{NOTI_LABEL[n.type] ?? n.type} 알림 · {n.channel}</span>
+              <span className="text-ink">
+                {NOTI_LABEL[n.type] ?? n.type} 알림 · {RECIPIENT_LABEL[n.recipient] ?? n.recipient} · {n.channel}
+              </span>
               <span className="text-xs text-subtle">
                 {n.status}
                 {n.sentAt ? ` · ${formatDateTimeKorean(n.sentAt)}` : ''}

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { noopSender } from '@/lib/notifications';
+import { dispatchBookingNotification } from '@/lib/notifications/dispatch';
 import {
   PaymentError,
   needsCompensation,
@@ -80,7 +80,8 @@ export async function confirmBooking(
   if (!row) throw new PaymentError('UNKNOWN', 'confirm 결과가 비어 있습니다.');
 
   if (row.outcome === 'CONFIRMED') {
-    await notifyConfirmed(supabase, row.booking_id, row.booking_number);
+    // 확정 알림(고객+관리자, best-effort)
+    await dispatchBookingNotification(supabase, row.booking_id, 'confirm');
   }
 
   return {
@@ -120,39 +121,5 @@ async function compensate(
       cancelled_at: new Date().toISOString(),
       raw_response: { compensated: true, reason } as Json,
     });
-  }
-}
-
-/** 확정 알림(추상화 레이어 경유) + 이력 기록. 실패해도 확정은 유지. */
-async function notifyConfirmed(
-  supabase: AdminClient,
-  bookingId: string,
-  bookingNumber: string,
-): Promise<void> {
-  try {
-    const { data: booking } = await supabase
-      .from('bookings')
-      .select('guest_phone')
-      .eq('id', bookingId)
-      .maybeSingle();
-
-    const result = await noopSender.send({
-      bookingId,
-      to: booking?.guest_phone ?? '',
-      type: 'confirm',
-      channel: 'sms',
-      payload: { bookingNumber },
-    });
-
-    await supabase.from('notifications').insert({
-      booking_id: bookingId,
-      type: 'confirm',
-      channel: 'sms',
-      status: result.status,
-      sent_at: result.status === 'sent' ? new Date().toISOString() : null,
-      payload: { bookingNumber } as Json,
-    });
-  } catch {
-    // best-effort
   }
 }
