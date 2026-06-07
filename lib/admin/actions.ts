@@ -62,3 +62,16 @@ export async function adminUpdateFacility(
   revalidatePath('/admin/facilities');
   revalidatePath('/');
 }
+
+export async function adminUpdateAddon(
+  key: string,
+  patch: { price?: number; isActive?: boolean },
+): Promise<void> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const update: { price?: number; is_active?: boolean } = {};
+  if (patch.price !== undefined) update.price = patch.price;
+  if (patch.isActive !== undefined) update.is_active = patch.isActive;
+  await supabase.from('addons').update(update).eq('key', key);
+  revalidatePath('/admin/facilities');
+}
