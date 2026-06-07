@@ -17,6 +17,7 @@ interface ReserveBody {
   guestName?: unknown;
   guestPhone?: unknown;
   guestCount?: unknown;
+  meat?: unknown;
 }
 
 export async function POST(request: Request) {
@@ -35,12 +36,14 @@ export async function POST(request: Request) {
     typeof body.guestCount === 'number' && Number.isInteger(body.guestCount)
       ? body.guestCount
       : 1;
+  const meat = body.meat === 'pork' || body.meat === 'beef' ? body.meat : '';
 
   const fieldErrors: Record<string, string> = {};
   if (!slotId) fieldErrors.slotId = '슬롯을 선택하세요.';
   if (!guestName) fieldErrors.guestName = '예약자명을 입력하세요.';
   if (!PHONE_RE.test(guestPhone)) fieldErrors.guestPhone = '휴대폰 번호 형식이 올바르지 않습니다.';
   if (guestCount < 1) fieldErrors.guestCount = '인원은 1명 이상이어야 합니다.';
+  if (!meat) fieldErrors.meat = '고기 종류를 선택하세요.';
 
   if (Object.keys(fieldErrors).length > 0) {
     return NextResponse.json(
@@ -50,7 +53,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await reserveSlot({ slotId, guestName, guestPhone, guestCount });
+    const result = await reserveSlot({
+      slotId,
+      guestName,
+      guestPhone,
+      guestCount,
+      meat: meat as 'pork' | 'beef',
+    });
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     if (error instanceof ReservationError) {

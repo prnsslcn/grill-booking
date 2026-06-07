@@ -18,6 +18,88 @@ export interface AdminBooking {
 
 interface SnapshotShape {
   facility_name?: string;
+  unit_label?: string;
+  meat?: string;
+}
+
+const MEAT_LABEL: Record<string, string> = { pork: '돼지', beef: '소' };
+
+export interface BookingDetail {
+  bookingNumber: string;
+  status: string;
+  guestName: string;
+  guestPhone: string;
+  guestCount: number;
+  facilityName: string;
+  unitLabel: string;
+  meatLabel: string;
+  date: string | null;
+  part: Part | null;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+  payments: {
+    status: string;
+    method: string | null;
+    amount: number;
+    approvedAt: string | null;
+    cancelledAt: string | null;
+    tossPaymentKey: string | null;
+  }[];
+  notifications: {
+    type: string;
+    channel: string;
+    status: string;
+    sentAt: string | null;
+  }[];
+}
+
+export async function getBookingDetail(bookingNumber: string): Promise<BookingDetail | null> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select(
+      'booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, updated_at, slots(date, part), payments(status, method, amount, approved_at, cancelled_at, toss_payment_key, created_at), notifications(type, channel, status, sent_at)',
+    )
+    .eq('booking_number', bookingNumber)
+    .maybeSingle();
+
+  if (!data) return null;
+  const snapshot = (data.facility_snapshot ?? {}) as SnapshotShape;
+
+  const payments = [...(data.payments ?? [])]
+    .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))
+    .map((p) => ({
+      status: p.status,
+      method: p.method,
+      amount: p.amount,
+      approvedAt: p.approved_at,
+      cancelledAt: p.cancelled_at,
+      tossPaymentKey: p.toss_payment_key,
+    }));
+
+  return {
+    bookingNumber: data.booking_number,
+    status: data.status,
+    guestName: data.guest_name,
+    guestPhone: data.guest_phone,
+    guestCount: data.guest_count,
+    facilityName: snapshot.facility_name ?? '',
+    unitLabel: snapshot.unit_label ?? '',
+    meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
+    date: data.slots?.date ?? null,
+    part: (data.slots?.part as Part) ?? null,
+    amount: data.amount,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    payments,
+    notifications: (data.notifications ?? []).map((n) => ({
+      type: n.type,
+      channel: n.channel,
+      status: n.status,
+      sentAt: n.sent_at,
+    })),
+  };
 }
 
 export async function listBookings(filter: {

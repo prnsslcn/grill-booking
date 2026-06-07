@@ -11,6 +11,7 @@ export interface ReserveGuest {
   guestName: string;
   guestPhone: string;
   guestCount: number;
+  meat: 'pork' | 'beef';
 }
 
 export class PayError extends Error {

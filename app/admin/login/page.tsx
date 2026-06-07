@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -34,7 +35,7 @@ export default function AdminLoginPage() {
     <div className="flex min-h-[100dvh] items-center justify-center px-5">
       <Card className="w-full max-w-sm p-7">
         <h1 className="text-xl font-bold text-ink">관리자 로그인</h1>
-        <p className="mt-1 text-sm text-muted">그릴 리조트 운영</p>
+        <p className="mt-1 text-sm text-muted">알펜시아 BBQ 운영</p>
         <form onSubmit={login} className="mt-6 space-y-4">
           <Field label="이메일">
             <Input
@@ -57,6 +58,12 @@ export default function AdminLoginPage() {
             {loading ? '로그인 중…' : '로그인'}
           </Button>
         </form>
+        <Link
+          href="/"
+          className="mt-4 block text-center text-sm font-medium text-muted hover:text-ink"
+        >
+          ← 홈으로 가기
+        </Link>
       </Card>
     </div>
   );

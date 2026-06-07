@@ -13,11 +13,14 @@ import { createAdminClient } from '@/lib/supabase/admin';
  * service_role(admin 클라이언트)로 호출 — RLS 우회는 이 서버 경로에 한정.
  */
 
+export type MeatType = 'pork' | 'beef';
+
 export interface ReserveInput {
   slotId: string;
   guestName: string;
   guestPhone: string;
   guestCount: number;
+  meat: MeatType;
 }
 
 export interface ReserveResult {
@@ -35,6 +38,7 @@ export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
     p_guest_name: input.guestName,
     p_guest_phone: input.guestPhone,
     p_guest_count: input.guestCount,
+    p_meat: input.meat,
   });
 
   if (error) {

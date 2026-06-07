@@ -10,45 +10,61 @@ import type { FacilityType } from '@/types/domain';
 export function FacilityEditor({
   type,
   name,
-  price,
+  pricePork,
+  priceBeef,
   isActive,
 }: {
   type: FacilityType;
   name: string;
-  price: number;
+  pricePork: number;
+  priceBeef: number;
   isActive: boolean;
 }) {
-  const [priceInput, setPriceInput] = useState(String(price));
+  const [pork, setPork] = useState(String(pricePork));
+  const [beef, setBeef] = useState(String(priceBeef));
   const [active, setActive] = useState(isActive);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function save() {
-    const p = Number(priceInput);
-    if (!Number.isInteger(p) || p < 0) return;
+    const p = Number(pork);
+    const b = Number(beef);
+    if (!Number.isInteger(p) || p < 0 || !Number.isInteger(b) || b < 0) return;
     setSaved(false);
     startTransition(async () => {
-      await adminUpdateFacility(type, { price: p, isActive: active });
+      await adminUpdateFacility(type, { pricePork: p, priceBeef: b, isActive: active });
       setSaved(true);
     });
   }
 
   return (
     <div className="flex flex-wrap items-center gap-4 py-4">
-      <span className="w-28 font-semibold text-ink">{name}</span>
+      <span className="w-40 font-semibold text-ink">{name}</span>
       <label className="flex items-center gap-2 text-sm text-muted">
-        가격
+        돼지
         <Input
           type="number"
           min={0}
-          value={priceInput}
+          value={pork}
           onChange={(e) => {
-            setPriceInput(e.target.value);
+            setPork(e.target.value);
             setSaved(false);
           }}
           className="h-10 w-32"
         />
-        원
+      </label>
+      <label className="flex items-center gap-2 text-sm text-muted">
+        소
+        <Input
+          type="number"
+          min={0}
+          value={beef}
+          onChange={(e) => {
+            setBeef(e.target.value);
+            setSaved(false);
+          }}
+          className="h-10 w-32"
+        />
       </label>
       <label className="flex items-center gap-2 text-sm text-muted">
         <input

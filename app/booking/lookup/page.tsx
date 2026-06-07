@@ -15,6 +15,7 @@ interface LookupResult {
   guestName: string;
   guestCount: number;
   facilityName: string;
+  meatLabel: string;
   date: string;
   partLabel: string;
   partTime: string;
@@ -123,6 +124,7 @@ export default function LookupPage() {
             </div>
             <div className="divide-y divide-line">
               <Row label="시설" value={result.facilityName} />
+              {result.meatLabel && <Row label="구성" value={`${result.meatLabel} 세트`} />}
               <Row label="일시" value={`${formatDateKorean(result.date)} · ${result.partLabel} ${result.partTime}`} />
               <Row label="예약자" value={`${result.guestName} (${result.guestCount}명)`} />
               <Row label="결제 금액" value={formatWon(result.amount)} />

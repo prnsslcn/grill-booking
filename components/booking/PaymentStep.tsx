@@ -11,10 +11,20 @@ import { requestTossPayment } from '@/lib/client/toss-payment';
 import { formatDateKorean, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
+interface Selected {
+  slotId: string;
+  facilityName: string;
+  part: Part;
+  capacity: number;
+  amount: number;
+  meat: 'pork' | 'beef';
+  meatLabel: string;
+}
+
 interface Props {
-  selected: { slotId: string; facilityName: string; price: number; part: Part };
+  selected: Selected;
   date: string;
-  guest: { name: string; phone: string; count: number };
+  guest: { name: string; phone: string };
   onSlotTaken: () => void;
 }
 
@@ -29,17 +39,19 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // fake 모드: reserve → fake confirm → 완료
+  const reserveInput = {
+    slotId: selected.slotId,
+    guestName: guest.name,
+    guestPhone: guest.phone,
+    guestCount: selected.capacity,
+    meat: selected.meat,
+  };
+
   async function payFake() {
     setSubmitting(true);
     setError('');
     try {
-      const { bookingNumber } = await payAndConfirm({
-        slotId: selected.slotId,
-        guestName: guest.name,
-        guestPhone: guest.phone,
-        guestCount: guest.count,
-      });
+      const { bookingNumber } = await payAndConfirm(reserveInput);
       router.push(`/booking/complete?n=${encodeURIComponent(bookingNumber)}`);
     } catch (err) {
       const code = err instanceof PayError ? err.code : 'UNKNOWN';
@@ -50,32 +62,24 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
     }
   }
 
-  // real 모드: reserve → 토스 결제창 → (successUrl) 서버 confirm
   async function payReal() {
     setSubmitting(true);
     setError('');
     try {
-      const { orderId } = await reserveSlotClient({
-        slotId: selected.slotId,
-        guestName: guest.name,
-        guestPhone: guest.phone,
-        guestCount: guest.count,
-      });
+      const { orderId } = await reserveSlotClient(reserveInput);
       await requestTossPayment({
-        amount: selected.price,
+        amount: selected.amount,
         orderId,
-        orderName: `${selected.facilityName} ${formatDateKorean(date)} ${PARTS[selected.part].label}`,
+        orderName: `${selected.facilityName} ${formatDateKorean(date)} ${PARTS[selected.part].label} (${selected.meatLabel})`,
         customerName: guest.name,
         customerMobilePhone: guest.phone.replace(/\D/g, ''),
       });
-      // 결제창이 successUrl로 리다이렉트하므로 여기 도달은 보통 없음
     } catch (err) {
       if (err instanceof PayError) {
         setError(mapError(err.code));
         if (err.code === 'SLOT_TAKEN') onSlotTaken();
       } else {
         const code = (err as { code?: string }).code;
-        // 사용자가 결제창을 닫은 경우(USER_CANCEL)는 조용히 무시
         if (code && code !== 'USER_CANCEL') {
           setError('결제가 취소되었거나 실패했습니다. 다시 시도해 주세요.');
         }
@@ -88,12 +92,13 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
     <div className="space-y-5">
       <h2 className="text-lg font-bold text-ink">결제</h2>
       <Card className="divide-y divide-line">
-        <Row label="시설" value={selected.facilityName} />
+        <Row label="시설" value={`${selected.facilityName} · ${selected.capacity}인`} />
         <Row label="일시" value={`${formatDateKorean(date)} · ${PARTS[selected.part].label}`} />
-        <Row label="예약자" value={`${guest.name} (${guest.count}명)`} />
+        <Row label="구성" value={`${selected.meatLabel} 세트`} />
+        <Row label="예약자" value={guest.name} />
         <div className="flex items-center justify-between p-5">
           <span className="font-semibold text-ink">결제 금액</span>
-          <span className="text-xl font-extrabold text-ink">{formatWon(selected.price)}</span>
+          <span className="text-xl font-extrabold text-ink">{formatWon(selected.amount)}</span>
         </div>
       </Card>
 
@@ -105,7 +110,7 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
       {error && <p className="text-sm text-danger">{error}</p>}
 
       <Button size="lg" onClick={PAYMENTS_FAKE ? payFake : payReal} disabled={submitting}>
-        {submitting ? '처리 중…' : `${formatWon(selected.price)} 결제하기`}
+        {submitting ? '처리 중…' : `${formatWon(selected.amount)} 결제하기`}
       </Button>
     </div>
   );

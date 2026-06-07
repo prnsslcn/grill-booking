@@ -22,6 +22,7 @@ export interface LookupResult {
   guestCount: number;
   facilityName: string;
   unitLabel: string;
+  meatLabel: string;
   date: string;
   part: Part;
   partLabel: string;
@@ -40,7 +41,10 @@ function normalizePhone(phone: string): string {
 interface SnapshotShape {
   facility_name?: string;
   unit_label?: string;
+  meat?: string;
 }
+
+const MEAT_LABEL: Record<string, string> = { pork: '돼지', beef: '소' };
 
 export async function lookupBooking(params: {
   bookingNumber: string;
@@ -98,6 +102,7 @@ export async function lookupBooking(params: {
     guestCount: data.guest_count,
     facilityName: snapshot.facility_name ?? '',
     unitLabel: snapshot.unit_label ?? '',
+    meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
     date: slot.date,
     part,
     partLabel: partInfo.label,

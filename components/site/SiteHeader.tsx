@@ -6,9 +6,9 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-2 font-bold text-ink">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-sm text-white">
-            G
+            A
           </span>
-          <span>그릴 리조트</span>
+          <span>알펜시아 BBQ</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm font-medium">
           <Link href="/booking" className="rounded-lg px-3 py-2 text-muted hover:bg-line-soft hover:text-ink">

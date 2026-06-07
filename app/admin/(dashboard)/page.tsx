@@ -1,12 +1,10 @@
 import Link from 'next/link';
 
-import { CancelButton } from '@/components/admin/CancelButton';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { listBookings } from '@/lib/admin/bookings';
 import { formatDateKorean, formatWon } from '@/lib/format';
-import { refundAmount } from '@/lib/policy/refund';
 import { PARTS } from '@/types/domain';
 
 export const dynamic = 'force-dynamic';
@@ -38,11 +36,11 @@ export default async function AdminBookingsPage({
     status: status || undefined,
     q: q || undefined,
   });
-  const now = new Date();
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-ink">예약 현황</h1>
+      <h2 className="text-5xl font-extrabold text-ink">Welcome back, Sir</h2>
+      <h1 className="mt-6 text-xl font-bold text-ink">예약 현황</h1>
 
       <form className="mt-5 flex flex-wrap items-end gap-3" method="get">
         <label className="text-sm">
@@ -99,25 +97,25 @@ export default async function AdminBookingsPage({
       <div className="mt-2 space-y-2">
         {bookings.map((b) => {
           const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
-          const preview =
-            b.status === 'confirmed' && b.date ? refundAmount(b.amount, b.date, now) : 0;
           return (
-            <Card key={b.bookingNumber} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
-              <Badge tone={meta.tone}>{meta.label}</Badge>
-              <span className="font-mono text-sm text-muted">{b.bookingNumber}</span>
-              <span className="font-medium text-ink">{b.facilityName}</span>
-              <span className="text-sm text-muted">
-                {b.date ? formatDateKorean(b.date) : '-'}
-                {b.part ? ` · ${PARTS[b.part].label}` : ''}
-              </span>
-              <span className="text-sm text-muted">
-                {b.guestName} · {b.guestPhone} · {b.guestCount}명
-              </span>
-              <span className="ml-auto font-semibold text-ink">{formatWon(b.amount)}</span>
-              {b.status === 'confirmed' && (
-                <CancelButton bookingNumber={b.bookingNumber} refundAmount={preview} />
-              )}
-            </Card>
+            <Link key={b.bookingNumber} href={`/admin/bookings/${b.bookingNumber}`} className="block">
+              <Card className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4 transition-colors hover:border-accent/40 hover:bg-line-soft/50">
+                <Badge tone={meta.tone}>{meta.label}</Badge>
+                <span className="font-mono text-sm text-muted">{b.bookingNumber}</span>
+                <span className="font-medium text-ink">{b.facilityName}</span>
+                <span className="text-sm text-muted">
+                  {b.date ? formatDateKorean(b.date) : '-'}
+                  {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                </span>
+                <span className="text-sm text-muted">
+                  {b.guestName} · {b.guestPhone} · {b.guestCount}명
+                </span>
+                <span className="ml-auto font-semibold text-ink">{formatWon(b.amount)}</span>
+                <span aria-hidden className="text-subtle">
+                  ›
+                </span>
+              </Card>
+            </Link>
           );
         })}
         {bookings.length === 0 && (

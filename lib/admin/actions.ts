@@ -50,12 +50,13 @@ export async function adminCloseDate(date: string): Promise<void> {
 
 export async function adminUpdateFacility(
   type: FacilityType,
-  patch: { price?: number; isActive?: boolean },
+  patch: { pricePork?: number; priceBeef?: number; isActive?: boolean },
 ): Promise<void> {
   await requireAdmin();
   const supabase = createAdminClient();
-  const update: { price?: number; is_active?: boolean } = {};
-  if (patch.price !== undefined) update.price = patch.price;
+  const update: { price_pork?: number; price_beef?: number; is_active?: boolean } = {};
+  if (patch.pricePork !== undefined) update.price_pork = patch.pricePork;
+  if (patch.priceBeef !== undefined) update.price_beef = patch.priceBeef;
   if (patch.isActive !== undefined) update.is_active = patch.isActive;
   await supabase.from('facilities').update(update).eq('type', type);
   revalidatePath('/admin/facilities');

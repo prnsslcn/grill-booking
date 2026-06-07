@@ -11,6 +11,13 @@ export function formatPhone(raw: string): string {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
 }
 
+/** timestamptz → "2026.06.05 14:30" (KST) */
+export function formatDateTimeKorean(iso: string): string {
+  const kst = new Date(new Date(iso).getTime() + 9 * 3600 * 1000);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${kst.getUTCFullYear()}.${p(kst.getUTCMonth() + 1)}.${p(kst.getUTCDate())} ${p(kst.getUTCHours())}:${p(kst.getUTCMinutes())}`;
+}
+
 /** YYYY-MM-DD → "6월 12일 (금)" */
 export function formatDateKorean(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);

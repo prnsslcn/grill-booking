@@ -17,7 +17,9 @@ export interface PartAvailability {
 export interface FacilityAvailability {
   type: FacilityType;
   name: string;
-  price: number;
+  capacity: number;
+  pricePork: number;
+  priceBeef: number;
   parts: PartAvailability[];
 }
 
@@ -40,9 +42,9 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
   const [{ data: facilities }, { data: slots }] = await Promise.all([
     supabase
       .from('facilities')
-      .select('id, type, name, price')
+      .select('id, type, name, capacity, price_pork, price_beef')
       .eq('is_active', true)
-      .order('price', { ascending: true }),
+      .order('capacity', { ascending: true }),
     supabase
       .from('slots')
       .select('id, part, facility_units(facility_id)')
@@ -72,7 +74,9 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
     return {
       type: f.type as FacilityType,
       name: f.name,
-      price: f.price,
+      capacity: f.capacity,
+      pricePork: f.price_pork,
+      priceBeef: f.price_beef,
       parts: partAvail,
     };
   });

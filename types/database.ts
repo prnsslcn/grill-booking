@@ -104,29 +104,35 @@ export type Database = {
       }
       facilities: {
         Row: {
+          capacity: number
           created_at: string
           id: string
           is_active: boolean
           name: string
-          price: number
+          price_beef: number
+          price_pork: number
           total_units: number
           type: string
         }
         Insert: {
+          capacity?: number
           created_at?: string
           id?: string
           is_active?: boolean
           name: string
-          price?: number
+          price_beef?: number
+          price_pork?: number
           total_units: number
           type: string
         }
         Update: {
+          capacity?: number
           created_at?: string
           id?: string
           is_active?: boolean
           name?: string
-          price?: number
+          price_beef?: number
+          price_pork?: number
           total_units?: number
           type?: string
         }
@@ -339,9 +345,10 @@ export type Database = {
       }
       reserve_slot: {
         Args: {
-          p_guest_count?: number
+          p_guest_count: number
           p_guest_name: string
           p_guest_phone: string
+          p_meat: string
           p_slot_id: string
         }
         Returns: {

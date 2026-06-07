@@ -12,6 +12,8 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { formatPhone, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
+type Meat = 'pork' | 'beef';
+
 interface PartAvailability {
   part: Part;
   available: boolean;
@@ -20,20 +22,23 @@ interface PartAvailability {
 interface FacilityAvailability {
   type: string;
   name: string;
-  price: number;
+  capacity: number;
+  pricePork: number;
+  priceBeef: number;
   parts: PartAvailability[];
 }
 interface Selected {
   slotId: string;
   facilityName: string;
-  price: number;
+  capacity: number;
   part: Part;
+  pricePork: number;
+  priceBeef: number;
 }
 
-const STEPS = ['슬롯 선택', '정보 입력', '결제'];
+const STEPS = ['시설·시간', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
-const BASE_GUESTS = 6; // 기본 포함 인원
-const MAX_EXTRA = 2; // 추가 가능 인원
+const MEAT_LABEL: Record<Meat, string> = { pork: '돼지', beef: '소' };
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
@@ -42,12 +47,14 @@ export default function BookingPage() {
   const [avail, setAvail] = useState<FacilityAvailability[]>([]);
   const [loadingAvail, setLoadingAvail] = useState(false);
   const [selected, setSelected] = useState<Selected | null>(null);
+  const [meat, setMeat] = useState<Meat | ''>('');
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [extra, setExtra] = useState(0); // 기본 6인 + 추가 인원(0~2)
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const amount = selected && meat ? (meat === 'pork' ? selected.pricePork : selected.priceBeef) : 0;
 
   async function selectDate(iso: string) {
     setDate(iso);
@@ -71,7 +78,6 @@ export default function BookingPage() {
     return Object.keys(e).length === 0;
   }
 
-
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <SiteHeader />
@@ -80,7 +86,7 @@ export default function BookingPage() {
           <Stepper current={step} labels={STEPS} />
         </div>
 
-        {/* 1단계: 슬롯 선택 */}
+        {/* 1단계: 날짜·시설·시간·고기 */}
         {step === 1 && (
           <div className="space-y-6">
             <div>
@@ -100,6 +106,7 @@ export default function BookingPage() {
             {date && (
               <div>
                 <h2 className="text-lg font-bold text-ink">시설·시간 선택</h2>
+                <p className="mt-1 text-sm text-muted">인원에 맞는 시설이 배정됩니다(동 지정 불가).</p>
                 {loadingAvail ? (
                   <p className="mt-3 text-sm text-subtle">불러오는 중…</p>
                 ) : (
@@ -107,8 +114,12 @@ export default function BookingPage() {
                     {avail.map((f) => (
                       <Card key={f.type} className="p-5">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-ink">{f.name}</span>
-                          <span className="font-bold text-ink">{formatWon(f.price)}</span>
+                          <span className="font-bold text-ink">
+                            {f.name} <span className="text-sm font-normal text-subtle">· {f.capacity}인</span>
+                          </span>
+                          <span className="text-xs text-subtle">
+                            돼지 {formatWon(f.pricePork)} · 소 {formatWon(f.priceBeef)}
+                          </span>
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           {f.parts.map((p) => {
@@ -123,8 +134,10 @@ export default function BookingPage() {
                                   setSelected({
                                     slotId: p.slotId,
                                     facilityName: f.name,
-                                    price: f.price,
+                                    capacity: f.capacity,
                                     part: p.part,
+                                    pricePork: f.pricePork,
+                                    priceBeef: f.priceBeef,
                                   })
                                 }
                                 className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
@@ -151,16 +164,45 @@ export default function BookingPage() {
               </div>
             )}
 
-            <Button size="lg" disabled={!selected} onClick={() => setStep(2)}>
+            {/* 고기 선택 */}
+            {selected && (
+              <div>
+                <h2 className="text-lg font-bold text-ink">고기 선택</h2>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {(['pork', 'beef'] as Meat[]).map((m) => {
+                    const price = m === 'pork' ? selected.pricePork : selected.priceBeef;
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => setMeat(m)}
+                        className={`rounded-xl border p-4 text-left transition-colors ${
+                          meat === m
+                            ? 'border-accent bg-accent-soft'
+                            : 'border-line bg-surface hover:border-accent/40'
+                        }`}
+                      >
+                        <span className="block font-semibold text-ink">{MEAT_LABEL[m]} 세트</span>
+                        <span className="mt-1 block text-sm text-muted">{formatWon(price)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <Button size="lg" disabled={!selected || !meat} onClick={() => setStep(2)}>
               다음
             </Button>
           </div>
         )}
 
         {/* 2단계: 정보 입력 */}
-        {step === 2 && (
+        {step === 2 && selected && (
           <div className="space-y-5">
             <h2 className="text-lg font-bold text-ink">예약자 정보</h2>
+            <Card className="bg-line-soft/50 p-4 text-sm text-muted">
+              {selected.facilityName} · {selected.capacity}인 · {meat && MEAT_LABEL[meat]} 세트 · {formatWon(amount)}
+            </Card>
             <Field label="이름" error={errors.name}>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
             </Field>
@@ -172,24 +214,6 @@ export default function BookingPage() {
                 inputMode="numeric"
                 maxLength={13}
               />
-            </Field>
-            <Field label="인원" hint={`기본 ${BASE_GUESTS}인 포함, 최대 +${MAX_EXTRA}명까지 추가할 수 있습니다.`}>
-              <div className="flex gap-2">
-                {Array.from({ length: MAX_EXTRA + 1 }, (_, n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setExtra(n)}
-                    className={`h-12 flex-1 rounded-xl border text-sm font-medium transition-colors ${
-                      extra === n
-                        ? 'border-accent bg-accent-soft text-accent'
-                        : 'border-line bg-surface text-muted hover:border-accent/40'
-                    }`}
-                  >
-                    {BASE_GUESTS + n}인{n > 0 ? ` (+${n})` : ''}
-                  </button>
-                ))}
-              </div>
             </Field>
 
             <label className="flex items-start gap-2.5 rounded-xl bg-line-soft p-4">
@@ -222,12 +246,20 @@ export default function BookingPage() {
         )}
 
         {/* 3단계: 결제 */}
-        {step === 3 && selected && (
+        {step === 3 && selected && meat && (
           <div className="space-y-4">
             <PaymentStep
-              selected={selected}
+              selected={{
+                slotId: selected.slotId,
+                facilityName: selected.facilityName,
+                part: selected.part,
+                capacity: selected.capacity,
+                amount,
+                meat,
+                meatLabel: MEAT_LABEL[meat],
+              }}
               date={date}
-              guest={{ name: name.trim(), phone: phone.trim(), count: BASE_GUESTS + extra }}
+              guest={{ name: name.trim(), phone: phone.trim() }}
               onSlotTaken={() => {
                 setStep(1);
                 if (date) void selectDate(date);
