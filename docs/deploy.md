@@ -61,6 +61,7 @@ node --env-file=.env.prod scripts/seed-admin.mjs admin@도메인 <비밀번호>
 - [ ] 관리자 `/admin/login` 로그인 → 슬롯 생성(향후 금·토)
 - [ ] `/booking` 예약 → 토스 결제창(테스트) → `/booking/success` → 완료
 - [ ] `/booking/lookup` 조회 + 취소·환불
+- [ ] 토스 웹훅 등록(개발자센터 > 웹훅 → `PAYMENT_STATUS_CHANGED` → `https://<도메인>/api/payments/webhook`, 테스트 MID) → 결제 후 토스에서 직접 취소 시 예약 `refunded`·슬롯 `open` 동기화 확인
 - [ ] Supabase Studio(호스티드)에서 bookings/payments 확인
 
 ---
@@ -68,7 +69,7 @@ node --env-file=.env.prod scripts/seed-admin.mjs admin@도메인 <비밀번호>
 ## D. 실오픈 전환 (나중)
 1. 토스 **전자결제 신청**(사업자등록·정산계좌·심사) → **운영 키** 발급.
 2. Vercel 환경변수의 토스 키를 운영 키로 교체, `NEXT_PUBLIC_PAYMENTS_FAKE`·`TOSS_FAKE`는 `0` 유지.
-3. 커스텀 도메인 연결(Vercel Domains).
+3. 커스텀 도메인 연결(Vercel Domains). **→ 토스 웹훅 URL도 새 도메인으로 갱신**할 것. successUrl/failUrl은 `window.location.origin` 기반이라 자동 적응하지만, 토스 대시보드에 등록한 웹훅 URL(`/api/payments/webhook`)은 고정값이라 수동 변경하지 않으면 외부취소 동기화가 끊긴다.
 4. (권장) 슬롯 자동생성 스케줄러 도입 — `generate_slots`/`expire_pending_bookings`를 Vercel Cron 또는 Supabase pg_cron으로.
 
 ---
