@@ -26,17 +26,11 @@ export interface FacilityAvailability {
 export async function getAvailability(date: string): Promise<FacilityAvailability[]> {
   const supabase = createAdminClient();
 
-  // 지연 생성: 운영일(금=5·토=6)인데 해당 날짜 슬롯이 아직 없으면 즉석 생성(idempotent).
-  // → 슬롯을 미리 만들어두는 스케줄러 없이, 고객이 조회하는 순간 채운다.
+  // 지연 생성: 운영일(금=5·토=6)이면 조회 시 항상 멱등 생성(중복은 건너뜀).
+  // → 스케줄러 없이 채우고, 새로 추가된 시설(예: 야외 테이블)도 기존 날짜에 backfill 된다.
   const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
   if (dow === 5 || dow === 6) {
-    const { count } = await supabase
-      .from('slots')
-      .select('*', { count: 'exact', head: true })
-      .eq('date', date);
-    if ((count ?? 0) === 0) {
-      await supabase.rpc('generate_slots', { p_from: date, p_to: date });
-    }
+    await supabase.rpc('generate_slots', { p_from: date, p_to: date });
   }
 
   const [{ data: facilities }, { data: slots }] = await Promise.all([
