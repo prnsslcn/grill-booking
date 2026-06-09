@@ -19,8 +19,15 @@
   --color-success: #16a34a;
   --color-danger: #e5484d;
 
+  /* 브랜드 그린 — 헤더/CTA */
+  --color-brand: #3ea055;
+  --color-brand-strong: #318044;
+  --color-brand-soft: #eaf6ee;
+
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;
+  /* 브랜드 디스플레이체(캠프·그릴·숲 컨셉). next/font의 --font-brand 변수를 사용. */
+  --font-display: var(--font-brand), "Pretendard Variable", sans-serif;
 }
 
 html {

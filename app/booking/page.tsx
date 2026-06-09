@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
 import { Calendar } from '@/components/booking/Calendar';
 import { PaymentStep } from '@/components/booking/PaymentStep';
@@ -46,7 +47,10 @@ const STEPS = ['시설·시간', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
 const MEAT_LABEL: Record<Meat, string> = { pork: '돼지', beef: '소' };
 
-export default function BookingPage() {
+function BookingFlow() {
+  const searchParams = useSearchParams();
+  const preferredType = searchParams.get('facility');
+
   const [step, setStep] = useState(1);
 
   const [date, setDate] = useState<string>('');
@@ -83,8 +87,25 @@ export default function BookingPage() {
     try {
       const res = await fetch(`/api/availability?date=${iso}`);
       const body = (await res.json()) as { availability: FacilityAvailability[]; addons: Addon[] };
-      setAvail(body.availability ?? []);
+      const list = body.availability ?? [];
+      setAvail(list);
       setAddonsCatalog(body.addons ?? []);
+
+      // 시설 상세에서 넘어온 경우(?facility=type): 해당 시설의 첫 가능한 시간대를 자동 선택.
+      if (preferredType) {
+        const fac = list.find((f) => f.type === preferredType);
+        const part = fac?.parts.find((p) => p.available && p.slotId);
+        if (fac && part?.slotId) {
+          setSelected({
+            slotId: part.slotId,
+            facilityName: fac.name,
+            capacity: fac.capacity,
+            part: part.part,
+            pricePork: fac.pricePork,
+            priceBeef: fac.priceBeef,
+          });
+        }
+      }
     } finally {
       setLoadingAvail(false);
     }
@@ -345,5 +366,13 @@ export default function BookingPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[100dvh] flex-col"><SiteHeader /></div>}>
+      <BookingFlow />
+    </Suspense>
   );
 }
