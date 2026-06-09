@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
+import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { formatPhone, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
@@ -365,6 +366,7 @@ function BookingFlow() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

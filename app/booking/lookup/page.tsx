@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
+import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { formatDateKorean, formatWon } from '@/lib/format';
 
@@ -157,6 +158,7 @@ export default function LookupPage() {
           </Card>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { confirmPaymentClient } from '@/lib/client/pay';
 
@@ -54,6 +55,7 @@ export default function PaymentSuccessPage() {
           </Card>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

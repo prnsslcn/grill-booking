@@ -13,9 +13,10 @@ export function SiteFooter() {
           예약·문의 033-339-0616 / 033-339-0664 (11:00~19:00)
         </p>
 
-        {/* 전자상거래법 제10조 사업자 정보. 통신판매업 신고번호는 신고 후 추가. */}
+        {/* 전자상거래법 제10조 사업자 정보. */}
         <div className="mt-6 border-t border-line pt-5 text-xs leading-relaxed text-subtle">
           <p>주식회사 에이비씨웍스글로벌 | 대표 황혜진 | 사업자등록번호 442-87-01602</p>
+          <p>통신판매업신고 제2021-서울강서-1055호</p>
           <p>서울특별시 강서구 마곡중앙로 171, 5층 513호 씨(마곡동)</p>
           <p>
             이메일{' '}
@@ -24,7 +25,18 @@ export function SiteFooter() {
             </a>{' '}
             | 개인정보보호책임자 황혜진
           </p>
-          {/* TODO: 통신판매업 신고 후 신고번호 추가 (예: 통신판매업신고 제2025-서울강서-XXXX호) */}
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <Link href="/terms" className="text-muted hover:underline">
+            이용약관
+          </Link>
+          <Link href="/privacy" className="font-semibold text-muted hover:underline">
+            개인정보처리방침
+          </Link>
+          <Link href="/refund-policy" className="text-muted hover:underline">
+            취소·환불정책
+          </Link>
         </div>
 
         <div className="mt-4 flex items-center justify-between">

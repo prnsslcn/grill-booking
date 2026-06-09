@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 
 export default async function PaymentFailPage({
@@ -26,6 +27,7 @@ export default async function PaymentFailPage({
           </Link>
         </Card>
       </main>
+      <SiteFooter />
     </div>
   );
 }
