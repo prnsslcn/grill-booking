@@ -37,7 +37,7 @@ export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
       <div className="mx-auto flex h-24 max-w-6xl items-center px-5">
         {/* 좌: 로고 */}
         <div className="flex flex-1 items-center">
-          <Link href="/" className="font-display text-5xl tracking-wide text-ink">
+          <Link href="/" className="whitespace-nowrap font-display text-3xl tracking-wide text-ink sm:text-5xl">
             Alpensia BBQ
           </Link>
         </div>
