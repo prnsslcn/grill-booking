@@ -32,6 +32,25 @@ export function ScrollVideoHero() {
     video.addEventListener('loadedmetadata', readDuration);
     if (video.readyState >= 1) readDuration();
 
+    // iOS Safari 대응: 제스처/재생 없이 currentTime만 바꾸면 프레임이 렌더되지 않아 검게 보인다.
+    // play()→pause()로 디코더를 한 번 깨워야 스크럽 시 프레임이 그려진다(muted+playsInline은 허용).
+    // 저전력 모드 등으로 play()가 거부되면 첫 사용자 입력 때 다시 시도한다.
+    let primed = false;
+    const prime = () => {
+      if (primed) return;
+      primed = true;
+      const p = video.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => video.pause()).catch(() => {
+          primed = false; // 실패 시 다음 제스처에서 재시도
+        });
+      }
+    };
+    video.addEventListener('loadeddata', prime);
+    window.addEventListener('pointerdown', prime);
+    window.addEventListener('touchstart', prime, { passive: true });
+    if (video.readyState >= 2) prime();
+
     const computeTarget = () => {
       const rect = track.getBoundingClientRect();
       // 트랙 전체 높이를 진행 구간으로 사용 → 히어로가 위로 빠지는 동안에도 영상이 진행되어
@@ -59,7 +78,10 @@ export function ScrollVideoHero() {
       cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
+      window.removeEventListener('pointerdown', prime);
+      window.removeEventListener('touchstart', prime);
       video.removeEventListener('loadedmetadata', readDuration);
+      video.removeEventListener('loadeddata', prime);
     };
   }, []);
 
@@ -71,6 +93,7 @@ export function ScrollVideoHero() {
           <video
             ref={videoRef}
             src="/videos/grill.mp4"
+            poster="/videos/grill-poster.jpg"
             muted
             playsInline
             preload="auto"
