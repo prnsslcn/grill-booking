@@ -32,6 +32,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* 스크롤바 숨김(스크롤 기능은 유지) — Firefox/IE */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+/* 스크롤바 숨김 — Chrome/Safari/Edge */
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
