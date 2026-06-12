@@ -18,6 +18,8 @@ export interface FacilityContent {
   hero: string;
   /** 강조 텍스트 색 */
   accent: string;
+  /** 갤러리 헤드라인을 한 줄로(기본은 공백 단위로 줄바꿈) */
+  headlineOneLine?: boolean;
 }
 
 export const FACILITIES: FacilityContent[] = [
@@ -37,6 +39,7 @@ export const FACILITIES: FacilityContent[] = [
     units: 8,
     hero: 'bg-[#23322d] text-white',
     accent: 'text-white',
+    headlineOneLine: true,
   },
   {
     slug: 'cabana',
@@ -71,6 +74,7 @@ export const FACILITIES: FacilityContent[] = [
     units: 10,
     hero: 'bg-brand-soft text-ink',
     accent: 'text-brand',
+    headlineOneLine: true,
   },
 ];
 

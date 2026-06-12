@@ -55,3 +55,189 @@ h1, h2, h3, h4 {
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
+
+/* ─────────────────────────────────────────────────────────
+   Sticky 가로 스크롤 갤러리 (Shopify식) — 시설 상세페이지 헤드라인+이미지 슬라이드.
+   aftc FtdSpinGallery에서 이식, 라이트 테마 + Pretendard 헤드라인으로 보정.
+   ───────────────────────────────────────────────────────── */
+:root {
+  --page-gutter: clamp(1rem, 5vw, 5rem);
+  --radius-card: 24px;
+  --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-card-hover-off: 0px 12px 31px 0px rgba(0, 0, 0, 0);
+  --shadow-card-hover: 0px 12px 31px 0px rgba(0, 0, 0, 0.14);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Shopify linear() spring — 위에서 떨어지듯 도착하는 hover */
+  --ease-spring-bouncy: linear(
+    0, 0.008, 0.032 2%, 0.13 4.4%, 0.26 6.6%, 0.681 13%, 0.891 17.1%, 0.968,
+    1.028, 1.073, 1.103 25.2%, 1.114, 1.119, 1.12, 1.115 31.4%, 1.098 34.4%,
+    1.042 41.6%, 1.017 45.4%, 0.998 49.5%, 0.988 53.9%, 0.986 60.4%, 1.001 80.9% 100%
+  );
+  --text-1: clamp(52px, 15vw, 140px);
+  --text-5: clamp(16px, 1.4vw, 20px);
+}
+
+.carousel-section {
+  --carousel-headline-top-safety: 0px;
+  position: relative;
+  background: var(--color-surface);
+}
+@media (max-height: 820px) and (min-width: 769px) {
+  .carousel-section {
+    --carousel-headline-top-safety: clamp(24px, calc((820px - 100vh) * 0.6), 84px);
+  }
+}
+
+.headline {
+  --side-bearing: -0.04em;
+  margin: 0 0 0 var(--side-bearing);
+  user-select: none;
+  text-align: center;
+  text-wrap: pretty;
+}
+.text-1 {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: var(--text-1);
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  word-break: keep-all;
+}
+.text-1.text-1--carousel { line-height: 0.92; }
+.text-5 {
+  font-size: var(--text-5);
+  color: var(--color-muted);
+  text-wrap: pretty;
+  white-space: pre-line;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 헤드라인은 일반 흐름 — 카드(sticky)와 같은 속도로 함께 스크롤되다가,
+   카드가 최상단에 닿아 멈추면(pin) 헤드라인만 계속 위로 빠진다. */
+.carousel-headline-stack {
+  padding-top: calc(96px + var(--carousel-headline-top-safety));
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  margin: 0 auto;
+  overflow: visible;
+}
+.carousel-tagline.text-5 {
+  margin-top: 48px;
+  text-align: center;
+  max-width: 760px;
+  text-wrap: pretty;
+  padding: 0 1rem;
+}
+
+/* Sticky 수평 스크롤 — outer(vertical) → container(sticky) → track(2-row grid) */
+.carousel-container {
+  --card-width: 480;
+  --card-height: 280;
+  --card-gap: 24;
+  --card-row-gap: 24;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  /* 카드는 세로 중앙(aftc 원본 스크롤 높이). 진입 시엔 JS rise 오프셋으로 헤드라인 아래에 위치. */
+  align-items: center;
+}
+.carousel-track {
+  display: flex;
+  flex-direction: column;
+  row-gap: calc(var(--card-row-gap) * 1px);
+  width: max-content;
+  will-change: transform;
+}
+.carousel-track-row {
+  display: flex;
+  gap: calc(var(--card-gap) * 1px);
+}
+.carousel-track-row--top {
+  padding-left: calc(50vw - calc(var(--card-width) * 0.5px));
+  padding-right: calc(50vw - calc(var(--card-width) * 0.5px));
+}
+.carousel-track-row--bottom {
+  padding-left: calc(
+    50vw - calc(var(--card-width) * 0.5px) +
+    calc((var(--card-width) + var(--card-gap)) * 0.5px)
+  );
+}
+.carousel-card {
+  flex: 0 0 calc(var(--card-width) * 1px);
+  width: calc(var(--card-width) * 1px);
+  height: calc(var(--card-height) * 1px);
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  outline: none;
+}
+.carousel-card--interactive { cursor: pointer; }
+.carousel-card:focus-visible .carousel-card-shell {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Entrance — translateX(100vw) scale(2), 카드별 delay 로 스태거 */
+.carousel-card-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  opacity: 0;
+  transform: translateX(100vw) scale(2);
+  transition:
+    transform 1.5s var(--ease-out-expo) var(--carousel-enter-delay, 0ms),
+    opacity 0.4s var(--ease-out-expo) var(--carousel-enter-delay, 0ms);
+  will-change: transform, opacity;
+}
+.carousel-container.carousel-container-entered .carousel-card-shell {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+.carousel-card-shell.carousel-card-hoverable {
+  --hover-speed: 0.65s;
+  box-shadow: var(--shadow-card-hover-off);
+  transition:
+    transform var(--hover-speed) var(--ease-spring-bouncy),
+    box-shadow var(--hover-speed) var(--ease-spring-bouncy);
+}
+@media (hover: hover) and (pointer: fine) {
+  .carousel-card-shell.carousel-card-hoverable:hover {
+    transform: scale(1.015);
+    box-shadow: var(--shadow-card-hover);
+  }
+  .carousel-card-shell.carousel-card-hoverable:active {
+    transform: scale(0.97);
+    box-shadow: var(--shadow-card-hover-off);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-card-shell {
+    opacity: 1;
+    transform: none;
+    transition: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .carousel-container {
+    --card-width: 280;
+    --card-height: 180;
+    --card-gap: 16;
+    --card-row-gap: 16;
+  }
+  .carousel-tagline { margin-top: 24px; }
+}

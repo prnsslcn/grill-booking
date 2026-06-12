@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { FACILITIES, facilityBySlug } from '@/lib/facilities';
@@ -55,22 +56,8 @@ export default async function FacilityPage({
       <SiteHeader />
 
       <main className="flex-1">
-        {/* 히어로 */}
-        <section className={`${f.hero}`}>
-          <div className="mx-auto max-w-5xl px-5 py-20 sm:py-24">
-            <Link
-              href="/#facilities"
-              className={`text-sm ${f.accent} opacity-70 transition-opacity hover:opacity-100`}
-            >
-              ← 시설 안내
-            </Link>
-            <p className={`mt-6 text-sm font-semibold ${f.accent} opacity-80`}>{f.tagline}</p>
-            <h1 className="mt-2 text-4xl font-extrabold leading-tight sm:text-5xl">{f.label}</h1>
-            <p className={`mt-5 max-w-xl text-lg leading-relaxed ${f.accent} opacity-90`}>
-              {f.intro}
-            </p>
-          </div>
-        </section>
+        {/* 헤드라인 + 가로 스크롤 이미지 갤러리 (홈 히어로 설명 블록 대체) */}
+        <FacilityGallery name={f.label} tagline={f.intro} oneLine={f.headlineOneLine} />
 
         {/* 특징 */}
         <section className="bg-surface py-16">
