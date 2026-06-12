@@ -1,8 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { Card } from '@/components/ui/Card';
 import { Reveal } from '@/components/ui/Reveal';
-import { ScrollVideoHero } from '@/components/site/ScrollVideoHero';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { facilityByType } from '@/lib/facilities';
@@ -49,11 +48,38 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <SiteHeader overlayHero />
+      <SiteHeader heroWordmark />
 
       <main className="flex-1">
-        {/* 히어로 — 스크롤 스크럽 영상 */}
-        <ScrollVideoHero />
+        {/* 히어로 — 중앙 헤드라인 + 그릴 이미지 */}
+        <section className="relative overflow-hidden bg-surface">
+          <div className="mx-auto max-w-5xl px-5 pb-16 pt-14 text-center sm:pt-20">
+            {/* <span className="inline-flex items-center rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-medium text-muted">
+              대관령 숯불 바비큐
+            </span> */}
+            <h1
+              data-hero-wordmark
+              className="mt-6 whitespace-nowrap font-display text-5xl tracking-wide text-ink sm:text-8xl"
+            >
+              Alpensia BBQ
+            </h1>
+            <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted">
+              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 야외 BBQ를 즐겨보세요.
+            </p>
+            {/* 가운데 그릴 이미지 */}
+            <div className="mx-auto mt-12 flex max-w-xl justify-center">
+              <Image
+                src="/images/grill.png"
+                alt="숯불 그릴"
+                width={706}
+                height={1000}
+                priority
+                sizes="(max-width: 768px) 88vw, 520px"
+                className="h-auto w-[88%] max-w-[520px]"
+              />
+            </div>
+          </div>
+        </section>
 
         {/* 시설 */}
         <section id="facilities" className="overflow-hidden bg-surface py-16 scroll-mt-24">
@@ -100,11 +126,11 @@ export default async function Home() {
 
                     <div className="mt-6 space-y-1.5">
                       <div className="flex items-baseline justify-between">
-                        <span className={`text-sm ${s.muted}`}>돼지 세트</span>
+                        <span className={`text-sm ${s.muted}`}>Pork Set</span>
                         <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
                       </div>
                       <div className="flex items-baseline justify-between">
-                        <span className={`text-sm ${s.muted}`}>소 세트</span>
+                        <span className={`text-sm ${s.muted}`}>Beef Set</span>
                         <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
                       </div>
                       <p className={`pt-1 text-xs ${s.muted}`}>
@@ -119,41 +145,6 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* 안내 */}
-        <section className="py-16">
-          <div className="mx-auto grid max-w-5xl gap-4 px-5 sm:grid-cols-3">
-            <Card className="p-6">
-              <h3 className="font-bold text-ink">운영 안내</h3>
-              <ul className="mt-3 space-y-1.5 text-sm text-muted">
-                <li>· 운영일: 매주 금·토 (성수기 주중·동계 휴장)</li>
-                <li>· 1부 17:00~19:00 / 2부 19:30~21:30</li>
-                <li>· 회차당 2시간 · 100% 선결제</li>
-                <li>· 예약·문의 033-339-0616 / 0664</li>
-              </ul>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-bold text-ink">포함 사항</h3>
-              <ul className="mt-3 space-y-1.5 text-sm text-muted">
-                <li>· 숯·석쇠·집게·식기·생수 등 기본 세팅</li>
-                <li>· 상추·양파·버섯·소시지·쌈장 등 기본 식재료</li>
-                <li>· 한강라면·햇반 무료 제공</li>
-                <li>· 커피 쿠폰 무료 제공</li>
-              </ul>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-bold text-ink">환불 규정</h3>
-              <ul className="mt-3 space-y-1.5 text-sm text-muted">
-                <li>· 이용 2일 전까지: 100% 환불</li>
-                <li>· 이용 1일 전: 50% 환불</li>
-                <li>· 이용 당일·노쇼: 환불 불가</li>
-                <li>· 우천 시 야외 테이블(4인)은 운영 제한될 수 있습니다.</li>
-              </ul>
-            </Card>
-          </div>
-          <p className="mx-auto mt-4 max-w-5xl px-5 text-sm text-subtle">
-            단체 BBQ(최대 200명)는 사전 예약·문의로 진행됩니다.
-          </p>
-        </section>
       </main>
 
       <SiteFooter />

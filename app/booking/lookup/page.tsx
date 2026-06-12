@@ -90,7 +90,7 @@ export default function LookupPage() {
   const st = result ? (STATUS[result.status] ?? { tone: 'neutral' as const, label: result.status }) : null;
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[100dvh] flex-col bg-surface">
       <SiteHeader />
       <main className="mx-auto w-full max-w-md flex-1 px-5 py-10">
         <h1 className="text-2xl font-bold text-ink">예약 조회</h1>
@@ -126,7 +126,7 @@ export default function LookupPage() {
             </div>
             <div className="divide-y divide-line">
               <Row label="시설" value={result.facilityName} />
-              {result.meatLabel && <Row label="구성" value={`${result.meatLabel} 세트`} />}
+              {result.meatLabel && <Row label="구성" value={`${result.meatLabel} Set`} />}
               {result.addons.length > 0 && (
                 <Row label="추가 메뉴" value={result.addons.map((a) => `${a.label} × ${a.qty}`).join(', ')} />
               )}

@@ -74,7 +74,7 @@ export default async function BookingDetailPage({
               : b.facilityName
           }
         />
-        {b.meatLabel && <Row label="구성" value={`${b.meatLabel} 세트`} />}
+        {b.meatLabel && <Row label="구성" value={`${b.meatLabel} Set`} />}
         {b.addons.length > 0 && (
           <Row label="추가 메뉴" value={b.addons.map((a) => `${a.label} × ${a.qty}`).join(', ')} />
         )}

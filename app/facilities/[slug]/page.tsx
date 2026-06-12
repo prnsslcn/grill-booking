@@ -100,13 +100,13 @@ export default async function FacilityPage({
                   {prices && prices.is_active ? (
                     <>
                       <div className="flex items-baseline gap-6">
-                        <span className="w-16 text-sm text-muted">돼지 세트</span>
+                        <span className="w-16 text-sm text-muted">Pork Set</span>
                         <span className="text-lg font-bold text-ink">
                           {formatWon(prices.price_pork)}
                         </span>
                       </div>
                       <div className="flex items-baseline gap-6">
-                        <span className="w-16 text-sm text-muted">소 세트</span>
+                        <span className="w-16 text-sm text-muted">Beef Set</span>
                         <span className="text-lg font-bold text-ink">
                           {formatWon(prices.price_beef)}
                         </span>

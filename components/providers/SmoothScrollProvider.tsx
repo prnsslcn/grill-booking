@@ -20,6 +20,9 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       touchMultiplier: 1,
     });
 
+    // nav FAQ 탭 등에서 lenis.scrollTo를 쓸 수 있게 전역 노출.
+    window.__lenis = lenis;
+
     let rafId = 0;
     function raf(time: number) {
       lenis.raf(time);
@@ -30,6 +33,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      delete window.__lenis;
     };
   }, []);
 

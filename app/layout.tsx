@@ -4,6 +4,7 @@ import { Alfa_Slab_One } from 'next/font/google';
 import './globals.css';
 import 'lenis/dist/lenis.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
+import { ScrollResetOnNavigate } from '@/components/site/ScrollResetOnNavigate';
 
 // 캠프·그릴·숲 컨셉의 묵직한 슬랩 세리프. 영문 브랜드 워드마크에 사용(대소문자 구분).
 const brandFont = Alfa_Slab_One({
@@ -40,6 +41,7 @@ export default function RootLayout({
             __html: `history.scrollRestoration='manual';window.scrollTo(0,0);`,
           }}
         />
+        <ScrollResetOnNavigate />
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>

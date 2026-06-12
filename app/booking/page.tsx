@@ -46,7 +46,7 @@ interface Addon {
 
 const STEPS = ['시설·시간', '정보 입력', '결제'];
 const PHONE_RE = /^01[016789]-?\d{3,4}-?\d{4}$/;
-const MEAT_LABEL: Record<Meat, string> = { pork: '돼지', beef: '소' };
+const MEAT_LABEL: Record<Meat, string> = { pork: 'Pork', beef: 'Beef' };
 
 function BookingFlow() {
   const searchParams = useSearchParams();
@@ -122,7 +122,7 @@ function BookingFlow() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[100dvh] flex-col bg-surface">
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
         <div className="mb-8">
@@ -229,7 +229,7 @@ function BookingFlow() {
                             : 'border-line bg-surface hover:border-accent/40'
                         }`}
                       >
-                        <span className="block font-semibold text-ink">{MEAT_LABEL[m]} 세트</span>
+                        <span className="block font-semibold text-ink">{MEAT_LABEL[m]} Set</span>
                         <span className="mt-1 block text-sm text-muted">{formatWon(price)}</span>
                       </button>
                     );
@@ -294,7 +294,7 @@ function BookingFlow() {
           <div className="space-y-5">
             <h2 className="text-lg font-bold text-ink">예약자 정보</h2>
             <Card className="bg-line-soft/50 p-4 text-sm text-muted">
-              {selected.facilityName} · {selected.capacity}인 · {meat && MEAT_LABEL[meat]} 세트 · {formatWon(amount)}
+              {selected.facilityName} · {selected.capacity}인 · {meat && MEAT_LABEL[meat]} Set · {formatWon(amount)}
             </Card>
             <Field label="이름" error={errors.name}>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />

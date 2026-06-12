@@ -28,7 +28,7 @@ interface SnapshotShape {
   addons?: SnapshotAddon[];
 }
 
-const MEAT_LABEL: Record<string, string> = { pork: '돼지', beef: '소' };
+const MEAT_LABEL: Record<string, string> = { pork: 'Pork', beef: 'Beef' };
 
 export interface BookingDetail {
   bookingNumber: string;

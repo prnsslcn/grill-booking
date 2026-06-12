@@ -97,7 +97,7 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
       <Card className="divide-y divide-line">
         <Row label="시설" value={`${selected.facilityName} · ${selected.capacity}인`} />
         <Row label="일시" value={`${formatDateKorean(date)} · ${PARTS[selected.part].label}`} />
-        <Row label="구성" value={`${selected.meatLabel} 세트`} />
+        <Row label="구성" value={`${selected.meatLabel} Set`} />
         {selected.addonLines.length > 0 && (
           <div className="p-5">
             <span className="text-sm text-muted">추가 메뉴</span>

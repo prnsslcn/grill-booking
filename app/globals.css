@@ -13,9 +13,10 @@
   --color-subtle: #8b95a1;
   --color-line: #e5e8eb;
   --color-line-soft: #f2f4f6;
-  --color-accent: #3182f6;
-  --color-accent-strong: #1b64da;
-  --color-accent-soft: #e8f3ff;
+  /* 포인트(accent) = 브랜드 그린으로 통일 (구 Toss 블루에서 변경) */
+  --color-accent: #3ea055;
+  --color-accent-strong: #318044;
+  --color-accent-soft: #eaf6ee;
   --color-success: #16a34a;
   --color-danger: #e5484d;
 

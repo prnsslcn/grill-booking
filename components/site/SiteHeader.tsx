@@ -11,10 +11,19 @@ import { FACILITIES } from '@/lib/facilities';
  *
  * overlayHero: 히어로 영상 위에선 배경 투명, 히어로 끝(센티넬)이 최상단에 닿으면 배경이 차오른다.
  */
-export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
+export function SiteHeader({
+  overlayHero = false,
+  heroWordmark = false,
+}: {
+  overlayHero?: boolean;
+  heroWordmark?: boolean;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [facilityOpen, setFacilityOpen] = useState(false);
   const [solid, setSolid] = useState(!overlayHero);
+  // heroWordmark: 히어로에 큰 워드마크가 있는 페이지(홈)에선 nav 워드마크를 숨겼다가,
+  // 히어로 워드마크가 화면 위로 사라지면 옆에서 슬라이드 인.
+  const [wordmarkShown, setWordmarkShown] = useState(!heroWordmark);
 
   useEffect(() => {
     if (!overlayHero) return;
@@ -28,6 +37,19 @@ export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
     return () => io.disconnect();
   }, [overlayHero]);
 
+  useEffect(() => {
+    if (!heroWordmark) return;
+    const hero = document.querySelector('[data-hero-wordmark]');
+    if (!hero) return;
+    const io = new IntersectionObserver(
+      // 히어로 워드마크가 화면 위로 완전히 사라졌을 때만 nav 워드마크 표시.
+      ([entry]) => setWordmarkShown(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0 },
+    );
+    io.observe(hero);
+    return () => io.disconnect();
+  }, [heroWordmark]);
+
   return (
     <header
       className={`sticky top-0 z-40 transition-colors duration-300 ${
@@ -35,9 +57,14 @@ export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
       }`}
     >
       <div className="mx-auto flex h-24 max-w-6xl items-center px-5">
-        {/* 좌: 로고 */}
+        {/* 좌: 로고 (heroWordmark 페이지에선 히어로 워드마크가 사라질 때 화면 위에서 슬라이드 인) */}
         <div className="flex flex-1 items-center">
-          <Link href="/" className="whitespace-nowrap font-display text-3xl tracking-wide text-ink sm:text-5xl">
+          <Link
+            href="/"
+            className={`whitespace-nowrap font-display text-3xl tracking-wide text-ink transition-all duration-[600ms] ease-out sm:text-5xl ${
+              wordmarkShown ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'
+            }`}
+          >
             Alpensia BBQ
           </Link>
         </div>
@@ -86,6 +113,10 @@ export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
               </div>
             </div>
           </div>
+
+          <Link href="/faq" className="py-2 text-ink transition-colors hover:text-muted">
+            FAQ
+          </Link>
 
           <Link
             href="/booking/lookup"
@@ -148,6 +179,13 @@ export function SiteHeader({ overlayHero = false }: { overlayHero?: boolean }) {
                   <span className="text-xs text-subtle">{f.tagline}</span>
                 </Link>
               ))}
+              <Link
+                href="/faq"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-xl px-3 py-3 font-medium text-ink hover:bg-brand-soft"
+              >
+                FAQ
+              </Link>
               <Link
                 href="/booking/lookup"
                 onClick={() => setMobileOpen(false)}
