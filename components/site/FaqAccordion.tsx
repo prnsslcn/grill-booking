@@ -39,7 +39,7 @@ const FAQS: Faq[] = [
   {
     q: '예약·문의는 어떻게 하나요?',
     a: [
-      '전화 033-339-0616 / 0664로 문의해 주세요.',
+      '전화 010-3045-2994로 문의해 주세요.',
       '단체 BBQ(최대 200명)는 사전 예약·문의로 진행됩니다.',
     ],
   },
@@ -58,15 +58,9 @@ export function FaqAccordion() {
       <div className="mx-auto grid max-w-5xl gap-10 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         {/* 좌: 헤딩 */}
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="text-3xl font-bold leading-tight text-ink sm:text-4xl">
-            자주 묻는
-            <br />
-            질문
-          </h2>
-          <p className="mt-4 text-muted">
-            궁금한 점이 더 있다면
-            <br className="hidden sm:block" /> 033-339-0616 / 0664로 연락 주세요.
-          </p>
+          <h1 className="text-4xl font-bold leading-tight text-ink sm:text-5xl">
+            FAQ
+          </h1>
         </div>
 
         {/* 우: 아코디언 */}

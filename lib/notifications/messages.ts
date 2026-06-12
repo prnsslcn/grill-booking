@@ -10,7 +10,7 @@ import { PARTS, type Part } from '@/types/domain';
 
 const BRAND = '알펜시아 BBQ';
 /** 고객 문자 말미 안내. 매장 공식 문의처(SiteFooter와 동일). */
-const CONTACT = '문의 033-339-0616 (11:00~19:00)';
+const CONTACT = '문의 010-3045-2994 (11:00~19:00)';
 
 export interface BookingInfo {
   bookingNumber: string;

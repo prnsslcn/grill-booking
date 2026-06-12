@@ -59,7 +59,7 @@ export default async function Home() {
             </span> */}
             <h1
               data-hero-wordmark
-              className="mt-6 whitespace-nowrap font-display text-5xl tracking-wide text-ink sm:text-8xl"
+              className="mt-6 whitespace-nowrap font-display text-5xl tracking-wide text-wood sm:text-8xl"
             >
               Alpensia BBQ
             </h1>

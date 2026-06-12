@@ -24,6 +24,8 @@
   --color-brand: #3ea055;
   --color-brand-strong: #318044;
   --color-brand-soft: #eaf6ee;
+  /* 우드(월넛) — 브랜드 워드마크. 그린과 어울리는 따뜻한 갈색 */
+  --color-wood: #2f1f12;
 
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;

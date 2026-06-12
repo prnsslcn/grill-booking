@@ -52,7 +52,7 @@ export default async function FacilityPage({
   const others = FACILITIES.filter((o) => o.slug !== f.slug);
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[100dvh] flex-col bg-surface">
       <SiteHeader />
 
       <main className="flex-1">
@@ -75,7 +75,7 @@ export default async function FacilityPage({
         </section>
 
         {/* 가격 + 예약 CTA */}
-        <section className="py-16">
+        <section className="py-16 bg-surface">
           <div className="mx-auto max-w-5xl px-5">
             <div className="flex flex-col gap-6 rounded-3xl border border-line bg-surface p-8 sm:flex-row sm:items-center sm:justify-between">
               <div>

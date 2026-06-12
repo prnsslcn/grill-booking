@@ -144,7 +144,6 @@ export default function PrivacyPage() {
       <h2>제10조 (개인정보 보호책임자)</h2>
       <ul>
         <li>성명: 황혜진</li>
-        <li>연락처: 033-339-0616</li>
         <li>이메일: campingclub2020@naver.com</li>
       </ul>
       <p>

@@ -61,7 +61,7 @@ export function SiteHeader({
         <div className="flex flex-1 items-center">
           <Link
             href="/"
-            className={`whitespace-nowrap font-display text-3xl tracking-wide text-ink transition-all duration-[600ms] ease-out sm:text-5xl ${
+            className={`whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-all duration-[600ms] ease-out sm:text-5xl ${
               wordmarkShown ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'
             }`}
           >
@@ -153,7 +153,7 @@ export function SiteHeader({
           <div className="absolute inset-0 bg-ink/20" onClick={() => setMobileOpen(false)} />
           <div className="absolute inset-x-0 top-0 rounded-b-3xl bg-surface p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="font-display text-3xl tracking-wide text-ink">Alpensia BBQ</span>
+              <span className="font-display text-3xl tracking-wide text-wood">Alpensia BBQ</span>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}

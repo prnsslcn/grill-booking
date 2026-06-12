@@ -69,7 +69,7 @@ export default function RefundPolicyPage() {
 
       <h2>문의</h2>
       <p>
-        취소·환불 관련 문의: 033-339-0616 / 033-339-0664 (11:00~19:00) · campingclub2020@naver.com
+        취소·환불 관련 문의: 010-3045-2994 (11:00~19:00) · campingclub2020@naver.com
       </p>
     </LegalPage>
   );

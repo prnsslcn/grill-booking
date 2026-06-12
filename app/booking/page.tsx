@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { Calendar } from '@/components/booking/Calendar';
 import { PaymentStep } from '@/components/booking/PaymentStep';
@@ -53,6 +53,12 @@ function BookingFlow() {
   const preferredType = searchParams.get('facility');
 
   const [step, setStep] = useState(1);
+
+  // 단계(1→2→3) 전환 시 항상 최상단에서 시작 (페이지 이동과 동일한 UX)
+  useEffect(() => {
+    window.__lenis?.scrollTo(0, { immediate: true });
+    window.scrollTo(0, 0);
+  }, [step]);
 
   const [date, setDate] = useState<string>('');
   const [avail, setAvail] = useState<FacilityAvailability[]>([]);
