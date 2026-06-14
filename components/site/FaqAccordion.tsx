@@ -25,6 +25,7 @@ const FAQS: Faq[] = [
     q: '고기 세트는 어떻게 구성되나요?',
     a: [
       '모든 상품에 고기세트(Pork Set / Beef Set)가 포함됩니다.',
+      '고기는 정원 기준 1인 150g — 4인 600g · 6인 900g · 8인 1200g으로 제공됩니다.',
       '세트는 예약 시 선택하며, 가격은 시설별로 다릅니다.',
     ],
   },
@@ -50,8 +51,8 @@ const FAQS: Faq[] = [
 ];
 
 export function FaqAccordion() {
-  // 한 번에 하나만 펼침(reference 동작). 기본 첫 항목 펼침.
-  const [open, setOpen] = useState(0);
+  // 다중 열림 — 다른 항목을 눌러도 이미 연 항목은 닫히지 않음. 기본 첫 항목 펼침.
+  const [open, setOpen] = useState<Set<number>>(() => new Set([0]));
 
   return (
     <section className="bg-surface py-20 scroll-mt-24" id="faq">
@@ -66,7 +67,7 @@ export function FaqAccordion() {
         {/* 우: 아코디언 */}
         <div className="space-y-3">
           {FAQS.map((f, i) => {
-            const isOpen = open === i;
+            const isOpen = open.has(i);
             return (
               <div
                 key={f.q}
@@ -76,15 +77,22 @@ export function FaqAccordion() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpen(isOpen ? -1 : i)}
+                  onClick={() =>
+                    setOpen((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(i)) next.delete(i);
+                      else next.add(i);
+                      return next;
+                    })
+                  }
                   aria-expanded={isOpen}
                   className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                 >
                   <span className="text-base font-semibold text-ink sm:text-lg">{f.q}</span>
                   <span
-                    className={`flex h-9 w-9 flex-none items-center justify-center rounded-full border transition-all duration-300 ${
+                    className={`flex h-9 w-9 flex-none items-center justify-center rounded-full border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                       isOpen
-                        ? 'rotate-45 border-brand bg-brand text-white'
+                        ? 'rotate-45 border-line text-ink'
                         : 'border-line text-muted'
                     }`}
                     aria-hidden
@@ -100,13 +108,17 @@ export function FaqAccordion() {
                   </span>
                 </button>
 
-                {/* grid-rows 트랜지션으로 높이 측정 없이 부드럽게 펼침 */}
+                {/* grid-rows 트랜지션으로 높이 측정 없이 부드럽게 펼침 + 내용 페이드 */}
                 <div
-                  className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                   }`}
                 >
-                  <div className="overflow-hidden">
+                  <div
+                    className={`overflow-hidden transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      isOpen ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
                     <ul className="space-y-1.5 px-6 pb-6 text-sm leading-relaxed text-muted">
                       {f.a.map((line) => (
                         <li key={line} className="flex gap-2">

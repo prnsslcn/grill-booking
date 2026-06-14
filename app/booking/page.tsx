@@ -11,6 +11,7 @@ import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
+import { meatGrams } from '@/lib/facilities';
 import { formatPhone, formatWon } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
 
@@ -236,7 +237,9 @@ function BookingFlow() {
                         }`}
                       >
                         <span className="block font-semibold text-ink">{MEAT_LABEL[m]} Set</span>
-                        <span className="mt-1 block text-sm text-muted">{formatWon(price)}</span>
+                        <span className="mt-1 block text-sm text-muted">
+                          {formatWon(price)} · {meatGrams(selected.capacity)}g
+                        </span>
                       </button>
                     );
                   })}

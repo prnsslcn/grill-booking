@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Reveal } from '@/components/ui/Reveal';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { facilityByType } from '@/lib/facilities';
+import { facilityByType, meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -31,6 +31,82 @@ const FACILITY_FROM = [
   { x: 760 },
   { x: 760 },
   { x: 760 },
+];
+
+// 이용 안내 3카드 — 아이콘 + 항목. Reveal stagger로 순차 등장.
+const INFO = [
+  {
+    title: '운영 안내',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+        <path
+          d="M12 7.5V12l3 1.8"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    items: [
+      '운영일: 매주 금·토 (성수기 주중·동계 휴장)',
+      '1부 17:00~19:00 / 2부 19:30~21:30',
+      '회차당 2시간 · 100% 선결제',
+      '예약·문의 010-3045-2994',
+    ],
+  },
+  {
+    title: '포함 사항',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M12 3l8 4v10l-8 4-8-4V7l8-4z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M4 7l8 4 8-4M12 11v10"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    items: [
+      '고기세트(정원 기준 1인 150g) 포함',
+      '숯·석쇠·집게·식기·생수 등 기본 세팅',
+      '상추·양파·버섯·소시지·쌈장 등 기본 식재료',
+      '한강라면·햇반, 커피 쿠폰 무료 제공',
+    ],
+  },
+  {
+    title: '환불 규정',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M12 3l7 3v5c0 4.4-3 7.4-7 8.9C8 17.4 5 14.4 5 10V6l7-3z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 11.5l2 2 3.5-3.5"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    items: [
+      '이용 2일 전까지: 100% 환불',
+      '이용 1일 전: 50% 환불',
+      '이용 당일·노쇼: 환불 불가',
+      '우천 시 야외 테이블(4인)은 운영 제한될 수 있습니다.',
+    ],
+  },
 ];
 
 async function getFacilities() {
@@ -134,7 +210,7 @@ export default async function Home() {
                         <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
                       </div>
                       <p className={`pt-1 text-xs ${s.muted}`}>
-                        기준 {f.capacity}인 · {f.total_units}동 운영
+                        기준 {f.capacity}인 · 세트당 {meatGrams(f.capacity)}g · {f.total_units}동
                       </p>
                     </div>
                   </Link>
@@ -145,6 +221,62 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* 이용 안내 — 운영/포함/환불 + 단체 배너 */}
+        <section className="bg-canvas py-20">
+          <div className="mx-auto max-w-5xl px-5">
+            <Reveal from={{ y: 24 }}>
+              <h2 className="text-2xl font-bold text-ink">이용 안내</h2>
+              <p className="mt-2 text-muted">운영·포함·환불 등 예약 전 핵심 정보입니다.</p>
+            </Reveal>
+
+            <div className="mt-9 grid gap-4 sm:grid-cols-3">
+              {INFO.map((c, i) => (
+                <Reveal key={c.title} delay={i * 120} from={{ y: 40 }} duration={0.8} className="h-full">
+                  <div className="group flex h-full flex-col rounded-3xl border border-line bg-surface p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-brand/30 hover:shadow-[0_22px_48px_-22px_rgba(0,0,0,0.20)]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand transition-transform duration-300 group-hover:scale-110">
+                      {c.icon}
+                    </div>
+                    <h3 className="mt-5 text-lg font-bold text-ink">{c.title}</h3>
+                    <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted">
+                      {c.items.map((it) => (
+                        <li key={it} className="flex gap-2.5">
+                          <span className="mt-[7px] h-1.5 w-1.5 flex-none rounded-full bg-brand/60" />
+                          <span>{it}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            {/* 단체 BBQ 배너 */}
+            <Reveal delay={120} from={{ y: 40 }} duration={0.8} className="mt-4 block">
+              <div className="flex flex-col items-start justify-between gap-5 overflow-hidden rounded-3xl bg-[#23322d] p-8 text-white sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-lg font-bold">단체 BBQ · 최대 200명</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">
+                    워크숍·동호회·가족 행사는 사전 예약·문의로 진행됩니다.
+                  </p>
+                </div>
+                <a
+                  href="tel:01030452994"
+                  className="inline-flex flex-none items-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-ink transition-transform duration-300 hover:-translate-y-0.5"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M6.5 3h3l1.5 5-2 1.5a11 11 0 005 5l1.5-2 5 1.5v3a2 2 0 01-2 2A16 16 0 014.5 5a2 2 0 012-2z"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  010-3045-2994
+                </a>
+              </div>
+            </Reveal>
+          </div>
+        </section>
       </main>
 
       <SiteFooter />

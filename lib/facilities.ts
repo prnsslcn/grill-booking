@@ -20,6 +20,8 @@ export interface FacilityContent {
   accent: string;
   /** 갤러리 헤드라인을 한 줄로(기본은 공백 단위로 줄바꿈) */
   headlineOneLine?: boolean;
+  /** 준비 중(임시) — 상세 대신 준비중 페이지(/soon)로 유도 */
+  comingSoon?: boolean;
 }
 
 export const FACILITIES: FacilityContent[] = [
@@ -75,6 +77,7 @@ export const FACILITIES: FacilityContent[] = [
     hero: 'bg-brand-soft text-ink',
     accent: 'text-brand',
     headlineOneLine: true,
+    comingSoon: true,
   },
 ];
 
@@ -84,4 +87,11 @@ export function facilityBySlug(slug: string): FacilityContent | undefined {
 
 export function facilityByType(type: string): FacilityContent | undefined {
   return FACILITIES.find((f) => f.type === type);
+}
+
+/** 1인 기준 고기 제공량(g) */
+export const GRAMS_PER_PERSON = 150;
+/** 세트당 고기 제공량 = 정원 × 1인 150g (4인 600g · 6인 900g · 8인 1200g) */
+export function meatGrams(capacity: number): number {
+  return capacity * GRAMS_PER_PERSON;
 }

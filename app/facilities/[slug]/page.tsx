@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { FACILITIES, facilityBySlug } from '@/lib/facilities';
+import { FACILITIES, facilityBySlug, meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const revalidate = 60;
 
 export function generateStaticParams() {
-  return FACILITIES.map((f) => ({ slug: f.slug }));
+  // 준비 중 시설은 /soon으로 리다이렉트되므로 상세는 사전 생성하지 않음
+  return FACILITIES.filter((f) => !f.comingSoon).map((f) => ({ slug: f.slug }));
 }
 
 export async function generateMetadata({
@@ -47,6 +48,7 @@ export default async function FacilityPage({
   const { slug } = await params;
   const f = facilityBySlug(slug);
   if (!f) notFound();
+  if (f.comingSoon) redirect(`/facilities/${f.slug}/soon`);
 
   const prices = await getPrices(f.type);
   const others = FACILITIES.filter((o) => o.slug !== f.slug);
@@ -81,7 +83,7 @@ export default async function FacilityPage({
               <div>
                 <h2 className="text-xl font-bold text-ink">{f.label} 가격</h2>
                 <p className="mt-1 text-sm text-muted">
-                  고기세트 포함 · 전액 선결제 · 기준 {f.capacity}인
+                  고기세트 포함 · 전액 선결제 · 기준 {f.capacity}인 (1인 150g)
                 </p>
                 <div className="mt-5 space-y-1.5">
                   {prices && prices.is_active ? (
@@ -91,12 +93,14 @@ export default async function FacilityPage({
                         <span className="text-lg font-bold text-ink">
                           {formatWon(prices.price_pork)}
                         </span>
+                        <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
                       </div>
                       <div className="flex items-baseline gap-6">
                         <span className="w-16 text-sm text-muted">Beef Set</span>
                         <span className="text-lg font-bold text-ink">
                           {formatWon(prices.price_beef)}
                         </span>
+                        <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
                       </div>
                     </>
                   ) : (
