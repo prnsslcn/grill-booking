@@ -243,3 +243,162 @@ h1, h2, h3, h4 {
   }
   .carousel-tagline { margin-top: 24px; }
 }
+
+/* ─────────────────────────────────────────────────────────
+   "mission" 브릭 레이아웃 (이용 안내) — getanchor 실제 CSS 이식.
+   브릭색은 #E9F6EE, 폰트는 Pretendard, 아이콘 배경은 생략.
+   ───────────────────────────────────────────────────────── */
+.casestudy-text--list {
+  width: 100%;
+  color: #0b5c3e;
+  margin-left: auto;
+  margin-right: auto;
+}
+.mission-top_block {
+  gap: 10px;
+  flex-direction: column;
+  width: 100%;
+  padding-top: 10px;
+  display: flex;
+}
+.mission-bottom_block {
+  gap: 10px;
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+}
+.mission-block {
+  gap: 11px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+}
+.mission-left_block {
+  background-color: #e9f6ee;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  flex: 1;
+  max-width: 77px;
+  height: 83px;
+}
+.mission-left_block.cc-vertical { height: auto; }
+.mission-left_block.cc-vertical.cc-hide-desktop { display: none; }
+.mission-block_tag {
+  background-color: #23322d;
+  max-width: 333px;
+  height: 83px;
+  color: #0be49b;
+  border-radius: 15px;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 30px;
+  padding-right: 30px;
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+}
+.mission-block_tag.cc-light-green { background-color: #045137; }
+.margin-right_block { gap: 10px; flex: 1; display: flex; }
+.mission-top_flex { justify-content: space-between; align-items: center; gap: 10px; display: flex; }
+.mission-top_left {
+  background-color: #e9f6ee;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  flex: 1;
+  max-width: 192.8px;
+  height: 83px;
+}
+.mission-top_left.cc-wide { max-width: 496px; }
+.mission-top_right {
+  background-color: #e9f6ee;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+  flex: 1;
+  max-width: 234px;
+  height: 83px;
+}
+.mission-top_right.cc-wide { max-width: 496px; }
+.mission-right_inner {
+  background-color: #e9f6ee;
+  border-radius: 15px;
+  flex: 1;
+  height: 83px;
+}
+.mission-right_inner.cc-right { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.mission-right_inner.cc-right.cc-small { max-width: 77px; }
+.mission-right_inner.cc-left { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.mission-inner_block { gap: 10px; display: flex; }
+.mission-right_block {
+  background-color: #e9f6ee;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+  flex: 1;
+  max-width: 77px;
+  height: 83px;
+}
+.mission-right_block.cc-vertical { height: auto; }
+.mission-right_block.cc-vertical.cc-hide-desktop { display: none; }
+.mission-left_container {
+  gap: 10px;
+  flex-direction: column;
+  flex: 1;
+  max-width: 77px;
+  display: flex;
+}
+.mission-text_container {
+  background-color: #e9f6ee;
+  letter-spacing: -0.4px;
+  border-radius: 15px;
+  flex: 1;
+  padding: 56px 64px;
+  font-size: 19px;
+  line-height: 1.6;
+  color: #0b5c3e;
+}
+.why-text_container {
+  background-color: #e9f6ee;
+  letter-spacing: -0.4px;
+  border-radius: 15px;
+  flex: 1;
+  padding: 40px 48px;
+  font-size: 19px;
+  line-height: 1.6;
+  color: #0b5c3e;
+}
+.mission-text_container p, .why-text_container p { margin: 0 0 16px; }
+.mission-text_container p:last-child, .why-text_container p:last-child { margin-bottom: 0; }
+.tag-circle { border-radius: 50%; flex: none; width: 16px; height: 16px; }
+.tag-circle.cc-green { background-color: #0be49b; }
+
+@media (max-width: 991px) {
+  .mission-left_block { align-self: stretch; height: auto; }
+  .mission-block_tag { height: 78px; font-size: 24px; }
+  .mission-top_left, .mission-top_right, .mission-right_inner { height: 78px; }
+  .mission-top_left.cc-wide, .mission-top_right.cc-wide { max-width: 300px; }
+  .mission-right_block { align-self: stretch; height: auto; }
+  .mission-text_container { padding: 44px; font-size: 18px; }
+  .why-text_container { padding: 40px; font-size: 18px; }
+}
+@media (max-width: 767px) {
+  .mission-bottom_block { display: none; }
+  .mission-block { gap: 5px; padding-top: 5px; padding-bottom: 5px; }
+  .mission-left_block { border-top-right-radius: 5.4px; border-bottom-right-radius: 5.4px; max-width: 70px; }
+  .mission-left_block.cc-vertical { min-height: 45px; }
+  .mission-left_block.cc-vertical.cc-hide-desktop { display: block; }
+  .mission-left_block.cc-heading { display: none; }
+  .mission-block_tag { border-radius: 0 5.4px 5.4px 0; max-width: 200px; height: 45px; font-size: 16px; }
+  .margin-right_block { gap: 5px; }
+  .mission-top_left, .mission-top_right { height: 45px; display: none; }
+  .mission-right_inner { border-radius: 5.4px; height: 45px; }
+  .mission-right_inner.cc-hide-mobile { display: none; }
+  .mission-inner_block { gap: 5px; }
+  .mission-right_block, .mission-right_block.cc-vertical { border-top-left-radius: 5.4px; border-bottom-left-radius: 5.4px; }
+  .mission-right_block.cc-vertical.cc-hide-desktop { display: block; }
+  .mission-left_container { gap: 4px; max-width: 30px; }
+  .mission-text_container { border-radius: 4.5px; padding: 24px 20px; font-size: 14px; }
+  .why-text_container { border-radius: 4.5px; padding: 20px; font-size: 14px; }
+}
