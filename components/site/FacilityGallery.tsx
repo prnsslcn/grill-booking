@@ -19,8 +19,8 @@ const GENIE_EASE = [0.32, 0.72, 0, 1] as const;
 type Rect = { left: number; top: number; width: number; height: number };
 type OpenState = { index: number; fromRect: Rect; toRect: Rect } | null;
 
-// 임시: 전 카드 동일 이미지(grill.png). 추후 시설별 실사 사진으로 교체.
-const IMAGES = Array.from({ length: 9 }, () => '/images/grill.png');
+// 기본 이미지(시설 상세 임시). images prop으로 교체 가능.
+const DEFAULT_IMAGES = Array.from({ length: 9 }, () => '/images/grill.png');
 
 // 각 카드가 자체 spring 으로 x 를 추적 — index 가 커질수록 stiffness 변화 → "신호 출발" lag
 function CarouselCard({
@@ -73,13 +73,18 @@ function CarouselCard({
 
 export function FacilityGallery({
   name,
-  tagline,
+  tagline = '',
   oneLine = false,
+  images,
+  headline = true,
 }: {
   name: string;
-  tagline: string;
+  tagline?: string;
   oneLine?: boolean;
+  images?: string[];
+  headline?: boolean;
 }) {
+  const IMAGES = images ?? DEFAULT_IMAGES;
   const outerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -225,7 +230,8 @@ export function FacilityGallery({
 
   return (
     <section className="carousel-section">
-      {/* Headline — 좌측에서 슬라이드 + scale + fade */}
+      {/* Headline — 좌측에서 슬라이드 (headline=false면 생략) */}
+      {headline && (
       <div ref={headlineRef} className="carousel-headline-stack">
         <h2 className="sr-only">{name}</h2>
         {lines.map((w, i) => (
@@ -249,6 +255,7 @@ export function FacilityGallery({
           {tagline}
         </motion.p>
       </div>
+      )}
 
       {/* Sticky horizontal scroll */}
       <div ref={outerRef} style={{ height: outerHeight, position: 'relative' }}>
