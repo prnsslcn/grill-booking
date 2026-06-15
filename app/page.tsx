@@ -5,6 +5,7 @@ import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { MissionBricks } from '@/components/site/MissionBricks';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { TempHeader } from '@/components/site/TempHeader';
+import { getAddons } from '@/lib/booking/availability';
 import { meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 
 const PHONE = '010-3045-2994';
 const TEL = 'tel:01030452994';
-// 홈 중앙 grill.png 대체 — 시설 실사 4장 (타프 t1·t2 / 카바나 c1·c2). 2행 브릭에 맞춰 그룹핑.
+// 홈 중앙 grill.png 대체 — 시설 실사 4장 (타프 t1·t2 / 카바나 c1·c2).
 const GALLERY = ['/images/t1.jpg', '/images/t2.jpg', '/images/c1.jpg', '/images/c2.jpg'];
 
 const FACILITY_DESC: Record<string, string> = {
@@ -49,6 +50,7 @@ async function getFacilities() {
 export default async function TempLanding() {
   // 임시 랜딩에선 야외 테이블 숨김
   const facilities = (await getFacilities()).filter((f) => f.type !== 'outdoor_table');
+  const addons = await getAddons(); // 고기 추가 옵션(booking 단계와 동일)
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
@@ -129,6 +131,23 @@ export default async function TempLanding() {
                         <p className={`pt-1 text-xs ${s.muted}`}>
                           기준 {f.capacity}인 · 세트당 {meatGrams(f.capacity)}g · {f.total_units}동
                         </p>
+
+                        {addons.length > 0 && (
+                          <div className="mt-3 border-t border-white/15 pt-3">
+                            <p className={`text-xs font-semibold ${s.muted}`}>고기 추가 옵션 (선택)</p>
+                            <div className="mt-2 space-y-1">
+                              {addons.map((a) => (
+                                <div
+                                  key={a.key}
+                                  className="flex items-baseline justify-between text-xs"
+                                >
+                                  <span className={s.muted}>{a.label}</span>
+                                  <span className="font-semibold">+{formatWon(a.price)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Reveal>
