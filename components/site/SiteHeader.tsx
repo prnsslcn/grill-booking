@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -50,19 +51,58 @@ export function SiteHeader({
     return () => io.disconnect();
   }, [heroWordmark]);
 
+  // 모바일 메뉴 열림 시 스크롤 잠금(Lenis 정지 + body overflow 차단). 닫히면 복원.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const lenis = window.__lenis;
+    lenis?.stop();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      lenis?.start();
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
+
   return (
-    <header
-      className={`sticky top-0 z-40 transition-colors duration-300 ${
-        solid ? 'bg-surface/80 backdrop-blur-md' : 'bg-transparent'
-      }`}
-    >
-      <div className="mx-auto flex h-24 max-w-6xl items-center px-5">
+    <>
+      {/* fixed 헤더 높이(pt-4 + h-24 = 7rem)만큼 레이아웃 자리 확보 */}
+      <div aria-hidden className="h-28" />
+      {/* sticky 대신 fixed — Lenis(부드러운 스크롤)에서 sticky는 매 프레임 위치 보정으로 떨리므로 fixed 사용 */}
+      <header className="fixed inset-x-0 top-0 z-40">
+      <div className="relative mx-auto max-w-6xl px-4 pt-4">
+        {/* 바깥 탭 → 닫기 (배경 살짝 디밍) */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              className="fixed inset-0 z-10 bg-ink/10 backdrop-blur-[2px] md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* 단일 pill — 모바일에서 메뉴가 열리면 이 pill 자체의 높이가 늘어난다.
+            overflow는 visible(데스크탑 hover 드롭다운 비클리핑), 배경은 rounded로 자동 클립. */}
+        <div
+          className={`absolute z-20 flex flex-col border px-6 transition-[top,left,right,border-radius,background-color,border-color,box-shadow] duration-300 sm:px-8 ${
+            mobileOpen
+              ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-line bg-surface/80 shadow-[0_12px_36px_-18px_rgba(0,0,0,0.18)] backdrop-blur-xl md:inset-x-4 md:top-4 md:rounded-[1.5rem]'
+              : solid
+                ? 'inset-x-4 top-4 rounded-[1.5rem] border-white/40 bg-surface/70 shadow-[0_8px_26px_-16px_rgba(0,0,0,0.14)] backdrop-blur-xl'
+                : 'inset-x-4 top-4 rounded-[1.5rem] border-white/30 bg-surface/55 shadow-[0_8px_26px_-18px_rgba(0,0,0,0.1)] backdrop-blur-xl'
+          }`}
+        >
+        {/* 바 행(항상 h-24 고정) */}
+        <div className="flex h-24 shrink-0 items-center">
         {/* 좌: 로고 (heroWordmark 페이지에선 히어로 워드마크가 사라질 때 화면 위에서 슬라이드 인) */}
-        <div className="flex flex-1 items-center">
+        <div className="flex h-24 flex-1 items-center [clip-path:inset(0_-100vw)]">
           <Link
             href="/"
-            className={`whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-all duration-[600ms] ease-out sm:text-5xl ${
-              wordmarkShown ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'
+            className={`flex h-full items-center whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-transform duration-[600ms] ease-out sm:text-5xl ${
+              wordmarkShown ? '' : '-translate-y-full'
             }`}
           >
             Alpensia BBQ
@@ -126,8 +166,8 @@ export function SiteHeader({
           </Link>
         </nav>
 
-        {/* 우: CTA + 모바일 햄버거 */}
-        <div className="flex flex-1 items-center justify-end gap-2">
+        {/* 우: CTA + 모바일 햄버거 (모바일은 로고 공간 확보 위해 flex-1 해제, 데스크탑만 flex-1로 중앙 메뉴 정렬) */}
+        <div className="flex items-center justify-end gap-2 md:flex-1">
           <Link
             href="/booking"
             className="hidden rounded-2xl bg-brand px-6 py-3 text-[17px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong md:inline-flex"
@@ -136,75 +176,94 @@ export function SiteHeader({
           </Link>
           <button
             type="button"
-            onClick={() => setMobileOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-ink md:hidden"
-            aria-label="메뉴 열기"
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex h-11 w-11 items-center justify-center text-ink transition-transform active:scale-90 md:hidden"
+            aria-label="메뉴"
+            aria-expanded={mobileOpen}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+              {mobileOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              )}
             </svg>
           </button>
         </div>
-      </div>
-
-      {/* 모바일 메뉴 */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-ink/20" onClick={() => setMobileOpen(false)} />
-          <div className="absolute inset-x-0 top-0 rounded-b-3xl bg-surface p-5 shadow-xl">
-            <div className="flex items-center justify-between">
-              <span className="font-display text-3xl tracking-wide text-wood">Alpensia BBQ</span>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-ink"
-                aria-label="메뉴 닫기"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-1">
-              <p className="px-3 pb-1 text-xs font-semibold text-subtle">시설안내</p>
-              {FACILITIES.map((f) => (
-                <Link
-                  key={f.slug}
-                  href={`/facilities/${f.slug}`}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-3 py-3 hover:bg-brand-soft"
-                >
-                  <span className="font-medium text-ink">{f.label}</span>
-                  <span className="text-xs text-subtle">{f.tagline}</span>
-                </Link>
-              ))}
-              <Link
-                href="/faq"
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-xl px-3 py-3 font-medium text-ink hover:bg-brand-soft"
-              >
-                FAQ
-              </Link>
-              <Link
-                href="/booking/lookup"
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-xl px-3 py-3 font-medium text-ink hover:bg-brand-soft"
-              >
-                예약조회
-              </Link>
-            </div>
-
-            <Link
-              href="/booking"
-              onClick={() => setMobileOpen(false)}
-              className="mt-4 block rounded-2xl bg-brand px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-brand-strong"
-            >
-              예약하기
-            </Link>
-          </div>
         </div>
-      )}
-    </header>
+        {/* 끝: 바 행 */}
+
+        {/* 모바일 메뉴 — 같은 pill 안에서 높이가 0→auto 로 늘어남(pill 자체가 길어짐).
+            overflow-hidden 으로 위에서부터 펼쳐지듯 보인다. */}
+        <AnimatePresence initial={false}>
+          {mobileOpen && (
+            <motion.div
+              className="overflow-hidden md:hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { type: 'spring', stiffness: 380, damping: 38 },
+                opacity: { duration: 0.18 },
+              }}
+            >
+              <div className="pb-5 pt-2">
+                <div className="divide-y divide-ink/15">
+                  {/* 시설안내 (3개) */}
+                  <div className="pb-2">
+                    <p className="px-3 pb-1 text-xs font-semibold text-subtle">시설안내</p>
+                    <div className="space-y-0.5">
+                      {FACILITIES.map((f) => (
+                        <Link
+                          key={f.slug}
+                          href={`/facilities/${f.slug}`}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center justify-between rounded-2xl px-3 py-3 transition-colors active:bg-brand-soft"
+                        >
+                          <span className="font-medium text-ink">{f.label}</span>
+                          <span className="text-xs text-subtle">{f.tagline}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* FAQ */}
+                  <div className="py-1">
+                    <Link
+                      href="/faq"
+                      onClick={() => setMobileOpen(false)}
+                      className="block rounded-2xl px-3 py-3 font-medium text-ink transition-colors active:bg-brand-soft"
+                    >
+                      FAQ
+                    </Link>
+                  </div>
+
+                  {/* 예약조회 */}
+                  <div className="py-1">
+                    <Link
+                      href="/booking/lookup"
+                      onClick={() => setMobileOpen(false)}
+                      className="block rounded-2xl px-3 py-3 font-medium text-ink transition-colors active:bg-brand-soft"
+                    >
+                      예약조회
+                    </Link>
+                  </div>
+                </div>
+
+                <Link
+                  href="/booking"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-3 block rounded-2xl bg-brand px-5 py-3.5 text-center font-semibold text-white transition-colors active:bg-brand-strong"
+                >
+                  예약하기
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        </div>
+      </div>
+      </header>
+    </>
   );
 }

@@ -51,7 +51,7 @@ export default async function Home() {
   const facilities = await getFacilities();
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[100dvh] flex-col bg-surface">
       <SiteHeader heroWordmark />
 
       <main className="flex-1">
