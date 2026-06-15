@@ -71,12 +71,17 @@ function BookingFlow() {
   const [selected, setSelected] = useState<Selected | null>(null);
   // 관리자 지정 오픈일(금·토 외 운영일) — 달력에서 선택 가능하게.
   const [openDates, setOpenDates] = useState<string[]>([]);
+  // 관리자 휴무일(금·토라도 닫힘) — 달력에서 선택 불가하게.
+  const [closedDates, setClosedDates] = useState<string[]>([]);
 
-  // 지정 오픈일 로드(달력 선택 가능 날짜)
+  // 운영일 정보 로드(달력 선택 가능/불가 날짜)
   useEffect(() => {
     fetch('/api/open-dates')
       .then((r) => r.json())
-      .then((b: { dates?: string[] }) => setOpenDates(b.dates ?? []))
+      .then((b: { dates?: string[]; closedDates?: string[] }) => {
+        setOpenDates(b.dates ?? []);
+        setClosedDates(b.closedDates ?? []);
+      })
       .catch(() => {});
   }, []);
   const [meat, setMeat] = useState<Meat | ''>('');
@@ -165,6 +170,7 @@ function BookingFlow() {
                   onSelect={selectDate}
                   allowedDows={[5, 6]}
                   allowedDates={openDates}
+                  closedDates={closedDates}
                   disablePast
                   maxDate={maxBookable}
                   hint={`금·토${openDates.length > 0 ? ' 및 지정 오픈일' : ''} · ${maxBookable}까지 예약 가능합니다.`}

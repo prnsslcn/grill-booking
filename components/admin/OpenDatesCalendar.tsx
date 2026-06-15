@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from 'react';
 
-import { adminAddOpenDate, adminRemoveOpenDate } from '@/lib/admin/actions';
+import {
+  adminAddOpenDate,
+  adminCloseOperatingDate,
+  adminRemoveOpenDate,
+  adminReopenOperatingDate,
+} from '@/lib/admin/actions';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -14,12 +19,21 @@ function toIso(y: number, m: number, d: number): string {
 }
 
 /**
- * 관리자 특정일 오픈 캘린더 — 평일을 클릭해 운영일로 열고/닫는다(open_dates 토글).
- * 금·토는 기본 운영일(색 구분, 토글 불가), 과거는 비활성.
+ * 관리자 운영일 캘린더.
+ * - 금·토: 기본 운영(연한 초록). 클릭하면 휴무(off), 다시 클릭하면 복구.
+ * - 평일: 기본 미운영. 클릭하면 지정 오픈(on), 다시 클릭하면 해제.
+ * 클릭은 낙관적으로 즉시 반영하고, 실패 시 되돌리며 안내한다. 과거 날짜는 비활성.
  */
-export function OpenDatesCalendar({ openDates }: { openDates: string[] }) {
+export function OpenDatesCalendar({
+  openDates,
+  closedDates,
+}: {
+  openDates: string[];
+  closedDates: string[];
+}) {
   // 낙관적 로컬 상태 — 클릭 즉시 반영, 실패 시 되돌림. (초기값은 서버 prop으로 seed)
   const [openSet, setOpenSet] = useState<Set<string>>(() => new Set(openDates));
+  const [closedSet, setClosedSet] = useState<Set<string>>(() => new Set(closedDates));
 
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -42,32 +56,70 @@ export function OpenDatesCalendar({ openDates }: { openDates: string[] }) {
     });
   }
 
-  function toggle(dstr: string, isOpen: boolean) {
-    // 낙관적 업데이트: 즉시 칠하기
-    setOpenSet((prev) => {
-      const n = new Set(prev);
-      if (isOpen) n.delete(dstr);
-      else n.add(dstr);
-      return n;
-    });
+  /** set 토글 헬퍼 — add=true면 추가, false면 제거한 새 Set 반환. */
+  function withToggle(set: Set<string>, dstr: string, add: boolean): Set<string> {
+    const n = new Set(set);
+    if (add) n.add(dstr);
+    else n.delete(dstr);
+    return n;
+  }
+
+  function run(
+    dstr: string,
+    optimistic: () => void,
+    revert: () => void,
+    action: () => Promise<void>,
+  ) {
+    optimistic();
     setBusy(dstr);
     startTransition(async () => {
       try {
-        if (isOpen) await adminRemoveOpenDate(dstr);
-        else await adminAddOpenDate(dstr);
+        await action();
       } catch (e) {
-        // 실패 시 되돌리고 안내
-        setOpenSet((prev) => {
-          const n = new Set(prev);
-          if (isOpen) n.add(dstr);
-          else n.delete(dstr);
-          return n;
-        });
+        revert();
         alert(`처리에 실패했습니다: ${e instanceof Error ? e.message : '알 수 없는 오류'}`);
       } finally {
         setBusy(null);
       }
     });
+  }
+
+  function onCellClick(dstr: string, isWeekend: boolean) {
+    if (isWeekend) {
+      // 금·토: 휴무 ↔ 운영 토글
+      if (closedSet.has(dstr)) {
+        run(
+          dstr,
+          () => setClosedSet((s) => withToggle(s, dstr, false)),
+          () => setClosedSet((s) => withToggle(s, dstr, true)),
+          () => adminReopenOperatingDate(dstr),
+        );
+      } else {
+        run(
+          dstr,
+          () => setClosedSet((s) => withToggle(s, dstr, true)),
+          () => setClosedSet((s) => withToggle(s, dstr, false)),
+          () => adminCloseOperatingDate(dstr),
+        );
+      }
+    } else {
+      // 평일: 지정 오픈 ↔ 해제 토글
+      if (openSet.has(dstr)) {
+        run(
+          dstr,
+          () => setOpenSet((s) => withToggle(s, dstr, false)),
+          () => setOpenSet((s) => withToggle(s, dstr, true)),
+          () => adminRemoveOpenDate(dstr),
+        );
+      } else {
+        run(
+          dstr,
+          () => setOpenSet((s) => withToggle(s, dstr, true)),
+          () => setOpenSet((s) => withToggle(s, dstr, false)),
+          () => adminAddOpenDate(dstr),
+        );
+      }
+    }
   }
 
   return (
@@ -78,9 +130,12 @@ export function OpenDatesCalendar({ openDates }: { openDates: string[] }) {
           <span className="h-3.5 w-3.5 rounded bg-brand-soft" /> 금·토 기본 운영
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 rounded bg-brand" /> 오픈함 (클릭 시 해제)
+          <span className="h-3.5 w-3.5 rounded bg-brand" /> 지정 오픈
         </span>
-        <span className="text-subtle">평일 클릭 → 오픈/해제</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-3.5 w-3.5 rounded bg-line-soft" /> 휴무
+        </span>
+        <span className="text-subtle">금·토 클릭 → 휴무 / 평일 클릭 → 오픈</span>
       </div>
 
       <div className="max-w-sm rounded-2xl border border-line bg-surface p-4">
@@ -127,14 +182,26 @@ export function OpenDatesCalendar({ openDates }: { openDates: string[] }) {
             const isPast = date < today;
             const isWeekend = dow === 5 || dow === 6;
             const isOpen = openSet.has(dstr);
+            const isClosed = closedSet.has(dstr);
             const isBusy = busy === dstr;
-            const clickable = !isPast && !isWeekend;
+            const clickable = !isPast;
 
             let cls = 'text-subtle/40 cursor-default'; // past 기본
+            let title = '';
             if (!isPast) {
-              if (isWeekend) cls = 'bg-brand-soft font-medium text-brand-strong cursor-default';
-              else if (isOpen) cls = 'bg-brand font-bold text-white hover:bg-brand-strong';
-              else cls = 'font-medium text-ink hover:bg-brand-soft';
+              if (isWeekend && isClosed) {
+                cls = 'bg-line-soft font-medium text-subtle line-through hover:bg-line';
+                title = '휴무 — 클릭 시 운영 복구';
+              } else if (isWeekend) {
+                cls = 'bg-brand-soft font-medium text-brand-strong hover:bg-brand/20';
+                title = '기본 운영일(금·토) — 클릭 시 휴무';
+              } else if (isOpen) {
+                cls = 'bg-brand font-bold text-white hover:bg-brand-strong';
+                title = '지정 오픈됨 — 클릭 시 해제';
+              } else {
+                cls = 'font-medium text-ink hover:bg-brand-soft';
+                title = '클릭 시 이 날짜 오픈';
+              }
             }
 
             return (
@@ -142,14 +209,8 @@ export function OpenDatesCalendar({ openDates }: { openDates: string[] }) {
                 key={dstr}
                 type="button"
                 disabled={!clickable || isBusy}
-                onClick={() => toggle(dstr, isOpen)}
-                title={
-                  isWeekend
-                    ? '기본 운영일(금·토)'
-                    : isOpen
-                      ? '오픈됨 — 클릭 시 해제'
-                      : '클릭 시 이 날짜 오픈'
-                }
+                onClick={() => onCellClick(dstr, isWeekend)}
+                title={title}
                 className={`aspect-square rounded-lg text-sm transition-colors ${cls} ${
                   isBusy ? 'opacity-50' : ''
                 }`}

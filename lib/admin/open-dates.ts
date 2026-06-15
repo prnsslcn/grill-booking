@@ -18,3 +18,14 @@ export async function listOpenDates(): Promise<OpenDate[]> {
     .order('date', { ascending: true });
   return (data ?? []).map((r) => ({ date: r.date, note: r.note }));
 }
+
+/** 오늘 이후의 휴무 처리된 날짜 목록 — 관리자 화면용. */
+export async function listClosedDates(): Promise<OpenDate[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('closed_dates')
+    .select('date, note')
+    .gte('date', kstToday())
+    .order('date', { ascending: true });
+  return (data ?? []).map((r) => ({ date: r.date, note: r.note }));
+}

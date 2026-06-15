@@ -4,7 +4,7 @@ import { OpenDatesCalendar } from '@/components/admin/OpenDatesCalendar';
 import { SlotToggle } from '@/components/admin/SlotToggle';
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
-import { listOpenDates } from '@/lib/admin/open-dates';
+import { listClosedDates, listOpenDates } from '@/lib/admin/open-dates';
 import { listSlotsByDate } from '@/lib/admin/slots';
 import { formatDateKorean } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
@@ -17,9 +17,10 @@ export default async function AdminSlotsPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date = '' } = await searchParams;
-  const [slots, openDates] = await Promise.all([
+  const [slots, openDates, closedDates] = await Promise.all([
     date ? listSlotsByDate(date) : Promise.resolve([]),
     listOpenDates(),
+    listClosedDates(),
   ]);
 
   // 시설명 → 동 → 부 그리드
@@ -34,13 +35,18 @@ export default async function AdminSlotsPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold text-ink">특정일 오픈 (성수기 등)</h1>
+        <h1 className="text-xl font-bold text-ink">운영일 관리</h1>
         <p className="mt-1 text-sm text-muted">
-          평소엔 <strong>금·토만</strong> 운영합니다. 성수기 등 특정 날짜를 추가로 열려면 날짜를 등록하세요.
-          등록 즉시 해당일 슬롯이 생성되어, 예약 가능 기간(오늘부터 1개월) 이내면 고객이 예약할 수 있습니다.
+          평소엔 <strong>금·토만</strong> 운영합니다. 캘린더에서 <strong>평일을 클릭</strong>하면 성수기 등 특정일을
+          추가로 열고, <strong>금·토를 클릭</strong>하면 휴무 처리합니다. 변경 즉시 반영되며, 예약 가능 기간(오늘부터
+          1개월) 이내면 고객 달력에 적용됩니다. 휴무 처리해도 <strong>이미 확정된 예약은 유지</strong>되므로, 취소가
+          필요하면 예약 관리에서 별도로 처리하세요.
         </p>
         <div className="mt-4">
-          <OpenDatesCalendar openDates={openDates.map((o) => o.date)} />
+          <OpenDatesCalendar
+            openDates={openDates.map((o) => o.date)}
+            closedDates={closedDates.map((o) => o.date)}
+          />
         </div>
       </div>
 

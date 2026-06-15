@@ -79,6 +79,48 @@ export async function adminRemoveOpenDate(date: string): Promise<void> {
   revalidatePath('/booking');
 }
 
+/**
+ * 운영일 휴무 처리 — 금·토(또는 오픈일)를 닫는다. 미예약(open) 슬롯만 닫고 기존 예약은 유지.
+ * (확정 예약을 취소하려면 예약 관리에서 별도 취소·환불 처리해야 한다.)
+ */
+export async function adminCloseOperatingDate(date: string, note?: string): Promise<void> {
+  await requireAdmin();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('INVALID_DATE');
+  const supabase = createAdminClient();
+  const { error: upErr } = await supabase
+    .from('closed_dates')
+    .upsert({ date, note: note?.trim() || null });
+  if (upErr) throw new Error(`휴무 저장 실패: ${upErr.message}`);
+  // 미예약 슬롯만 닫기(예약 완료 슬롯은 booked 상태라 그대로 유지됨)
+  const { error: closeErr } = await supabase
+    .from('slots')
+    .update({ status: 'closed' })
+    .eq('date', date)
+    .eq('status', 'open');
+  if (closeErr) throw new Error(`슬롯 닫기 실패: ${closeErr.message}`);
+  revalidatePath('/admin/slots');
+  revalidatePath('/booking');
+}
+
+/** 휴무 해제 — 운영일로 되돌리고 닫혀 있던 슬롯을 다시 연다(예약 완료 슬롯은 그대로). */
+export async function adminReopenOperatingDate(date: string): Promise<void> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error: delErr } = await supabase.from('closed_dates').delete().eq('date', date);
+  if (delErr) throw new Error(`휴무 해제 실패: ${delErr.message}`);
+  // 누락된 슬롯 멱등 생성(이제 운영일로 인정됨) + 닫혀 있던 슬롯 다시 열기
+  const { error: genErr } = await supabase.rpc('generate_slots', { p_from: date, p_to: date });
+  if (genErr) throw new Error(`슬롯 생성 실패: ${genErr.message}`);
+  const { error: openErr } = await supabase
+    .from('slots')
+    .update({ status: 'open' })
+    .eq('date', date)
+    .eq('status', 'closed');
+  if (openErr) throw new Error(`슬롯 열기 실패: ${openErr.message}`);
+  revalidatePath('/admin/slots');
+  revalidatePath('/booking');
+}
+
 export async function adminUpdateFacility(
   type: FacilityType,
   patch: { pricePork?: number; priceBeef?: number; isActive?: boolean },
