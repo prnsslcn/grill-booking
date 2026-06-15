@@ -4,6 +4,7 @@ import { Reveal } from '@/components/ui/Reveal';
 import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { MissionBricks } from '@/components/site/MissionBricks';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { TempHeader } from '@/components/site/TempHeader';
 import { meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -35,17 +36,6 @@ const FACILITY_STYLE: Record<string, { card: string; muted: string }> = {
 const FACILITY_STYLE_DEFAULT = { card: 'bg-brand-soft text-ink', muted: 'text-muted' };
 const FACILITY_FROM = [{ x: 760 }, { x: 760 }, { x: 760 }];
 
-const PhoneIcon = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path
-      d="M6.5 3h3l1.5 5-2 1.5a11 11 0 005 5l1.5-2 5 1.5v3a2 2 0 01-2 2A16 16 0 014.5 5a2 2 0 012-2z"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 async function getFacilities() {
   const supabase = createAdminClient();
   const { data } = await supabase
@@ -61,26 +51,17 @@ export default async function TempLanding() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
-      {/* 헤더 — 워드마크 + 전화 예약 (예약 시스템 링크 없음) */}
-      <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5">
-          <span className="font-display text-2xl tracking-wide text-wood sm:text-3xl">Alpensia BBQ</span>
-          <a
-            href={TEL}
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong sm:px-5"
-          >
-            {PhoneIcon}
-            <span className="hidden sm:inline">전화 예약 </span>
-            {PHONE}
-          </a>
-        </div>
-      </header>
+      {/* 헤더 — 워드마크 슬라이드인 + 전화 예약 (예약 시스템 링크 없음) */}
+      <TempHeader />
 
       <main className="flex-1">
         {/* 히어로 — 워드마크 + 서브 + 공지 */}
         <section className="bg-surface">
           <div className="mx-auto max-w-5xl px-5 pb-10 pt-14 text-center sm:pt-20">
-            <h1 className="whitespace-nowrap font-display text-5xl tracking-wide text-wood sm:text-8xl">
+            <h1
+              data-hero-wordmark
+              className="whitespace-nowrap font-display text-5xl tracking-wide text-wood sm:text-8xl"
+            >
               Alpensia BBQ
             </h1>
             <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted">
