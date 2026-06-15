@@ -47,7 +47,8 @@ async function getFacilities() {
 }
 
 export default async function TempLanding() {
-  const facilities = await getFacilities();
+  // 임시 랜딩에선 야외 테이블 숨김
+  const facilities = (await getFacilities()).filter((f) => f.type !== 'outdoor_table');
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
@@ -95,7 +96,7 @@ export default async function TempLanding() {
           <div className="mx-auto max-w-5xl px-5">
             <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
             <p className="mt-2 text-muted">모든 상품에 고기세트가 포함됩니다 (정원 기준 1인 150g).</p>
-            <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            <div className="mt-7 grid gap-4 sm:grid-cols-2">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
                 return (
