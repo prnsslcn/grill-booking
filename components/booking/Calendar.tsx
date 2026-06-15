@@ -125,15 +125,22 @@ export function Calendar({
               type="button"
               disabled={disabled}
               onClick={() => onSelect(dstr)}
-              className={`aspect-square rounded-lg text-sm transition-colors ${
+              className={`flex aspect-square flex-col items-center justify-center rounded-lg text-sm transition-colors ${
                 selected
                   ? 'bg-accent font-bold text-white'
-                  : disabled
-                    ? 'cursor-default text-subtle/40'
-                    : 'font-medium text-ink hover:bg-accent-soft'
+                  : isClosed
+                    ? 'cursor-default bg-line-soft text-subtle'
+                    : disabled
+                      ? 'cursor-default text-subtle/40'
+                      : 'font-medium text-ink hover:bg-accent-soft'
               }`}
             >
-              {d}
+              <span className={isClosed ? 'leading-none' : undefined}>{d}</span>
+              {isClosed && (
+                <span className="mt-0.5 text-[9px] font-medium leading-none text-[#e5484d]/80">
+                  휴장
+                </span>
+              )}
             </button>
           );
         })}
