@@ -13,6 +13,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { meatGrams } from '@/lib/facilities';
 import { formatPhone, formatWon } from '@/lib/format';
+import { bookingMaxDate } from '@/lib/policy/booking-window';
 import { PARTS, type Part } from '@/types/domain';
 
 type Meat = 'pork' | 'beef';
@@ -52,6 +53,9 @@ const MEAT_LABEL: Record<Meat, string> = { pork: 'Pork', beef: 'Beef' };
 function BookingFlow() {
   const searchParams = useSearchParams();
   const preferredType = searchParams.get('facility');
+
+  // 예약 가능한 마지막 날짜(오늘 + 1개월 − 1일). 달력 상한·안내에 사용.
+  const maxBookable = bookingMaxDate();
 
   const [step, setStep] = useState(1);
 
@@ -141,14 +145,17 @@ function BookingFlow() {
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
-              <p className="mt-1 text-sm text-muted">금·토만 운영합니다. 월 이동으로 원하는 날짜를 고르세요.</p>
+              <p className="mt-1 text-sm text-muted">
+                금·토만 운영합니다. 예약은 오늘부터 1개월 이내({maxBookable}까지) 날짜만 가능합니다.
+              </p>
               <div className="mt-3">
                 <Calendar
                   value={date}
                   onSelect={selectDate}
                   allowedDows={[5, 6]}
                   disablePast
-                  hint="금·토만 예약 가능합니다."
+                  maxDate={maxBookable}
+                  hint={`금·토만 · ${maxBookable}까지 예약 가능합니다.`}
                 />
               </div>
             </div>

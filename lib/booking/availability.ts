@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isWithinBookingWindow } from '@/lib/policy/booking-window';
 import type { FacilityType, Part } from '@/types/domain';
 
 /**
@@ -43,10 +44,13 @@ export async function getAddons(): Promise<Addon[]> {
 export async function getAvailability(date: string): Promise<FacilityAvailability[]> {
   const supabase = createAdminClient();
 
-  // 지연 생성: 운영일(금=5·토=6)이면 조회 시 항상 멱등 생성(중복은 건너뜀).
+  // 예약 가능 기간(오늘~1개월, KST) 밖이면 슬롯을 생성하지 않고 전부 unavailable로 노출(슬롯 id 미노출).
+  const inWindow = isWithinBookingWindow(date);
+
+  // 지연 생성: 운영일(금=5·토=6) + 예약 가능 기간 내일 때만 조회 시 멱등 생성(중복은 건너뜀).
   // → 스케줄러 없이 채우고, 새로 추가된 시설(예: 야외 테이블)도 기존 날짜에 backfill 된다.
   const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
-  if (dow === 5 || dow === 6) {
+  if ((dow === 5 || dow === 6) && inWindow) {
     await supabase.rpc('generate_slots', { p_from: date, p_to: date });
   }
 
@@ -67,7 +71,7 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
 
   // facility_id → { 1: slotId|null, 2: slotId|null }
   const openByFacility = new Map<string, Map<number, string>>();
-  for (const slot of slots ?? []) {
+  for (const slot of inWindow ? (slots ?? []) : []) {
     const facilityId = slot.facility_units?.facility_id;
     if (!facilityId) continue;
     if (!openByFacility.has(facilityId)) openByFacility.set(facilityId, new Map());

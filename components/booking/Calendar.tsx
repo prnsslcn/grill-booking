@@ -21,18 +21,23 @@ export function Calendar({
   onSelect,
   allowedDows,
   disablePast = false,
+  maxDate,
   hint,
 }: {
   value: string;
   onSelect: (iso: string) => void;
   allowedDows?: number[];
   disablePast?: boolean;
+  /** 선택 가능한 마지막 날짜(YYYY-MM-DD). 이후 날짜·달 이동 비활성. */
+  maxDate?: string;
   hint?: string;
 }) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const init = value ? new Date(`${value}T00:00:00`) : now;
   const [view, setView] = useState({ y: init.getFullYear(), m: init.getMonth() });
+
+  const maxD = maxDate ? new Date(`${maxDate}T00:00:00`) : null;
 
   const firstDow = new Date(view.y, view.m, 1).getDay();
   const daysInMonth = new Date(view.y, view.m + 1, 0).getDate();
@@ -43,6 +48,11 @@ export function Calendar({
 
   // 과거 비활성일 때만 현재 달 이전으로 이동 제한
   const canPrev = !disablePast || view.y > today.getFullYear() || view.m > today.getMonth();
+  // maxDate 설정 시 그 달 이후로는 다음 달 이동 제한
+  const canNext =
+    !maxD ||
+    view.y < maxD.getFullYear() ||
+    (view.y === maxD.getFullYear() && view.m < maxD.getMonth());
   function move(delta: number) {
     setView((v) => {
       const d = new Date(v.y, v.m + delta, 1);
@@ -68,8 +78,9 @@ export function Calendar({
         <button
           type="button"
           onClick={() => move(1)}
+          disabled={!canNext}
           aria-label="다음 달"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-line-soft"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-line-soft disabled:opacity-30"
         >
           ›
         </button>
@@ -93,8 +104,9 @@ export function Calendar({
           const dow = date.getDay();
           const dowOk = allowedDows ? allowedDows.includes(dow) : true;
           const isPast = date < today;
-          const disabled = !dowOk || (disablePast && isPast);
           const dstr = toIso(view.y, view.m, d);
+          const tooFar = maxDate ? dstr > maxDate : false;
+          const disabled = !dowOk || (disablePast && isPast) || tooFar;
           const selected = dstr === value;
 
           return (
