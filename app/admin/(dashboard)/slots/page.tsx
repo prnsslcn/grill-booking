@@ -1,8 +1,10 @@
 import { CloseDateButton } from '@/components/admin/CloseDateButton';
 import { GenerateSlotsForm } from '@/components/admin/GenerateSlotsForm';
+import { OpenDatesManager } from '@/components/admin/OpenDatesManager';
 import { SlotToggle } from '@/components/admin/SlotToggle';
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { listOpenDates } from '@/lib/admin/open-dates';
 import { listSlotsByDate } from '@/lib/admin/slots';
 import { formatDateKorean } from '@/lib/format';
 import { PARTS, type Part } from '@/types/domain';
@@ -15,7 +17,10 @@ export default async function AdminSlotsPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const { date = '' } = await searchParams;
-  const slots = date ? await listSlotsByDate(date) : [];
+  const [slots, openDates] = await Promise.all([
+    date ? listSlotsByDate(date) : Promise.resolve([]),
+    listOpenDates(),
+  ]);
 
   // 시설명 → 동 → 부 그리드
   const byFacility = new Map<string, Map<string, Record<number, (typeof slots)[number]>>>();
@@ -28,6 +33,17 @@ export default async function AdminSlotsPage({
 
   return (
     <div className="space-y-8">
+      <div>
+        <h1 className="text-xl font-bold text-ink">특정일 오픈 (성수기 등)</h1>
+        <p className="mt-1 text-sm text-muted">
+          평소엔 <strong>금·토만</strong> 운영합니다. 성수기 등 특정 날짜를 추가로 열려면 날짜를 등록하세요.
+          등록 즉시 해당일 슬롯이 생성되어, 예약 가능 기간(오늘부터 1개월) 이내면 고객이 예약할 수 있습니다.
+        </p>
+        <div className="mt-4">
+          <OpenDatesManager dates={openDates} />
+        </div>
+      </div>
+
       <div>
         <h1 className="text-xl font-bold text-ink">슬롯 미리 생성</h1>
         <p className="mt-1 text-sm text-muted">

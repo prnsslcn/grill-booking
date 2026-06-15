@@ -47,10 +47,10 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
   // 예약 가능 기간(오늘~1개월, KST) 밖이면 슬롯을 생성하지 않고 전부 unavailable로 노출(슬롯 id 미노출).
   const inWindow = isWithinBookingWindow(date);
 
-  // 지연 생성: 운영일(금=5·토=6) + 예약 가능 기간 내일 때만 조회 시 멱등 생성(중복은 건너뜀).
-  // → 스케줄러 없이 채우고, 새로 추가된 시설(예: 야외 테이블)도 기존 날짜에 backfill 된다.
-  const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
-  if ((dow === 5 || dow === 6) && inWindow) {
+  // 지연 생성: 예약 가능 기간 내면 조회 시 멱등 생성. 운영일 판정(금·토 ∪ open_dates)은
+  // generate_slots RPC가 수행하므로 운영일이 아니면 아무것도 생성되지 않는다(빈 INSERT).
+  // → 스케줄러 없이 채우고, 관리자 지정 오픈일·새 시설도 backfill 된다.
+  if (inWindow) {
     await supabase.rpc('generate_slots', { p_from: date, p_to: date });
   }
 

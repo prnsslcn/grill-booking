@@ -48,6 +48,32 @@ export async function adminCloseDate(date: string): Promise<void> {
   revalidatePath('/admin/slots');
 }
 
+/** 특정일 오픈(성수기 등) — 금·토 외 날짜를 운영일로 등록하고 슬롯 즉시 생성. */
+export async function adminAddOpenDate(date: string, note?: string): Promise<void> {
+  await requireAdmin();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('INVALID_DATE');
+  const supabase = createAdminClient();
+  await supabase.from('open_dates').upsert({ date, note: note?.trim() || null });
+  // 오픈일 등록 후 해당 날짜 슬롯 멱등 생성(이제 운영일로 인정됨)
+  await supabase.rpc('generate_slots', { p_from: date, p_to: date });
+  revalidatePath('/admin/slots');
+  revalidatePath('/booking');
+}
+
+/** 특정일 오픈 해제 — 등록 제거 + (평일이면) 미예약 슬롯 닫기(기존 예약은 유지). */
+export async function adminRemoveOpenDate(date: string): Promise<void> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const dow = new Date(`${date}T00:00:00Z`).getUTCDay();
+  // 금·토가 아닌 날짜만 슬롯 닫기(금·토는 기본 운영일이라 유지)
+  if (dow !== 5 && dow !== 6) {
+    await supabase.from('slots').update({ status: 'closed' }).eq('date', date).eq('status', 'open');
+  }
+  await supabase.from('open_dates').delete().eq('date', date);
+  revalidatePath('/admin/slots');
+  revalidatePath('/booking');
+}
+
 export async function adminUpdateFacility(
   type: FacilityType,
   patch: { pricePork?: number; priceBeef?: number; isActive?: boolean },

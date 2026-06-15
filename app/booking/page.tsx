@@ -69,6 +69,16 @@ function BookingFlow() {
   const [avail, setAvail] = useState<FacilityAvailability[]>([]);
   const [loadingAvail, setLoadingAvail] = useState(false);
   const [selected, setSelected] = useState<Selected | null>(null);
+  // 관리자 지정 오픈일(금·토 외 운영일) — 달력에서 선택 가능하게.
+  const [openDates, setOpenDates] = useState<string[]>([]);
+
+  // 지정 오픈일 로드(달력 선택 가능 날짜)
+  useEffect(() => {
+    fetch('/api/open-dates')
+      .then((r) => r.json())
+      .then((b: { dates?: string[] }) => setOpenDates(b.dates ?? []))
+      .catch(() => {});
+  }, []);
   const [meat, setMeat] = useState<Meat | ''>('');
   const [addonsCatalog, setAddonsCatalog] = useState<Addon[]>([]);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
@@ -146,16 +156,18 @@ function BookingFlow() {
             <div>
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
               <p className="mt-1 text-sm text-muted">
-                금·토만 운영합니다. 예약은 오늘부터 1개월 이내({maxBookable}까지) 날짜만 가능합니다.
+                금·토{openDates.length > 0 ? ' 및 지정 오픈일' : ''}에 운영합니다. 예약은 오늘부터
+                1개월 이내({maxBookable}까지) 날짜만 가능합니다.
               </p>
               <div className="mt-3">
                 <Calendar
                   value={date}
                   onSelect={selectDate}
                   allowedDows={[5, 6]}
+                  allowedDates={openDates}
                   disablePast
                   maxDate={maxBookable}
-                  hint={`금·토만 · ${maxBookable}까지 예약 가능합니다.`}
+                  hint={`금·토${openDates.length > 0 ? ' 및 지정 오픈일' : ''} · ${maxBookable}까지 예약 가능합니다.`}
                 />
               </div>
             </div>

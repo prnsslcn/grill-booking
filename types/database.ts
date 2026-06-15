@@ -58,6 +58,24 @@ export type Database = {
         }
         Relationships: []
       }
+      open_dates: {
+        Row: {
+          created_at: string
+          date: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       admins: {
         Row: {
           created_at: string
