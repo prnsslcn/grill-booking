@@ -86,6 +86,7 @@ export function MissionBricks() {
               세팅과 상추·양파·버섯·소시지·쌈장 등 기본 식재료, 한강라면·햇반·커피 쿠폰이 무료로
               제공됩니다.
             </p>
+            <p>현장에서는 물(수도)을 사용할 수 없는 점 참고 부탁드립니다.</p>
           </motion.div>
           <div className="mission-left_container">
             <Brick className="mission-right_block cc-vertical" anim={fromRight} />

@@ -14,9 +14,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: '알펜시아 BBQ — 대관령 프리미엄 야외 BBQ',
+  title: '알펜시아 BBQ — 대관령 프리미엄 BBQ',
   description:
-    '대관령 알펜시아 BBQ. 타프 텐트·카바나·야외 테이블에서 즐기는 고기세트 포함 프리미엄 야외 BBQ. 금·토 2부제 운영. 예약 문의 010-3045-2994.',
+    '대관령 알펜시아 BBQ. 타프 텐트·카바나·야외 테이블에서 즐기는 고기세트 포함 프리미엄 BBQ. 금·토 2부제 운영. 예약 문의 010-3045-2994.',
 };
 
 const PHONE = '010-3045-2994';
@@ -68,7 +68,7 @@ export default async function TempLanding() {
               Alpensia BBQ
             </h1>
             <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted">
-              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 야외 BBQ를 즐겨보세요.
+              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
             </p>
 
             {/* 공지 — 유선 예약 유도 */}

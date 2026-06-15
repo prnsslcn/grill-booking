@@ -68,7 +68,7 @@ export default async function Home() {
               Alpensia BBQ
             </h1>
             <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted">
-              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 야외 BBQ를 즐겨보세요.
+              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
             </p>
             {/* 가운데 그릴 이미지 */}
             <div className="mx-auto mt-12 flex max-w-xl justify-center">
