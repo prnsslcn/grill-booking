@@ -1,6 +1,6 @@
 import { CloseDateButton } from '@/components/admin/CloseDateButton';
 import { GenerateSlotsForm } from '@/components/admin/GenerateSlotsForm';
-import { OpenDatesManager } from '@/components/admin/OpenDatesManager';
+import { OpenDatesCalendar } from '@/components/admin/OpenDatesCalendar';
 import { SlotToggle } from '@/components/admin/SlotToggle';
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
@@ -40,7 +40,7 @@ export default async function AdminSlotsPage({
           등록 즉시 해당일 슬롯이 생성되어, 예약 가능 기간(오늘부터 1개월) 이내면 고객이 예약할 수 있습니다.
         </p>
         <div className="mt-4">
-          <OpenDatesManager dates={openDates} />
+          <OpenDatesCalendar openDates={openDates.map((o) => o.date)} />
         </div>
       </div>
 

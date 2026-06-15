@@ -53,9 +53,13 @@ export async function adminAddOpenDate(date: string, note?: string): Promise<voi
   await requireAdmin();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('INVALID_DATE');
   const supabase = createAdminClient();
-  await supabase.from('open_dates').upsert({ date, note: note?.trim() || null });
+  const { error: upErr } = await supabase
+    .from('open_dates')
+    .upsert({ date, note: note?.trim() || null });
+  if (upErr) throw new Error(`오픈일 저장 실패: ${upErr.message}`);
   // 오픈일 등록 후 해당 날짜 슬롯 멱등 생성(이제 운영일로 인정됨)
-  await supabase.rpc('generate_slots', { p_from: date, p_to: date });
+  const { error: genErr } = await supabase.rpc('generate_slots', { p_from: date, p_to: date });
+  if (genErr) throw new Error(`슬롯 생성 실패: ${genErr.message}`);
   revalidatePath('/admin/slots');
   revalidatePath('/booking');
 }
@@ -69,7 +73,8 @@ export async function adminRemoveOpenDate(date: string): Promise<void> {
   if (dow !== 5 && dow !== 6) {
     await supabase.from('slots').update({ status: 'closed' }).eq('date', date).eq('status', 'open');
   }
-  await supabase.from('open_dates').delete().eq('date', date);
+  const { error: delErr } = await supabase.from('open_dates').delete().eq('date', date);
+  if (delErr) throw new Error(`오픈일 해제 실패: ${delErr.message}`);
   revalidatePath('/admin/slots');
   revalidatePath('/booking');
 }
