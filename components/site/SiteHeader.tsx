@@ -66,8 +66,8 @@ export function SiteHeader({
 
   return (
     <>
-      {/* fixed 헤더 높이(pt-4 + h-24 = 7rem)만큼 레이아웃 자리 확보 */}
-      <div aria-hidden className="h-28" />
+      {/* fixed 헤더 높이(pt-4 + 바 높이)만큼 레이아웃 자리 확보. 모바일 h-16 → 5rem, sm+ h-24 → 7rem */}
+      <div aria-hidden className="h-20 sm:h-28" />
       {/* sticky 대신 fixed — Lenis(부드러운 스크롤)에서 sticky는 매 프레임 위치 보정으로 떨리므로 fixed 사용 */}
       <header className="fixed inset-x-0 top-0 z-40">
       <div className="relative mx-auto max-w-6xl px-4 pt-4">
@@ -87,22 +87,25 @@ export function SiteHeader({
         {/* 단일 pill — 모바일에서 메뉴가 열리면 이 pill 자체의 높이가 늘어난다.
             overflow는 visible(데스크탑 hover 드롭다운 비클리핑), 배경은 rounded로 자동 클립. */}
         <div
-          className={`absolute z-20 flex flex-col border px-6 transition-[top,left,right,border-radius,background-color,border-color,box-shadow] duration-300 sm:px-8 ${
+          className={`absolute z-20 flex flex-col border px-6 transition-all duration-500 ease-out sm:px-8 ${
+            // 모바일: Hero 워드마크가 뷰포트를 벗어날 때까지 nav 전체를 화면 위로 숨김. 데스크탑은 항상 노출.
+            wordmarkShown ? 'translate-y-0' : '-translate-y-32'
+          } md:translate-y-0 ${
             mobileOpen
-              ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-line bg-surface/80 shadow-[0_12px_36px_-18px_rgba(0,0,0,0.18)] backdrop-blur-xl md:inset-x-4 md:top-4 md:rounded-[1.5rem]'
+              ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-line bg-surface md:inset-x-4 md:top-4 md:rounded-[1.5rem] md:bg-surface/80 md:backdrop-blur-xl'
               : solid
-                ? 'inset-x-4 top-4 rounded-[1.5rem] border-white/40 bg-surface/70 shadow-[0_8px_26px_-16px_rgba(0,0,0,0.14)] backdrop-blur-xl'
-                : 'inset-x-4 top-4 rounded-[1.5rem] border-white/30 bg-surface/55 shadow-[0_8px_26px_-18px_rgba(0,0,0,0.1)] backdrop-blur-xl'
+                ? 'inset-x-3 top-3 rounded-[1.5rem] border-white/40 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/70 sm:backdrop-blur-xl'
+                : 'inset-x-3 top-3 rounded-[1.5rem] border-white/30 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/55 sm:backdrop-blur-xl'
           }`}
         >
-        {/* 바 행(항상 h-24 고정) */}
-        <div className="flex h-24 shrink-0 items-center">
+        {/* 바 행 (모바일 h-16, sm+ h-24) */}
+        <div className="flex h-16 shrink-0 items-center sm:h-24">
         {/* 좌: 로고 (heroWordmark 페이지에선 히어로 워드마크가 사라질 때 화면 위에서 슬라이드 인) */}
-        <div className="flex h-24 flex-1 items-center [clip-path:inset(0_-100vw)]">
+        <div className="flex h-16 flex-1 items-center [clip-path:inset(0_-100vw)] sm:h-24">
           <Link
             href="/"
             className={`flex h-full items-center whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-transform duration-[600ms] ease-out sm:text-5xl ${
-              wordmarkShown ? '' : '-translate-y-full'
+              wordmarkShown ? '' : 'md:-translate-y-full'
             }`}
           >
             Alpensia BBQ
