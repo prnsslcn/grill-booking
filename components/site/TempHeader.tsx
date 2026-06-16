@@ -33,7 +33,7 @@ export function TempHeader() {
         </span>
         <a
           href={TEL}
-          className="inline-flex items-center gap-1.5 rounded-2xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong sm:px-5"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-2xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong sm:px-5"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path

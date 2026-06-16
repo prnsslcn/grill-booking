@@ -64,7 +64,7 @@ export default async function TempLanding() {
           <div className="mx-auto max-w-5xl px-5 pb-10 pt-14 text-center sm:pt-20">
             <h1
               data-hero-wordmark
-              className="whitespace-nowrap font-display text-5xl tracking-wide text-wood sm:text-8xl"
+              className="whitespace-nowrap font-display text-[clamp(2rem,10vw,6rem)] tracking-wide text-wood"
             >
               Alpensia BBQ
             </h1>
