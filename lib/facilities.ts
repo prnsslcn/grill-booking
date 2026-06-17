@@ -89,6 +89,11 @@ export function facilityByType(type: string): FacilityContent | undefined {
   return FACILITIES.find((f) => f.type === type);
 }
 
+/** 준비 중(comingSoon) 시설 종류인지 — 예약 노출/생성 차단의 단일 기준. */
+export function isComingSoonType(type: string): boolean {
+  return FACILITIES.some((f) => f.type === type && f.comingSoon);
+}
+
 /** 1인 기준 고기 제공량(g) */
 export const GRAMS_PER_PERSON = 150;
 /** 세트당 고기 제공량 = 정원 × 1인 150g (4인 600g · 6인 900g · 8인 1200g) */

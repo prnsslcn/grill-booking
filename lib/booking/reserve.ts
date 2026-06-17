@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { toReservationError, ReservationError } from '@/lib/booking/errors';
+import { isComingSoonType } from '@/lib/facilities';
 import { isWithinBookingWindow } from '@/lib/policy/booking-window';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -38,11 +39,24 @@ export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
   // 예약 가능 기간(오늘~1개월, KST) 밖 날짜는 거부 — 클라이언트 우회 방지(서버 권위).
   const { data: slot } = await supabase
     .from('slots')
-    .select('date')
+    .select('date, facility_units(facility_id)')
     .eq('id', input.slotId)
     .maybeSingle();
   if (slot && !isWithinBookingWindow(slot.date)) {
     throw new ReservationError('SLOT_CLOSED', '예약 가능 기간(오늘부터 1개월)을 벗어난 날짜입니다.');
+  }
+
+  // 준비 중(comingSoon) 시설은 예약 거부 — UI를 우회해 slotId를 직접 보내도 서버에서 차단.
+  const facilityId = slot?.facility_units?.facility_id;
+  if (facilityId) {
+    const { data: fac } = await supabase
+      .from('facilities')
+      .select('type')
+      .eq('id', facilityId)
+      .maybeSingle();
+    if (fac && isComingSoonType(fac.type)) {
+      throw new ReservationError('SLOT_CLOSED', '현재 준비 중인 시설입니다.');
+    }
   }
 
   const { data, error } = await supabase.rpc('reserve_slot', {
