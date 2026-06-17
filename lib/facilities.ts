@@ -18,6 +18,8 @@ export interface FacilityContent {
   hero: string;
   /** 강조 텍스트 색 */
   accent: string;
+  /** 다른 시설 카드: 기본 무채색 → hover 시 채울 색 (Tailwind가 스캔하도록 literal hover: 클래스) */
+  heroHover: string;
   /** 갤러리 헤드라인을 한 줄로(기본은 공백 단위로 줄바꿈) */
   headlineOneLine?: boolean;
   /** 준비 중(임시) — 상세 대신 준비중 페이지(/soon)로 유도 */
@@ -41,6 +43,7 @@ export const FACILITIES: FacilityContent[] = [
     units: 8,
     hero: 'bg-[#23322d] text-white',
     accent: 'text-white',
+    heroHover: 'hover:border-transparent hover:bg-[#23322d] hover:text-white',
     headlineOneLine: true,
   },
   {
@@ -59,6 +62,7 @@ export const FACILITIES: FacilityContent[] = [
     units: 4,
     hero: 'bg-brand text-white',
     accent: 'text-white',
+    heroHover: 'hover:border-transparent hover:bg-brand hover:text-white',
   },
   {
     slug: 'outdoor-table',
@@ -76,6 +80,7 @@ export const FACILITIES: FacilityContent[] = [
     units: 10,
     hero: 'bg-brand-soft text-ink',
     accent: 'text-brand',
+    heroHover: 'hover:border-transparent hover:bg-brand-soft hover:text-ink',
     headlineOneLine: true,
     comingSoon: true,
   },

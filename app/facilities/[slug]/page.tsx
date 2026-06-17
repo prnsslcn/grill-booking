@@ -127,14 +127,14 @@ export default async function FacilityPage({
                 <Link
                   key={o.slug}
                   href={`/facilities/${o.slug}`}
-                  className={`group flex items-center justify-between rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 ${o.hero}`}
+                  className={`group flex items-center justify-between rounded-3xl border border-line bg-surface p-7 text-ink transition duration-300 hover:-translate-y-1.5 ${o.heroHover}`}
                 >
                   <div>
-                    <p className={`text-sm font-semibold ${o.accent} opacity-80`}>{o.tagline}</p>
+                    <p className="text-sm font-semibold opacity-70">{o.tagline}</p>
                     <h3 className="mt-1 text-2xl font-bold">{o.label}</h3>
                   </div>
                   <span
-                    className={`flex h-9 w-9 flex-none items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${o.accent}`}
+                    className="flex h-9 w-9 flex-none items-center justify-center opacity-80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
                       <path

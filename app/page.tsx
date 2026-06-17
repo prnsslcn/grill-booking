@@ -5,7 +5,7 @@ import { Reveal } from '@/components/ui/Reveal';
 import { MissionBricks } from '@/components/site/MissionBricks';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { facilityByType, meatGrams } from '@/lib/facilities';
+import { facilityByType, isComingSoonType, meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -93,6 +93,7 @@ export default async function Home() {
             <div className="mt-7 grid gap-4 sm:grid-cols-3">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
+                const soon = isComingSoonType(f.type);
                 return (
                   <Reveal
                     key={f.type}
@@ -128,19 +129,28 @@ export default async function Home() {
                       </p>
                     </div>
 
-                    <div className="mt-6 space-y-1.5">
-                      <div className="flex items-baseline justify-between">
-                        <span className={`text-sm ${s.muted}`}>Pork Set</span>
-                        <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
+                    {soon ? (
+                      <div className="mt-6">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3.5 py-1.5 text-sm font-bold text-brand-strong">
+                          오픈 준비 중
+                        </span>
+                        <p className={`mt-3 text-xs ${s.muted}`}>곧 만나보실 수 있습니다.</p>
                       </div>
-                      <div className="flex items-baseline justify-between">
-                        <span className={`text-sm ${s.muted}`}>Beef Set</span>
-                        <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
+                    ) : (
+                      <div className="mt-6 space-y-1.5">
+                        <div className="flex items-baseline justify-between">
+                          <span className={`text-sm ${s.muted}`}>Pork Set</span>
+                          <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
+                        </div>
+                        <div className="flex items-baseline justify-between">
+                          <span className={`text-sm ${s.muted}`}>Beef Set</span>
+                          <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
+                        </div>
+                        <p className={`pt-1 text-xs ${s.muted}`}>
+                          기준 {f.capacity}인 · 세트당 {meatGrams(f.capacity)}g · {f.total_units}동
+                        </p>
                       </div>
-                      <p className={`pt-1 text-xs ${s.muted}`}>
-                        기준 {f.capacity}인 · 세트당 {meatGrams(f.capacity)}g · {f.total_units}동
-                      </p>
-                    </div>
+                    )}
                   </Link>
                   </Reveal>
                 );
