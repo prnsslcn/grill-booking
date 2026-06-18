@@ -49,8 +49,7 @@ async function getFacilities() {
 }
 
 export default async function TempLanding() {
-  // 임시 랜딩에선 야외 테이블 숨김
-  const facilities = (await getFacilities()).filter((f) => f.type !== 'outdoor_table');
+  const facilities = await getFacilities();
   const addons = await getAddons(); // 고기 추가 옵션(booking 단계와 동일)
 
   return (

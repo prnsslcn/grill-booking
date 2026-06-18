@@ -82,7 +82,6 @@ export const FACILITIES: FacilityContent[] = [
     accent: 'text-brand',
     heroHover: 'hover:border-transparent hover:bg-brand-soft hover:text-ink',
     headlineOneLine: true,
-    comingSoon: true,
   },
 ];
 
