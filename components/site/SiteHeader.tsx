@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 
 import { FACILITIES } from '@/lib/facilities';
 
+// nav 상품 리스트는 정원(4·6·8인) 오름차순으로 노출
+const NAV_FACILITIES = [...FACILITIES].sort((a, b) => a.capacity - b.capacity);
+
 /**
  * 사이트 헤더. 3분할 레이아웃: 좌측 로고 · 중앙 메뉴(시설안내 드롭다운) · 우측 예약 CTA.
  * 데스크탑은 hover 드롭다운, 모바일은 햄버거 → 풀스크린 슬라이드 메뉴.
@@ -143,7 +146,7 @@ export function SiteHeader({
               }`}
             >
               <div className="rounded-2xl border border-line bg-surface p-2 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.15)]">
-                {FACILITIES.map((f) => (
+                {NAV_FACILITIES.map((f) => (
                   <Link
                     key={f.slug}
                     href={`/facilities/${f.slug}`}
@@ -216,7 +219,7 @@ export function SiteHeader({
                   <div className="pb-2">
                     <p className="px-3 pb-1 text-xs font-semibold text-subtle">시설안내</p>
                     <div className="space-y-0.5">
-                      {FACILITIES.map((f) => (
+                      {NAV_FACILITIES.map((f) => (
                         <Link
                           key={f.slug}
                           href={`/facilities/${f.slug}`}
