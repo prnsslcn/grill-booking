@@ -26,6 +26,7 @@ const DEFAULT_IMAGES = Array.from({ length: 9 }, () => '/images/grill.png');
 function CarouselCard({
   src,
   i,
+  total,
   x,
   direction,
   alt,
@@ -33,12 +34,20 @@ function CarouselCard({
 }: {
   src: string;
   i: number;
+  total: number;
   x: MotionValue<number>;
   direction: 'down' | 'up';
   alt: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>, i: number) => void;
 }) {
-  const stiffness = direction === 'down' ? 200 - i * 10 : 100 + i * 10;
+  // index 비율 기반 stiffness 그라디언트 → "신호 출발" lag (양방향 spread)
+  const stiffMax = 200;
+  const stiffMin = 100;
+  const span = Math.max(1, total - 1);
+  const stiffness =
+    direction === 'down'
+      ? stiffMax - (i / span) * (stiffMax - stiffMin)
+      : stiffMin + (i / span) * (stiffMax - stiffMin);
   const damping = 40;
   const cardX = useSpring(x, { stiffness, damping, mass: 1 });
   return (
@@ -61,8 +70,8 @@ function CarouselCard({
           src={src}
           alt={`${alt} ${i + 1}`}
           fill
-          sizes="(max-width: 768px) 280px, 480px"
-          quality={82}
+          sizes="(max-width: 768px) 240px, 373px"
+          quality={90}
           className="object-cover"
           draggable={false}
         />
@@ -224,10 +233,6 @@ export function FacilityGallery({
     return () => observer.disconnect();
   }, []);
 
-  // 2-row brick: even → top, odd → bottom (half-card offset)
-  const row1 = IMAGES.map((src, i) => ({ src, i })).filter(({ i }) => i % 2 === 0);
-  const row2 = IMAGES.map((src, i) => ({ src, i })).filter(({ i }) => i % 2 === 1);
-
   return (
     <section className="carousel-section">
       {/* Headline — 좌측에서 슬라이드 (headline=false면 생략) */}
@@ -261,32 +266,18 @@ export function FacilityGallery({
       <div ref={outerRef} style={{ height: outerHeight, position: 'relative' }}>
         <div ref={containerRef} className="carousel-container" data-layout="carousel">
           <div ref={trackRef} className="carousel-track">
-            <div className="carousel-track-row carousel-track-row--top">
-              {row1.map((c) => (
-                <CarouselCard
-                  key={c.i}
-                  src={c.src}
-                  i={c.i}
-                  x={x}
-                  direction={direction}
-                  alt={name}
-                  onClick={handleCardClick}
-                />
-              ))}
-            </div>
-            <div className="carousel-track-row carousel-track-row--bottom">
-              {row2.map((c) => (
-                <CarouselCard
-                  key={c.i}
-                  src={c.src}
-                  i={c.i}
-                  x={x}
-                  direction={direction}
-                  alt={name}
-                  onClick={handleCardClick}
-                />
-              ))}
-            </div>
+            {IMAGES.map((src, i) => (
+              <CarouselCard
+                key={i}
+                src={src}
+                i={i}
+                total={IMAGES.length}
+                x={x}
+                direction={direction}
+                alt={name}
+                onClick={handleCardClick}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -297,7 +288,7 @@ export function FacilityGallery({
           <>
             <motion.div
               key="genie-bg"
-              className="fixed inset-0 z-[400] cursor-zoom-out bg-black/85 backdrop-blur-md"
+              className="cursor-close-x fixed inset-0 z-[400] bg-white"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -341,31 +332,6 @@ export function FacilityGallery({
                 draggable={false}
               />
             </motion.div>
-            <motion.button
-              key="genie-close"
-              type="button"
-              className="fixed right-6 top-6 z-[402] flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.25 }}
-              onClick={() => setOpenState(null)}
-              aria-label="닫기"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
-            </motion.button>
-            <motion.p
-              key="genie-count"
-              className="fixed bottom-6 left-1/2 z-[402] -translate-x-1/2 font-mono text-[11px] tracking-[.25em] text-white/50 tabular-nums"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-            >
-              {String(openState.index + 1).padStart(2, '0')} / {String(IMAGES.length).padStart(2, '0')}
-            </motion.p>
           </>
         )}
       </AnimatePresence>

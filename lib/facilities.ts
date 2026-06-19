@@ -20,6 +20,8 @@ export interface FacilityContent {
   accent: string;
   /** 다른 시설 카드: 기본 무채색 → hover 시 채울 색 (Tailwind가 스캔하도록 literal hover: 클래스) */
   heroHover: string;
+  /** 상세 페이지 갤러리 사진(4:3). 없으면 기본 플레이스홀더 사용 */
+  images?: string[];
   /** 갤러리 헤드라인을 한 줄로(기본은 공백 단위로 줄바꿈) */
   headlineOneLine?: boolean;
   /** 준비 중(임시) — 상세 대신 준비중 페이지(/soon)로 유도 */
@@ -44,6 +46,14 @@ export const FACILITIES: FacilityContent[] = [
     hero: 'bg-[#23322d] text-white',
     accent: 'text-white',
     heroHover: 'hover:border-transparent hover:bg-[#23322d] hover:text-white',
+    images: [
+      '/images/facilities/tarp-tent/1.jpg',
+      '/images/facilities/tarp-tent/2.jpg',
+      '/images/facilities/tarp-tent/3.jpg',
+      '/images/facilities/tarp-tent/4.jpg',
+      '/images/facilities/tarp-tent/5.jpg',
+      '/images/facilities/tarp-tent/6.jpg',
+    ],
     headlineOneLine: true,
   },
   {
@@ -63,6 +73,14 @@ export const FACILITIES: FacilityContent[] = [
     hero: 'bg-brand text-white',
     accent: 'text-white',
     heroHover: 'hover:border-transparent hover:bg-brand hover:text-white',
+    images: [
+      '/images/facilities/cabana/1.jpg',
+      '/images/facilities/cabana/2.jpg',
+      '/images/facilities/cabana/3.jpg',
+      '/images/facilities/cabana/4.jpg',
+      '/images/facilities/cabana/5.jpg',
+      '/images/facilities/cabana/6.jpg',
+    ],
   },
   {
     slug: 'outdoor-table',

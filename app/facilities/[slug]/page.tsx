@@ -59,7 +59,7 @@ export default async function FacilityPage({
 
       <main className="flex-1">
         {/* 헤드라인 + 가로 스크롤 이미지 갤러리 (홈 히어로 설명 블록 대체) */}
-        <FacilityGallery name={f.label} tagline={f.intro} oneLine={f.headlineOneLine} />
+        <FacilityGallery name={f.label} tagline={f.intro} oneLine={f.headlineOneLine} images={f.images} />
 
         {/* 특징 */}
         <section className="bg-surface py-16">

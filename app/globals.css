@@ -138,41 +138,28 @@ h1, h2, h3, h4 {
   padding: 0 1rem;
 }
 
-/* Sticky 수평 스크롤 — outer(vertical) → container(sticky) → track(2-row grid) */
+/* Sticky 수평 스크롤 — outer(vertical) → container(sticky) → track(단일 row) */
 .carousel-container {
-  --card-width: 480;
-  --card-height: 280;
+  /* 단일 가로 row. 사진과 동일한 4:3 (720×540) — object-cover 여도 잘림 없이 전체가 보인다 */
+  --card-width: 720;
+  --card-height: 540;
   --card-gap: 24;
-  --card-row-gap: 24;
   position: sticky;
   top: 0;
   z-index: 1;
   height: 100vh;
   overflow: hidden;
   display: flex;
-  /* 카드는 세로 중앙(aftc 원본 스크롤 높이). 진입 시엔 JS rise 오프셋으로 헤드라인 아래에 위치. */
+  /* 카드는 세로 중앙 정렬, 단일 가로 row */
   align-items: center;
 }
 .carousel-track {
   display: flex;
-  flex-direction: column;
-  row-gap: calc(var(--card-row-gap) * 1px);
+  gap: calc(var(--card-gap) * 1px);
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
   width: max-content;
   will-change: transform;
-}
-.carousel-track-row {
-  display: flex;
-  gap: calc(var(--card-gap) * 1px);
-}
-.carousel-track-row--top {
-  padding-left: calc(50vw - calc(var(--card-width) * 0.5px));
-  padding-right: calc(50vw - calc(var(--card-width) * 0.5px));
-}
-.carousel-track-row--bottom {
-  padding-left: calc(
-    50vw - calc(var(--card-width) * 0.5px) +
-    calc((var(--card-width) + var(--card-gap)) * 0.5px)
-  );
 }
 .carousel-card {
   flex: 0 0 calc(var(--card-width) * 1px);
@@ -236,10 +223,10 @@ h1, h2, h3, h4 {
 }
 @media (max-width: 768px) {
   .carousel-container {
-    --card-width: 280;
-    --card-height: 180;
+    /* 모바일 단일 row 4:3 (360×270) */
+    --card-width: 360;
+    --card-height: 270;
     --card-gap: 16;
-    --card-row-gap: 16;
   }
   .carousel-tagline { margin-top: 24px; }
 }
@@ -401,4 +388,9 @@ h1, h2, h3, h4 {
   .mission-left_container { gap: 4px; max-width: 30px; }
   .mission-text_container { border-radius: 4.5px; padding: 24px 20px; font-size: 14px; }
   .why-text_container { border-radius: 4.5px; padding: 20px; font-size: 14px; }
+}
+
+/* 이미지 확대(genie) 배경 — 마우스가 이미지를 벗어나면 X 커서(닫기) */
+.cursor-close-x {
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='28'%20height='28'%20viewBox='0%200%2028%2028'%3E%3Ccircle%20cx='14'%20cy='14'%20r='13'%20fill='%23191f28'%20fill-opacity='.08'/%3E%3Cpath%20d='M9.5%209.5l9%209M18.5%209.5l-9%209'%20stroke='%23191f28'%20stroke-width='1.8'%20stroke-linecap='round'/%3E%3C/svg%3E") 14 14, auto;
 }
