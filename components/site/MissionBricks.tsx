@@ -134,7 +134,10 @@ export function MissionBricks() {
               이용 2일 전까지 100% 환불, 1일 전 50% 환불됩니다. 이용 당일·노쇼는 환불이 불가하며,
               우천 시 야외 테이블은 운영이 제한될 수 있습니다.
             </p>
-            <p>예약·문의 및 단체 BBQ(최대 200명)는 010-3045-2994 (11:00~19:00)로 연락 주세요.</p>
+            <p>
+              예약·문의 및 단체 BBQ(최대 200명)는 010-3045-2994 (11:00~19:00)로 연락 주세요.
+              단체 예약은 최소 일주일 전에 문의 부탁드립니다.
+            </p>
           </motion.div>
           <div className="mission-left_container">
             <Brick className="mission-right_block cc-vertical" anim={fromRight} />
