@@ -90,10 +90,7 @@ export function SiteHeader({
         {/* 단일 pill — 모바일에서 메뉴가 열리면 이 pill 자체의 높이가 늘어난다.
             overflow는 visible(데스크탑 hover 드롭다운 비클리핑), 배경은 rounded로 자동 클립. */}
         <div
-          className={`absolute z-20 flex flex-col border px-6 transition-all duration-500 ease-out sm:px-8 ${
-            // 모바일: Hero 워드마크가 뷰포트를 벗어날 때까지 nav 전체를 화면 위로 숨김. 데스크탑은 항상 노출.
-            wordmarkShown ? 'translate-y-0' : '-translate-y-32'
-          } md:translate-y-0 ${
+          className={`nav-drop-in absolute z-20 flex flex-col border px-6 transition-all duration-500 ease-out sm:px-8 ${
             mobileOpen
               ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface md:inset-x-4 md:top-4 md:rounded-[1.5rem] md:border-line md:bg-surface/80 md:backdrop-blur-xl'
               : solid
@@ -108,7 +105,7 @@ export function SiteHeader({
           <Link
             href="/"
             className={`flex h-full items-center whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-transform duration-[600ms] ease-out sm:text-5xl ${
-              wordmarkShown ? '' : 'md:-translate-y-full'
+              wordmarkShown ? '' : '-translate-y-full'
             }`}
           >
             Alpensia BBQ
