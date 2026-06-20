@@ -5,6 +5,7 @@ import { Reveal } from '@/components/ui/Reveal';
 import { MissionBricks } from '@/components/site/MissionBricks';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
+import { NoticePopup } from '@/components/site/NoticePopup';
 import { facilityByType, isComingSoonType, meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -52,6 +53,8 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
+      {/* 홈페이지 준비 중 안내 팝업 — 정식 오픈 시 이 한 줄만 제거하면 철회됨 */}
+      <NoticePopup />
       <SiteHeader heroWordmark />
 
       <main className="flex-1">
