@@ -161,6 +161,11 @@ h1, h2, h3, h4 {
   width: max-content;
   will-change: transform;
 }
+/* 헤드라인 없는 갤러리(예: /phone) — 카드를 중앙 대신 위쪽에 배치 */
+.carousel-container--top {
+  align-items: flex-start;
+  padding-top: clamp(40px, 12vh, 130px);
+}
 .carousel-card {
   flex: 0 0 calc(var(--card-width) * 1px);
   width: calc(var(--card-width) * 1px);

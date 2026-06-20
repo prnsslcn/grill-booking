@@ -86,12 +86,15 @@ export function FacilityGallery({
   oneLine = false,
   images,
   headline = true,
+  cardsTop = false,
 }: {
   name: string;
   tagline?: string;
   oneLine?: boolean;
   images?: string[];
   headline?: boolean;
+  /** 카드를 100vh 컨테이너 중앙이 아니라 위쪽에 배치(헤드라인 없는 갤러리용) */
+  cardsTop?: boolean;
 }) {
   const IMAGES = images ?? DEFAULT_IMAGES;
   const outerRef = useRef<HTMLDivElement>(null);
@@ -264,7 +267,11 @@ export function FacilityGallery({
 
       {/* Sticky horizontal scroll */}
       <div ref={outerRef} style={{ height: outerHeight, position: 'relative' }}>
-        <div ref={containerRef} className="carousel-container" data-layout="carousel">
+        <div
+          ref={containerRef}
+          className={`carousel-container${cardsTop ? ' carousel-container--top' : ''}`}
+          data-layout="carousel"
+        >
           <div ref={trackRef} className="carousel-track">
             {IMAGES.map((src, i) => (
               <CarouselCard

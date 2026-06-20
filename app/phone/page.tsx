@@ -22,8 +22,15 @@ export const metadata: Metadata = {
 
 const PHONE = '010-3045-2994';
 const TEL = 'tel:01030452994';
-// 홈 중앙 grill.png 대체 — 시설 실사 4장 (타프 t1·t2 / 카바나 c1·c2).
-const GALLERY = ['/images/t1.jpg', '/images/t2.jpg', '/images/c1.jpg', '/images/c2.jpg'];
+// 현장 미리보기 — /phone 전용 실사 6장.
+const GALLERY = [
+  '/images/phone/1.jpg',
+  '/images/phone/2.jpg',
+  '/images/phone/3.jpg',
+  '/images/phone/4.jpg',
+  '/images/phone/5.jpg',
+  '/images/phone/6.jpg',
+];
 
 const FACILITY_DESC: Record<string, string> = {
   tarp_tent: '오픈형 타프 텐트에서 즐기는 숯불 바비큐',
@@ -90,8 +97,8 @@ export default async function TempLanding() {
           </div>
         </section>
 
-        {/* 시설 사진 카루셀 — 홈 중앙 grill.png 대체 (실사 4장) */}
-        <FacilityGallery name="알펜시아 BBQ 시설" headline={false} images={GALLERY} />
+        {/* 현장 미리보기 — 실사 6장 (카드 위치 위로) */}
+        <FacilityGallery name="알펜시아 BBQ 시설" headline={false} images={GALLERY} cardsTop />
 
         {/* 시설 안내 — 정보 카드(예약 링크 없음) */}
         <section className="overflow-hidden bg-surface py-16">
