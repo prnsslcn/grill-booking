@@ -23,6 +23,7 @@ export function Calendar({
   allowedDates,
   closedDates,
   disablePast = false,
+  minDate,
   maxDate,
   hint,
 }: {
@@ -34,6 +35,8 @@ export function Calendar({
   /** 운영일이라도 선택 불가 처리할 날짜(YYYY-MM-DD). 예: 관리자 휴무 처리일. */
   closedDates?: string[];
   disablePast?: boolean;
+  /** 선택 가능한 가장 이른 날짜(YYYY-MM-DD). 이전 날짜 비활성. 예: 당일 마감 시 내일부터. */
+  minDate?: string;
   /** 선택 가능한 마지막 날짜(YYYY-MM-DD). 이후 날짜·달 이동 비활성. */
   maxDate?: string;
   hint?: string;
@@ -115,8 +118,9 @@ export function Calendar({
             (allowedDates?.includes(dstr) ?? false);
           const isClosed = closedDates?.includes(dstr) ?? false;
           const isPast = date < today;
+          const tooSoon = minDate ? dstr < minDate : false;
           const tooFar = maxDate ? dstr > maxDate : false;
-          const disabled = !dayOk || isClosed || (disablePast && isPast) || tooFar;
+          const disabled = !dayOk || isClosed || (disablePast && isPast) || tooSoon || tooFar;
           const selected = dstr === value;
 
           return (

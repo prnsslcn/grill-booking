@@ -43,7 +43,10 @@ export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
     .eq('id', input.slotId)
     .maybeSingle();
   if (slot && !isWithinBookingWindow(slot.date)) {
-    throw new ReservationError('SLOT_CLOSED', '예약 가능 기간(오늘부터 1개월)을 벗어난 날짜입니다.');
+    throw new ReservationError(
+      'SLOT_CLOSED',
+      '예약 가능 시간이 지났거나(당일 15:00 마감) 예약 가능 기간을 벗어났습니다.',
+    );
   }
 
   // 준비 중(comingSoon) 시설은 예약 거부 — UI를 우회해 slotId를 직접 보내도 서버에서 차단.

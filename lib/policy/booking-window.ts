@@ -14,6 +14,9 @@ const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 /** 예약 가능 기간(개월). 정책 변경 시 이 값만 수정. */
 export const BOOKING_WINDOW_MONTHS = 1;
 
+/** 당일 예약 마감 시각(KST, 시). 이 시각 이후엔 당일(1·2부 모두) 예약 불가. 정책 변경 시 이 값만 수정. */
+export const SAME_DAY_CUTOFF_HOUR = 15;
+
 function toKst(now: Date): Date {
   return new Date(now.getTime() + KST_OFFSET_MS);
 }
@@ -34,7 +37,25 @@ export function bookingMaxDate(now: Date = new Date()): string {
   return iso(d);
 }
 
-/** date(YYYY-MM-DD)가 예약 가능 기간 내인지: 오늘 ≤ date ≤ 최대일. */
+/** 당일 예약 마감(KST 15:00) 지났는지. */
+export function isSameDayCutoffPassed(now: Date = new Date()): boolean {
+  return toKst(now).getUTCHours() >= SAME_DAY_CUTOFF_HOUR;
+}
+
+/**
+ * date(YYYY-MM-DD)가 예약 가능한지: 오늘 ≤ date ≤ 최대일.
+ * 단, 당일(date == 오늘)은 KST 15:00 이전까지만 가능(1·2부 모두 동일 마감).
+ */
 export function isWithinBookingWindow(date: string, now: Date = new Date()): boolean {
-  return date >= kstToday(now) && date <= bookingMaxDate(now);
+  const today = kstToday(now);
+  if (date < today || date > bookingMaxDate(now)) return false;
+  if (date === today && isSameDayCutoffPassed(now)) return false; // 당일 15:00 이후 마감
+  return true;
+}
+
+/** 캘린더에서 선택 가능한 가장 이른 날짜(YYYY-MM-DD). 당일 마감이면 내일. */
+export function firstBookableDate(now: Date = new Date()): string {
+  const d = toKst(now);
+  if (isSameDayCutoffPassed(now)) d.setUTCDate(d.getUTCDate() + 1);
+  return iso(d);
 }
