@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { adminCreateBooking } from '@/lib/admin/actions';
 import { BEEF_ENABLED } from '@/lib/config';
+import { formatPhone } from '@/lib/format';
 
 interface FacilityOpt {
   type: string;
@@ -109,7 +110,13 @@ export function OfflineBookingForm({
         </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-ink">연락처</span>
-          <input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} className={inputCls} placeholder="010-0000-0000" />
+          <input
+            value={guestPhone}
+            onChange={(e) => setGuestPhone(formatPhone(e.target.value))}
+            className={inputCls}
+            placeholder="010-0000-0000"
+            inputMode="numeric"
+          />
         </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-ink">인원</span>

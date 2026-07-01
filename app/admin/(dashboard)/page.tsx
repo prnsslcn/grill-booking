@@ -47,7 +47,7 @@ function SearchForm({ defaultValue = '' }: { defaultValue?: string }) {
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ y?: string; m?: string; part?: string; date?: string; q?: string }>;
+  searchParams: Promise<{ y?: string; m?: string; date?: string; dp?: string; q?: string }>;
 }) {
   const sp = await searchParams;
   const q = (sp.q ?? '').trim();
@@ -96,11 +96,12 @@ export default async function AdminDashboard({
   const now = new Date();
   const y = Number(sp.y) || now.getFullYear();
   const m = Number(sp.m) || now.getMonth() + 1; // 1-based
-  const part = sp.part === '2' ? 2 : 1;
   const date = sp.date ?? '';
+  const dp = sp.dp === '1' || sp.dp === '2' ? sp.dp : ''; // 상세 예약목록 부 필터('' = 전체)
 
   const board = await getMonthBoard(y, m - 1);
   const dateBookings = date ? await listBookings({ date }) : [];
+  const shownBookings = dp ? dateBookings.filter((b) => String(b.part) === dp) : dateBookings;
   const addons = date ? await getAddons() : [];
 
   const firstDow = new Date(y, m - 1, 1).getDay();
@@ -121,9 +122,9 @@ export default async function AdminDashboard({
 
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
-  const navHref = (yy: number, mm: number) => `/admin?y=${yy}&m=${mm}&part=${part}`;
-  const partHref = (p: number) => `/admin?y=${y}&m=${m}&part=${p}${date ? `&date=${date}` : ''}`;
-  const cellHref = (d: number) => `/admin?y=${y}&m=${m}&part=${part}&date=${iso(d)}`;
+  const navHref = (yy: number, mm: number) => `/admin?y=${yy}&m=${mm}`;
+  const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
+  const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
 
   return (
     <div>
@@ -158,19 +159,6 @@ export default async function AdminDashboard({
             ›
           </Link>
         </div>
-        <div className="inline-flex overflow-hidden rounded-lg border border-line text-sm">
-          {[1, 2].map((p) => (
-            <Link
-              key={p}
-              href={partHref(p)}
-              className={`px-4 py-2 font-medium ${
-                part === p ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
-              }`}
-            >
-              {PARTS[p as 1 | 2].label}
-            </Link>
-          ))}
-        </div>
       </div>
 
       {/* 캘린더 */}
@@ -191,13 +179,12 @@ export default async function AdminDashboard({
           const ds = iso(d);
           const operating = isOperating(d, dow);
           const selected = ds === date;
-          const dayCounts = board.counts[ds]?.[part] ?? {};
 
           return (
             <Link
               key={ds}
               href={cellHref(d)}
-              className={`flex min-h-[92px] flex-col rounded-xl border p-2 transition-colors ${
+              className={`flex min-h-[200px] flex-col rounded-xl border p-2.5 transition-colors ${
                 selected
                   ? 'border-accent bg-accent-soft'
                   : operating
@@ -206,34 +193,39 @@ export default async function AdminDashboard({
               }`}
             >
               <span
-                className={`text-sm font-semibold ${
+                className={`text-base font-bold ${
                   operating ? 'text-ink' : 'text-subtle/50'
                 }`}
               >
                 {d}
               </span>
               {operating && (
-                <div className="mt-1 space-y-0.5">
-                  {board.facilities.map((f) => {
-                    const booked = dayCounts[f.type] ?? 0;
-                    const full = booked >= f.totalUnits;
-                    return (
-                      <div key={f.type} className="flex items-center justify-between text-[11px] leading-tight">
-                        <span className="text-subtle">{SHORT[f.type] ?? f.name}</span>
-                        <span
-                          className={
-                            full
-                              ? 'font-bold text-danger'
-                              : booked > 0
-                                ? 'font-semibold text-accent-strong'
-                                : 'text-subtle/60'
-                          }
-                        >
-                          {booked}/{f.totalUnits}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="mt-1.5 space-y-1.5 text-xs leading-snug">
+                  {([1, 2] as const).map((p, idx) => (
+                    <div key={p} className={idx === 1 ? 'border-t border-line pt-1.5' : ''}>
+                      <span className="mb-0.5 block font-semibold text-subtle">{p}부</span>
+                      {board.facilities.map((f) => {
+                        const booked = board.counts[ds]?.[p]?.[f.type] ?? 0;
+                        const full = booked >= f.totalUnits;
+                        return (
+                          <div key={f.type} className="flex items-center justify-between">
+                            <span className="text-subtle">{SHORT[f.type] ?? f.name}</span>
+                            <span
+                              className={
+                                full
+                                  ? 'font-bold text-danger'
+                                  : booked > 0
+                                    ? 'font-semibold text-accent-strong'
+                                    : 'text-subtle/60'
+                              }
+                            >
+                              {booked}/{f.totalUnits}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
               )}
             </Link>
@@ -248,33 +240,60 @@ export default async function AdminDashboard({
           <div>
             <h2 className="text-lg font-bold text-ink">{formatDateKorean(date)}</h2>
 
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {[1, 2].map((p) => (
-                <Card key={p} className="p-4">
-                  <p className="text-sm font-semibold text-ink">{PARTS[p as 1 | 2].label}</p>
-                  <div className="mt-2 space-y-1">
-                    {board.facilities.map((f) => {
-                      const booked = board.counts[date]?.[p]?.[f.type] ?? 0;
-                      return (
-                        <div key={f.type} className="flex justify-between text-sm">
-                          <span className="text-muted">{f.name}</span>
-                          <span className="font-medium text-ink">
-                            {booked}/{f.totalUnits}
-                            <span className="ml-1 text-xs text-subtle">
-                              (잔여 {f.totalUnits - booked})
-                            </span>
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              ))}
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-ink">
+                부별 현황 <span className="font-normal text-subtle">· 탭 클릭 시 해당 부만</span>
+              </span>
+              <Link
+                href={dpHref('')}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  !dp ? 'bg-accent text-white' : 'border border-line text-muted hover:bg-line-soft'
+                }`}
+              >
+                전체보기
+              </Link>
             </div>
 
-            <h3 className="mt-6 text-sm font-bold text-ink">예약 목록 ({dateBookings.length})</h3>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              {([1, 2] as const).map((p) => {
+                const active = dp === String(p);
+                return (
+                  <Link
+                    key={p}
+                    href={dpHref(String(p))}
+                    className={`rounded-2xl border p-4 transition-colors ${
+                      active
+                        ? 'border-accent bg-accent-soft ring-1 ring-accent'
+                        : 'border-line bg-surface hover:border-accent/40'
+                    }`}
+                  >
+                    <p className="text-sm font-semibold text-ink">{PARTS[p].label}</p>
+                    <div className="mt-2 space-y-1">
+                      {board.facilities.map((f) => {
+                        const booked = board.counts[date]?.[p]?.[f.type] ?? 0;
+                        return (
+                          <div key={f.type} className="flex justify-between text-sm">
+                            <span className="text-muted">{f.name}</span>
+                            <span className="font-medium text-ink">
+                              {booked}/{f.totalUnits}
+                              <span className="ml-1 text-xs text-subtle">
+                                (잔여 {f.totalUnits - booked})
+                              </span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <h3 className="mt-6 text-sm font-bold text-ink">
+              예약 목록{dp ? ` · ${PARTS[Number(dp) as 1 | 2].label}` : ' · 전체'} ({shownBookings.length})
+            </h3>
             <div className="mt-2 space-y-2">
-              {dateBookings.map((b) => {
+              {shownBookings.map((b) => {
                 const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
                 const offline = b.source === 'offline';
                 return (
@@ -300,8 +319,10 @@ export default async function AdminDashboard({
                   </Card>
                 );
               })}
-              {dateBookings.length === 0 && (
-                <p className="py-6 text-center text-sm text-subtle">이 날짜의 예약이 없습니다.</p>
+              {shownBookings.length === 0 && (
+                <p className="py-6 text-center text-sm text-subtle">
+                  {dp ? '해당 부의 예약이 없습니다.' : '이 날짜의 예약이 없습니다.'}
+                </p>
               )}
             </div>
           </div>
@@ -316,7 +337,7 @@ export default async function AdminDashboard({
               <div className="mt-4">
                 <OfflineBookingForm
                   date={date}
-                  defaultPart={part}
+                  defaultPart={1}
                   facilities={board.facilities.map((f) => ({
                     type: f.type,
                     name: f.name,
