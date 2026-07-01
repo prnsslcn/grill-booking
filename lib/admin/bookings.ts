@@ -4,8 +4,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import type { Part } from '@/types/domain';
 
 export interface AdminBooking {
+  id: string;
   bookingNumber: string;
   status: string;
+  source: string;
   guestName: string;
   guestPhone: string;
   guestCount: number;
@@ -122,7 +124,7 @@ export async function listBookings(filter: {
   let query = supabase
     .from('bookings')
     .select(
-      'booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, slots(date, part)',
+      'id, booking_number, status, source, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, slots(date, part)',
     )
     .order('created_at', { ascending: false })
     .limit(200);
@@ -144,8 +146,10 @@ export async function listBookings(filter: {
   return rows.map((r) => {
     const snapshot = (r.facility_snapshot ?? {}) as SnapshotShape;
     return {
+      id: r.id,
       bookingNumber: r.booking_number,
       status: r.status,
+      source: r.source,
       guestName: r.guest_name,
       guestPhone: r.guest_phone,
       guestCount: r.guest_count,

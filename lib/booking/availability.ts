@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { BEEF_ENABLED, isBeefAddonKey } from '@/lib/config';
 import { isComingSoonType } from '@/lib/facilities';
 import { isWithinBookingWindow } from '@/lib/policy/booking-window';
 import type { FacilityType, Part } from '@/types/domain';
@@ -39,7 +40,9 @@ export async function getAddons(): Promise<Addon[]> {
     .select('key, label, price')
     .eq('is_active', true)
     .order('sort', { ascending: true });
-  return data ?? [];
+  const list = data ?? [];
+  // 소 세트 비활성화 시 소고기 추가옵션(beef_*)도 숨김
+  return BEEF_ENABLED ? list : list.filter((a) => !isBeefAddonKey(a.key));
 }
 
 export async function getAvailability(date: string): Promise<FacilityAvailability[]> {

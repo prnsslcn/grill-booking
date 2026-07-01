@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { requireAdmin } from '@/lib/admin/auth';
 import { refundBooking } from '@/lib/booking/refund';
+import { BEEF_ENABLED, isBeefAddonKey } from '@/lib/config';
 import { generateSlots } from '@/lib/booking/slots';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { FacilityType } from '@/types/domain';
@@ -12,6 +13,65 @@ import type { FacilityType } from '@/types/domain';
  * 관리자 운영 액션. 각 액션은 requireAdmin()으로 호출자를 검증한 뒤
  * 서비스롤(admin 클라이언트)/기존 도메인 로직으로 실행한다.
  */
+
+/** 유선(오프라인) 예약 직접 등록 — 슬롯 점유해 온라인 가용성에서 자동 제외. */
+export async function adminCreateBooking(input: {
+  facilityType: string;
+  date: string;
+  part: number;
+  guestName: string;
+  guestPhone: string;
+  guestCount: number;
+  meat?: 'pork' | 'beef';
+  note?: string;
+  addons?: Record<string, number>;
+}): Promise<void> {
+  await requireAdmin();
+  if (input.meat === 'beef' && !BEEF_ENABLED) {
+    throw new Error('소 세트는 현재 판매하지 않습니다.');
+  }
+  const addons = input.addons ?? {};
+  const cleanAddons = BEEF_ENABLED
+    ? addons
+    : Object.fromEntries(Object.entries(addons).filter(([k]) => !isBeefAddonKey(k)));
+  const supabase = createAdminClient();
+  const { error } = await supabase.rpc('admin_create_booking', {
+    p_facility_type: input.facilityType,
+    p_date: input.date,
+    p_part: input.part,
+    p_guest_name: input.guestName.trim(),
+    p_guest_phone: input.guestPhone.trim(),
+    p_guest_count: input.guestCount,
+    p_meat: input.meat ?? 'pork',
+    p_note: input.note?.trim() || undefined,
+    p_addons: cleanAddons,
+  });
+  if (error) {
+    const m = error.message;
+    const friendly = m.includes('NO_UNIT_AVAILABLE')
+      ? '선택한 시간대에 예약 가능한 동이 없습니다 (운영일·잔여 확인).'
+      : m.includes('NAME_REQUIRED')
+        ? '예약자명을 입력하세요.'
+        : m.includes('INVALID_ADDON')
+          ? '유효하지 않은 추가 옵션입니다.'
+          : m.includes('FACILITY_NOT_FOUND')
+            ? '시설을 찾을 수 없습니다.'
+            : `예약 추가 실패: ${m}`;
+    throw new Error(friendly);
+  }
+  revalidatePath('/admin');
+  revalidatePath('/booking');
+}
+
+/** 오프라인 예약 취소(오등록 정정) — 슬롯 open 복구. */
+export async function adminCancelOfflineBooking(bookingId: string): Promise<void> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase.rpc('admin_cancel_offline_booking', { p_booking_id: bookingId });
+  if (error) throw new Error(`취소 실패: ${error.message}`);
+  revalidatePath('/admin');
+  revalidatePath('/booking');
+}
 
 export async function adminCancelRefund(bookingNumber: string): Promise<void> {
   await requireAdmin();

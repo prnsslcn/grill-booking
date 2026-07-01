@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { BEEF_ENABLED } from '@/lib/config';
+
 type Faq = { q: string; a: string[] };
 
 const FAQS: Faq[] = [
@@ -25,9 +27,9 @@ const FAQS: Faq[] = [
   {
     q: '고기 세트는 어떻게 구성되나요?',
     a: [
-      '모든 상품에 고기세트(Pork Set / Beef Set)가 포함됩니다.',
+      `모든 상품에 고기세트(${BEEF_ENABLED ? 'Pork Set / Beef Set' : 'Pork Set'})가 포함됩니다.`,
       '고기는 정원 기준 1인 150g — 4인 600g · 6인 900g · 8인 1200g으로 제공됩니다.',
-      '세트는 예약 시 선택하며, 가격은 시설별로 다릅니다.',
+      BEEF_ENABLED ? '세트는 예약 시 선택하며, 가격은 시설별로 다릅니다.' : '가격은 시설별로 다릅니다.',
     ],
   },
   {

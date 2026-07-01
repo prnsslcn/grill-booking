@@ -1,14 +1,23 @@
 import Link from 'next/link';
 
-import { DatePicker } from '@/components/ui/DatePicker';
+import { OfflineBookingForm } from '@/components/admin/OfflineBookingForm';
+import { OfflineCancelButton } from '@/components/admin/OfflineCancelButton';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { listBookings } from '@/lib/admin/bookings';
+import { getMonthBoard } from '@/lib/admin/calendar';
+import { getAddons } from '@/lib/booking/availability';
 import { formatDateKorean, formatWon } from '@/lib/format';
 import { PARTS } from '@/types/domain';
 
 export const dynamic = 'force-dynamic';
 
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const SHORT: Record<string, string> = {
+  tarp_tent: '타프',
+  cabin: '카바나',
+  outdoor_table: '야외',
+};
 const STATUS_META: Record<string, { tone: 'success' | 'warning' | 'neutral' | 'danger'; label: string }> = {
   confirmed: { tone: 'success', label: '확정' },
   pending_payment: { tone: 'warning', label: '결제대기' },
@@ -17,111 +26,309 @@ const STATUS_META: Record<string, { tone: 'success' | 'warning' | 'neutral' | 'd
   cancelled: { tone: 'neutral', label: '취소' },
 };
 
-const STATUS_FILTERS = [
-  { value: '', label: '전체' },
-  { value: 'confirmed', label: '확정' },
-  { value: 'pending_payment', label: '결제대기' },
-  { value: 'refunded', label: '환불완료' },
-  { value: 'cancelled', label: '취소' },
-];
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
+}
 
-export default async function AdminBookingsPage({
+function SearchForm({ defaultValue = '' }: { defaultValue?: string }) {
+  return (
+    <form method="get" action="/admin" className="flex gap-2">
+      <input
+        name="q"
+        defaultValue={defaultValue}
+        placeholder="예약번호·이름·연락처"
+        className="h-9 w-56 rounded-lg border border-line px-3 text-sm outline-none focus:border-accent"
+      />
+      <button className="h-9 rounded-lg bg-accent px-4 text-sm font-semibold text-white">검색</button>
+    </form>
+  );
+}
+
+export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; status?: string; q?: string }>;
+  searchParams: Promise<{ y?: string; m?: string; part?: string; date?: string; q?: string }>;
 }) {
-  const { date = '', status = '', q = '' } = await searchParams;
-  const bookings = await listBookings({
-    date: date || undefined,
-    status: status || undefined,
-    q: q || undefined,
-  });
+  const sp = await searchParams;
+  const q = (sp.q ?? '').trim();
+
+  // 검색 모드 — 예약번호·이름·연락처 전역 검색(캘린더 대신 결과 리스트)
+  if (q) {
+    const results = await listBookings({ q });
+    return (
+      <div>
+        <h1 className="text-xl font-bold text-ink">예약 검색</h1>
+        <SearchForm defaultValue={q} />
+        <p className="mt-4 text-sm text-muted">&quot;{q}&quot; · {results.length}건</p>
+        <div className="mt-2 space-y-2">
+          {results.map((b) => {
+            const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
+            return (
+              <Link key={b.bookingNumber} href={`/admin/bookings/${b.bookingNumber}`} className="block">
+                <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
+                  <Badge tone={meta.tone}>{meta.label}</Badge>
+                  {b.source === 'offline' && <Badge tone="neutral">유선</Badge>}
+                  <span className="font-mono text-xs text-muted">{b.bookingNumber}</span>
+                  <span className="font-medium text-ink">{b.facilityName}</span>
+                  <span className="text-sm text-muted">
+                    {b.date ? formatDateKorean(b.date) : '-'}
+                    {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                  </span>
+                  <span className="text-sm text-muted">
+                    {b.guestName} · {b.guestPhone}
+                  </span>
+                  <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
+                </Card>
+              </Link>
+            );
+          })}
+          {results.length === 0 && (
+            <p className="py-10 text-center text-sm text-subtle">결과가 없습니다.</p>
+          )}
+        </div>
+        <Link href="/admin" className="mt-6 inline-block text-sm font-medium text-accent-strong hover:underline">
+          ← 캘린더로 돌아가기
+        </Link>
+      </div>
+    );
+  }
+
+  const now = new Date();
+  const y = Number(sp.y) || now.getFullYear();
+  const m = Number(sp.m) || now.getMonth() + 1; // 1-based
+  const part = sp.part === '2' ? 2 : 1;
+  const date = sp.date ?? '';
+
+  const board = await getMonthBoard(y, m - 1);
+  const dateBookings = date ? await listBookings({ date }) : [];
+  const addons = date ? await getAddons() : [];
+
+  const firstDow = new Date(y, m - 1, 1).getDay();
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const cells: (number | null)[] = [
+    ...Array<null>(firstDow).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  const openSet = new Set(board.openDates);
+  const closedSet = new Set(board.closedDates);
+  const iso = (d: number) => `${y}-${pad(m)}-${pad(d)}`;
+  const isOperating = (d: number, dow: number) => {
+    const ds = iso(d);
+    if (closedSet.has(ds)) return false;
+    return dow === 5 || dow === 6 || openSet.has(ds);
+  };
+
+  const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
+  const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
+  const navHref = (yy: number, mm: number) => `/admin?y=${yy}&m=${mm}&part=${part}`;
+  const partHref = (p: number) => `/admin?y=${y}&m=${m}&part=${p}${date ? `&date=${date}` : ''}`;
+  const cellHref = (d: number) => `/admin?y=${y}&m=${m}&part=${part}&date=${iso(d)}`;
 
   return (
     <div>
-      <h2 className="text-5xl font-extrabold text-ink">Welcome back, Sir</h2>
-      <h1 className="mt-6 text-xl font-bold text-ink">예약 현황</h1>
-
-      <form className="mt-5 flex flex-wrap items-end gap-3" method="get">
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-ink">검색</span>
-          <input
-            type="text"
-            name="q"
-            defaultValue={q}
-            placeholder="이름·연락처·예약번호"
-            className="h-11 w-52 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
-          />
-        </label>
-        <div className="text-sm">
-          <span className="mb-1 block font-medium text-ink">이용일</span>
-          <DatePicker name="date" defaultValue={date} allowClear />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-ink">예약 현황</h1>
+          <p className="mt-1 text-sm text-muted">
+            날짜별 시설 예약 현황(예약/총). 날짜를 클릭하면 유선 예약을 직접 추가할 수 있습니다.
+          </p>
         </div>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-ink">상태</span>
-          <select
-            name="status"
-            defaultValue={status}
-            className="h-11 rounded-xl border border-line px-3 text-sm outline-none focus:border-accent"
-          >
-            {STATUS_FILTERS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button className="h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white">
-          조회
-        </button>
-        {date && (
+        <SearchForm />
+      </div>
+
+      {/* 컨트롤: 월 이동 + 부 토글 */}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
           <Link
-            href={`/admin${(() => {
-              const sp = new URLSearchParams();
-              if (status) sp.set('status', status);
-              if (q) sp.set('q', q);
-              const s = sp.toString();
-              return s ? `?${s}` : '';
-            })()}`}
-            className="flex h-11 items-center rounded-xl border border-line px-4 text-sm font-medium text-muted hover:bg-line-soft"
+            href={navHref(prev.y, prev.m)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
+            aria-label="이전 달"
           >
-            전체 기간
+            ‹
           </Link>
-        )}
-      </form>
+          <span className="min-w-28 text-center text-base font-bold text-ink">
+            {y}년 {m}월
+          </span>
+          <Link
+            href={navHref(next.y, next.m)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
+            aria-label="다음 달"
+          >
+            ›
+          </Link>
+        </div>
+        <div className="inline-flex overflow-hidden rounded-lg border border-line text-sm">
+          {[1, 2].map((p) => (
+            <Link
+              key={p}
+              href={partHref(p)}
+              className={`px-4 py-2 font-medium ${
+                part === p ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
+              }`}
+            >
+              {PARTS[p as 1 | 2].label}
+            </Link>
+          ))}
+        </div>
+      </div>
 
-      <p className="mt-5 text-sm text-muted">
-        {date ? formatDateKorean(date) : '전체 기간'} · {bookings.length}건
-      </p>
+      {/* 캘린더 */}
+      <div className="mt-4 grid grid-cols-7 gap-1.5">
+        {WEEKDAYS.map((w, i) => (
+          <div
+            key={w}
+            className={`py-1 text-center text-xs font-semibold ${
+              i === 0 ? 'text-danger/80' : i === 6 ? 'text-accent' : 'text-subtle'
+            }`}
+          >
+            {w}
+          </div>
+        ))}
+        {cells.map((d, i) => {
+          if (d === null) return <div key={`b${i}`} />;
+          const dow = new Date(y, m - 1, d).getDay();
+          const ds = iso(d);
+          const operating = isOperating(d, dow);
+          const selected = ds === date;
+          const dayCounts = board.counts[ds]?.[part] ?? {};
 
-      <div className="mt-2 space-y-2">
-        {bookings.map((b) => {
-          const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
           return (
-            <Link key={b.bookingNumber} href={`/admin/bookings/${b.bookingNumber}`} className="block">
-              <Card className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4 transition-colors hover:border-accent/40 hover:bg-line-soft/50">
-                <Badge tone={meta.tone}>{meta.label}</Badge>
-                <span className="font-mono text-sm text-muted">{b.bookingNumber}</span>
-                <span className="font-medium text-ink">{b.facilityName}</span>
-                <span className="text-sm text-muted">
-                  {b.date ? formatDateKorean(b.date) : '-'}
-                  {b.part ? ` · ${PARTS[b.part].label}` : ''}
-                </span>
-                <span className="text-sm text-muted">
-                  {b.guestName} · {b.guestPhone} · {b.guestCount}명
-                </span>
-                <span className="ml-auto font-semibold text-ink">{formatWon(b.amount)}</span>
-                <span aria-hidden className="text-subtle">
-                  ›
-                </span>
-              </Card>
+            <Link
+              key={ds}
+              href={cellHref(d)}
+              className={`flex min-h-[92px] flex-col rounded-xl border p-2 transition-colors ${
+                selected
+                  ? 'border-accent bg-accent-soft'
+                  : operating
+                    ? 'border-line bg-surface hover:border-accent/40 hover:bg-line-soft/50'
+                    : 'border-transparent bg-line-soft/40'
+              }`}
+            >
+              <span
+                className={`text-sm font-semibold ${
+                  operating ? 'text-ink' : 'text-subtle/50'
+                }`}
+              >
+                {d}
+              </span>
+              {operating && (
+                <div className="mt-1 space-y-0.5">
+                  {board.facilities.map((f) => {
+                    const booked = dayCounts[f.type] ?? 0;
+                    const full = booked >= f.totalUnits;
+                    return (
+                      <div key={f.type} className="flex items-center justify-between text-[11px] leading-tight">
+                        <span className="text-subtle">{SHORT[f.type] ?? f.name}</span>
+                        <span
+                          className={
+                            full
+                              ? 'font-bold text-danger'
+                              : booked > 0
+                                ? 'font-semibold text-accent-strong'
+                                : 'text-subtle/60'
+                          }
+                        >
+                          {booked}/{f.totalUnits}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </Link>
           );
         })}
-        {bookings.length === 0 && (
-          <p className="py-10 text-center text-sm text-subtle">조건에 맞는 예약이 없습니다.</p>
-        )}
       </div>
+
+      {/* 선택 날짜 상세 */}
+      {date && (
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {/* 좌: 부별 현황 + 예약 목록 */}
+          <div>
+            <h2 className="text-lg font-bold text-ink">{formatDateKorean(date)}</h2>
+
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {[1, 2].map((p) => (
+                <Card key={p} className="p-4">
+                  <p className="text-sm font-semibold text-ink">{PARTS[p as 1 | 2].label}</p>
+                  <div className="mt-2 space-y-1">
+                    {board.facilities.map((f) => {
+                      const booked = board.counts[date]?.[p]?.[f.type] ?? 0;
+                      return (
+                        <div key={f.type} className="flex justify-between text-sm">
+                          <span className="text-muted">{f.name}</span>
+                          <span className="font-medium text-ink">
+                            {booked}/{f.totalUnits}
+                            <span className="ml-1 text-xs text-subtle">
+                              (잔여 {f.totalUnits - booked})
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <h3 className="mt-6 text-sm font-bold text-ink">예약 목록 ({dateBookings.length})</h3>
+            <div className="mt-2 space-y-2">
+              {dateBookings.map((b) => {
+                const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
+                const offline = b.source === 'offline';
+                return (
+                  <Card key={b.bookingNumber} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3">
+                    <Badge tone={meta.tone}>{meta.label}</Badge>
+                    {offline && <Badge tone="neutral">유선</Badge>}
+                    <span className="font-medium text-ink">{b.facilityName}</span>
+                    <span className="text-sm text-muted">{b.part ? PARTS[b.part].label : '-'}</span>
+                    <span className="text-sm text-muted">
+                      {b.guestName} · {b.guestPhone} · {b.guestCount}명
+                    </span>
+                    <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
+                    {offline && b.status === 'confirmed' ? (
+                      <OfflineCancelButton bookingId={b.id} />
+                    ) : (
+                      <Link
+                        href={`/admin/bookings/${b.bookingNumber}`}
+                        className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted hover:bg-line-soft"
+                      >
+                        상세
+                      </Link>
+                    )}
+                  </Card>
+                );
+              })}
+              {dateBookings.length === 0 && (
+                <p className="py-6 text-center text-sm text-subtle">이 날짜의 예약이 없습니다.</p>
+              )}
+            </div>
+          </div>
+
+          {/* 우: 유선 예약 추가 */}
+          <div>
+            <Card className="p-5">
+              <h3 className="text-sm font-bold text-ink">유선 예약 추가</h3>
+              <p className="mt-1 text-xs text-muted">
+                전화로 받은 예약을 등록하면 온라인 예약에서 자동으로 해당 동이 제외됩니다.
+              </p>
+              <div className="mt-4">
+                <OfflineBookingForm
+                  date={date}
+                  defaultPart={part}
+                  facilities={board.facilities.map((f) => ({
+                    type: f.type,
+                    name: f.name,
+                    capacity: f.capacity,
+                  }))}
+                  addons={addons}
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

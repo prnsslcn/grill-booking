@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { ReservationError, reservationHttpStatus } from '@/lib/booking/errors';
 import { reserveSlot } from '@/lib/booking/reserve';
+import { BEEF_ENABLED, isBeefAddonKey } from '@/lib/config';
 
 /**
  * 슬롯 선점 → pending_payment 예약 생성 엔드포인트.
@@ -48,8 +49,13 @@ export async function POST(request: Request) {
     typeof body.guestCount === 'number' && Number.isInteger(body.guestCount)
       ? body.guestCount
       : 1;
-  const meat = body.meat === 'pork' || body.meat === 'beef' ? body.meat : '';
-  const addons = parseAddons(body.addons);
+  let meat = body.meat === 'pork' || body.meat === 'beef' ? body.meat : '';
+  // 소 세트 비활성화 시 서버에서도 거부(UI 우회 방지)
+  if (meat === 'beef' && !BEEF_ENABLED) meat = '';
+  const rawAddons = parseAddons(body.addons);
+  const addons = BEEF_ENABLED
+    ? rawAddons
+    : Object.fromEntries(Object.entries(rawAddons).filter(([k]) => !isBeefAddonKey(k)));
 
   const fieldErrors: Record<string, string> = {};
   if (!slotId) fieldErrors.slotId = '슬롯을 선택하세요.';

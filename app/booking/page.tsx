@@ -11,6 +11,7 @@ import { Field, Input } from '@/components/ui/Field';
 import { Stepper } from '@/components/ui/Stepper';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
+import { BEEF_ENABLED } from '@/lib/config';
 import { meatGrams } from '@/lib/facilities';
 import { formatPhone, formatWon } from '@/lib/format';
 import { bookingMaxDate, firstBookableDate } from '@/lib/policy/booking-window';
@@ -196,7 +197,8 @@ function BookingFlow() {
                             {f.name} <span className="text-sm font-normal text-subtle">· {f.capacity}인</span>
                           </span>
                           <span className="text-xs text-subtle">
-                            돼지 {formatWon(f.pricePork)} · 소 {formatWon(f.priceBeef)}
+                            돼지 {formatWon(f.pricePork)}
+                            {BEEF_ENABLED && ` · 소 ${formatWon(f.priceBeef)}`}
                           </span>
                         </div>
                         {f.weatherDependent && (
@@ -251,8 +253,8 @@ function BookingFlow() {
             {selected && (
               <div>
                 <h2 className="text-lg font-bold text-ink">고기 선택</h2>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {(['pork', 'beef'] as Meat[]).map((m) => {
+                <div className={`mt-3 grid gap-2 ${BEEF_ENABLED ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {(BEEF_ENABLED ? (['pork', 'beef'] as Meat[]) : (['pork'] as Meat[])).map((m) => {
                     const price = m === 'pork' ? selected.pricePork : selected.priceBeef;
                     return (
                       <button

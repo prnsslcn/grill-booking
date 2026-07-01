@@ -7,6 +7,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { TempHeader } from '@/components/site/TempHeader';
 import { getAddons } from '@/lib/booking/availability';
 import { meatGrams } from '@/lib/facilities';
+import { BEEF_ENABLED } from '@/lib/config';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -131,10 +132,12 @@ export default async function TempLanding() {
                           <span className={`text-sm ${s.muted}`}>Pork Set</span>
                           <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
                         </div>
-                        <div className="flex items-baseline justify-between">
-                          <span className={`text-sm ${s.muted}`}>Beef Set</span>
-                          <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
-                        </div>
+                        {BEEF_ENABLED && (
+                          <div className="flex items-baseline justify-between">
+                            <span className={`text-sm ${s.muted}`}>Beef Set</span>
+                            <span className="text-lg font-bold">{formatWon(f.price_beef)}</span>
+                          </div>
+                        )}
                         <p className={`pt-1 text-xs ${s.muted}`}>
                           기준 {f.capacity}인 · 세트당 {meatGrams(f.capacity)}g · {f.total_units}동
                         </p>

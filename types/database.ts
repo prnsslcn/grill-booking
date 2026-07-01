@@ -123,6 +123,7 @@ export type Database = {
           guest_phone: string
           id: string
           slot_id: string
+          source: string
           status: string
           updated_at: string
         }
@@ -136,6 +137,7 @@ export type Database = {
           guest_phone: string
           id?: string
           slot_id: string
+          source?: string
           status?: string
           updated_at?: string
         }
@@ -149,6 +151,7 @@ export type Database = {
           guest_phone?: string
           id?: string
           slot_id?: string
+          source?: string
           status?: string
           updated_at?: string
         }
@@ -364,6 +367,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_offline_booking: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
+      admin_create_booking: {
+        Args: {
+          p_facility_type: string
+          p_date: string
+          p_part: number
+          p_guest_name: string
+          p_guest_phone: string
+          p_guest_count: number
+          p_meat?: string
+          p_note?: string
+          p_addons?: Json
+        }
+        Returns: {
+          booking_id: string
+          booking_number: string
+        }[]
+      }
       confirm_booking_tx: {
         Args: {
           p_amount: number

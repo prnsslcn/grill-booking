@@ -6,6 +6,7 @@ import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { FACILITIES, facilityBySlug, meatGrams } from '@/lib/facilities';
+import { BEEF_ENABLED } from '@/lib/config';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -95,13 +96,15 @@ export default async function FacilityPage({
                         </span>
                         <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
                       </div>
-                      <div className="flex items-baseline gap-6">
-                        <span className="w-16 text-sm text-muted">Beef Set</span>
-                        <span className="text-lg font-bold text-ink">
-                          {formatWon(prices.price_beef)}
-                        </span>
-                        <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
-                      </div>
+                      {BEEF_ENABLED && (
+                        <div className="flex items-baseline gap-6">
+                          <span className="w-16 text-sm text-muted">Beef Set</span>
+                          <span className="text-lg font-bold text-ink">
+                            {formatWon(prices.price_beef)}
+                          </span>
+                          <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <p className="text-sm text-subtle">현재 예약을 받지 않는 시설입니다.</p>
