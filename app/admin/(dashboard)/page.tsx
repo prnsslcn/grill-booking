@@ -143,6 +143,7 @@ export default async function AdminDashboard({
         <div className="flex items-center gap-2">
           <Link
             href={navHref(prev.y, prev.m)}
+            scroll={false}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
             aria-label="이전 달"
           >
@@ -153,6 +154,7 @@ export default async function AdminDashboard({
           </span>
           <Link
             href={navHref(next.y, next.m)}
+            scroll={false}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
             aria-label="다음 달"
           >
@@ -184,6 +186,7 @@ export default async function AdminDashboard({
             <Link
               key={ds}
               href={cellHref(d)}
+              scroll={false}
               className={`flex min-h-[200px] flex-col rounded-xl border p-2.5 transition-colors ${
                 selected
                   ? 'border-accent bg-accent-soft'
@@ -246,6 +249,7 @@ export default async function AdminDashboard({
               </span>
               <Link
                 href={dpHref('')}
+                scroll={false}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   !dp ? 'bg-accent text-white' : 'border border-line text-muted hover:bg-line-soft'
                 }`}
@@ -261,6 +265,7 @@ export default async function AdminDashboard({
                   <Link
                     key={p}
                     href={dpHref(String(p))}
+                    scroll={false}
                     className={`rounded-2xl border p-4 transition-colors ${
                       active
                         ? 'border-accent bg-accent-soft ring-1 ring-accent'
