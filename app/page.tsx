@@ -95,7 +95,7 @@ export default async function Home() {
           <div className="mx-auto max-w-5xl px-5">
             <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
             <p className="mt-2 text-muted">모든 상품에 고기세트가 포함됩니다.</p>
-            <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-5">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
                 const soon = isComingSoonType(f.type);
@@ -106,11 +106,11 @@ export default async function Home() {
                     from={FACILITY_FROM[i % FACILITY_FROM.length]}
                     duration={0.8}
                     ease="cubic-bezier(0.16,1,0.3,1)"
-                    className="h-full"
+                    className="h-full w-full sm:w-auto sm:flex-1 sm:min-w-[260px] sm:max-w-[360px]"
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
-                    className={`group relative flex h-full min-h-[260px] flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 ${s.card}`}
+                    className={`group relative flex h-full min-h-[260px] flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:min-h-[300px] sm:p-8 ${s.card}`}
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
