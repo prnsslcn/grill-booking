@@ -64,11 +64,12 @@ function confirmMessages(info: BookingInfo): RenderedMessages {
     `${info.guestName}님, 결제가 완료되어 예약이 확정되었습니다.`,
     `· 예약번호 ${info.bookingNumber}`,
     `· 일시 ${whenLine(info)}`,
-    `· 장소 ${placeLine(info)}`,
+    `· 상품 ${placeLine(info)}`,
     `· 인원 ${info.guestCount}명`,
     `· 결제금액 ${formatWon(info.amount)}`,
     '',
-    "예약 시간에 맞춰 방문하신 뒤, 나무 데크 위 '운영사무실'에서 자리를 안내받으세요.",
+    '예약 시간에 맞춰 방문해 주세요.',
+    "❗️나무 데크 위 '운영사무실'에서 예약 확인 도와드리겠습니다.❗️",
     '변경·취소는 예약조회에서 가능합니다.',
     CONTACT,
   ].join('\n');
@@ -96,7 +97,7 @@ function cancelMessages(info: BookingInfo, extra: MessageExtra): RenderedMessage
     `${info.guestName}님, 아래 예약이 취소 처리되었습니다.`,
     `· 예약번호 ${info.bookingNumber}`,
     `· 일시 ${whenLine(info)}`,
-    `· 장소 ${placeLine(info)}`,
+    `· 상품 ${placeLine(info)}`,
     refundLine,
     CONTACT,
   ].join('\n');
