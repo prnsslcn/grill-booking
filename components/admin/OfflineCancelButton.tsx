@@ -15,7 +15,8 @@ export function OfflineCancelButton({ bookingId }: { bookingId: string }) {
         if (!confirm('이 유선 예약을 취소하고 슬롯을 복구할까요?')) return;
         start(async () => {
           try {
-            await adminCancelOfflineBooking(bookingId);
+            const res = await adminCancelOfflineBooking(bookingId);
+            if (!res.ok) alert(res.error);
           } catch (e) {
             alert(e instanceof Error ? e.message : '취소 실패');
           }

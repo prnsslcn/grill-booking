@@ -14,6 +14,13 @@ import type { FacilityType } from '@/types/domain';
  * 서비스롤(admin 클라이언트)/기존 도메인 로직으로 실행한다.
  */
 
+/**
+ * 액션 결과. 실패 사유를 값으로 반환한다 — Next.js 프로덕션은 서버 액션에서
+ * throw된 에러를 익명 digest 메시지로 가리므로, 사용자에게 보여줄 사유는 반드시
+ * return 값으로 전달해야 한다(throw 금지).
+ */
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
 /** 유선(오프라인) 예약 직접 등록 — 슬롯 점유해 온라인 가용성에서 자동 제외. */
 export async function adminCreateBooking(input: {
   facilityType: string;
@@ -25,10 +32,10 @@ export async function adminCreateBooking(input: {
   meat?: 'pork' | 'beef';
   note?: string;
   addons?: Record<string, number>;
-}): Promise<void> {
+}): Promise<ActionResult> {
   await requireAdmin();
   if (input.meat === 'beef' && !BEEF_ENABLED) {
-    throw new Error('소 세트는 현재 판매하지 않습니다.');
+    return { ok: false, error: '소 세트는 현재 판매하지 않습니다.' };
   }
   const addons = input.addons ?? {};
   const cleanAddons = BEEF_ENABLED
@@ -49,7 +56,7 @@ export async function adminCreateBooking(input: {
   if (error) {
     const m = error.message;
     const friendly = m.includes('NO_UNIT_AVAILABLE')
-      ? '선택한 시간대에 예약 가능한 동이 없습니다 (운영일·잔여 확인).'
+      ? '이 날짜·부에 예약 가능한 동이 없습니다. 운영일(휴무 여부)과 잔여 동을 확인하세요.'
       : m.includes('NAME_REQUIRED')
         ? '예약자명을 입력하세요.'
         : m.includes('INVALID_ADDON')
@@ -57,20 +64,22 @@ export async function adminCreateBooking(input: {
           : m.includes('FACILITY_NOT_FOUND')
             ? '시설을 찾을 수 없습니다.'
             : `예약 추가 실패: ${m}`;
-    throw new Error(friendly);
+    return { ok: false, error: friendly };
   }
   revalidatePath('/admin');
   revalidatePath('/booking');
+  return { ok: true };
 }
 
 /** 오프라인 예약 취소(오등록 정정) — 슬롯 open 복구. */
-export async function adminCancelOfflineBooking(bookingId: string): Promise<void> {
+export async function adminCancelOfflineBooking(bookingId: string): Promise<ActionResult> {
   await requireAdmin();
   const supabase = createAdminClient();
   const { error } = await supabase.rpc('admin_cancel_offline_booking', { p_booking_id: bookingId });
-  if (error) throw new Error(`취소 실패: ${error.message}`);
+  if (error) return { ok: false, error: `취소 실패: ${error.message}` };
   revalidatePath('/admin');
   revalidatePath('/booking');
+  return { ok: true };
 }
 
 export async function adminCancelRefund(bookingNumber: string): Promise<void> {

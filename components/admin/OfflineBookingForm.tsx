@@ -60,7 +60,7 @@ export function OfflineBookingForm({
     );
     startTransition(async () => {
       try {
-        await adminCreateBooking({
+        const res = await adminCreateBooking({
           facilityType,
           date,
           part,
@@ -71,11 +71,16 @@ export function OfflineBookingForm({
           note,
           addons,
         });
+        if (!res.ok) {
+          setErr(res.error);
+          return;
+        }
         setOk(true);
         setGuestName('');
         setGuestPhone('');
         setAddonQty({});
       } catch (e) {
+        // 네트워크·직렬화 등 예기치 못한 오류만 여기로 온다(도메인 사유는 res.error).
         setErr(e instanceof Error ? e.message : '알 수 없는 오류');
       }
     });

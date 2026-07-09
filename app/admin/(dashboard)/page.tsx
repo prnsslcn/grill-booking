@@ -114,11 +114,15 @@ export default async function AdminDashboard({
   const openSet = new Set(board.openDates);
   const closedSet = new Set(board.closedDates);
   const iso = (d: number) => `${y}-${pad(m)}-${pad(d)}`;
-  const isOperating = (d: number, dow: number) => {
-    const ds = iso(d);
+  const isOperatingDate = (ds: string) => {
     if (closedSet.has(ds)) return false;
+    const [yy, mm, dd] = ds.split('-').map(Number);
+    const dow = new Date(yy, mm - 1, dd).getDay();
     return dow === 5 || dow === 6 || openSet.has(ds);
   };
+  const isOperating = (d: number) => isOperatingDate(iso(d));
+  // 선택 날짜가 운영일(금·토 ∪ 오픈일 − 휴무)인지 — 유선 예약은 운영일에만 가능
+  const selectedOperating = date ? isOperatingDate(date) : false;
 
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
@@ -177,9 +181,8 @@ export default async function AdminDashboard({
         ))}
         {cells.map((d, i) => {
           if (d === null) return <div key={`b${i}`} />;
-          const dow = new Date(y, m - 1, d).getDay();
           const ds = iso(d);
-          const operating = isOperating(d, dow);
+          const operating = isOperating(d);
           const selected = ds === date;
 
           return (
@@ -339,18 +342,34 @@ export default async function AdminDashboard({
               <p className="mt-1 text-xs text-muted">
                 전화로 받은 예약을 등록하면 온라인 예약에서 자동으로 해당 동이 제외됩니다.
               </p>
-              <div className="mt-4">
-                <OfflineBookingForm
-                  date={date}
-                  defaultPart={1}
-                  facilities={board.facilities.map((f) => ({
-                    type: f.type,
-                    name: f.name,
-                    capacity: f.capacity,
-                  }))}
-                  addons={addons}
-                />
-              </div>
+              {selectedOperating ? (
+                <div className="mt-4">
+                  <OfflineBookingForm
+                    date={date}
+                    defaultPart={1}
+                    facilities={board.facilities.map((f) => ({
+                      type: f.type,
+                      name: f.name,
+                      capacity: f.capacity,
+                    }))}
+                    addons={addons}
+                  />
+                </div>
+              ) : (
+                <div className="mt-4 rounded-xl border border-line bg-line-soft/60 p-4">
+                  <p className="text-sm font-semibold text-ink">이 날짜는 운영일이 아닙니다.</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    유선 예약은 운영일(금·토 또는 오픈한 날)에만 등록할 수 있습니다. 성수기 등으로 이
+                    날짜에 예약을 받으려면 먼저 슬롯 관리에서 날짜를 오픈하세요.
+                  </p>
+                  <Link
+                    href="/admin/slots"
+                    className="mt-3 inline-block rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-strong"
+                  >
+                    슬롯 관리로 이동 →
+                  </Link>
+                </div>
+              )}
             </Card>
           </div>
         </div>
