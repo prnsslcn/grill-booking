@@ -40,12 +40,13 @@ function whenLine(info: BookingInfo): string {
   return `${formatDateKorean(info.dateIso)} · ${p.label} ${p.start}~${p.end}`;
 }
 
-/** "타프 텐트 1호" — unit_label이 이미 시설명을 포함하면 중복 제거. */
+/**
+ * 장소는 시설 종류만 표기(예: "타프 텐트").
+ * 특정 동 번호는 시스템이 임의 배정한 값이라 고객·안내에 노출하지 않는다.
+ * 실제 자리는 방문 시 현장(운영사무실)에서 안내한다.
+ */
 function placeLine(info: BookingInfo): string {
-  const { facilityName, unitLabel } = info;
-  if (!unitLabel) return facilityName;
-  if (!facilityName) return unitLabel;
-  return unitLabel.startsWith(facilityName) ? unitLabel : `${facilityName} ${unitLabel}`;
+  return info.facilityName || info.unitLabel;
 }
 
 export function buildMessages(
@@ -67,7 +68,8 @@ function confirmMessages(info: BookingInfo): RenderedMessages {
     `· 인원 ${info.guestCount}명`,
     `· 결제금액 ${formatWon(info.amount)}`,
     '',
-    '예약 시간에 맞춰 방문해 주세요. 변경·취소는 예약조회에서 가능합니다.',
+    "예약 시간에 맞춰 방문하신 뒤, 나무 데크 위 '운영사무실'에서 자리를 안내받으세요.",
+    '변경·취소는 예약조회에서 가능합니다.',
     CONTACT,
   ].join('\n');
 
