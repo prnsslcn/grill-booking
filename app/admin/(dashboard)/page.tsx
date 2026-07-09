@@ -58,6 +58,7 @@ export default async function AdminDashboard({
     range?: string;
     dir?: string;
     page?: string;
+    past?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -114,6 +115,7 @@ export default async function AdminDashboard({
   const range = sp.range === 'week' || sp.range === 'all' ? sp.range : 'month'; // 기본 이 달
   // 방향: 미지정 시 필드별 자연스러운 기본값(예약순=최근 먼저=desc, 이용일순=가까운 먼저=asc)
   const dir = sp.dir === 'asc' || sp.dir === 'desc' ? sp.dir : sort === 'usage' ? 'asc' : 'desc';
+  const hidePast = sp.past === 'hide'; // 이용일이 오늘(KST) 이전인 예약 숨기기
   const listPage = Math.max(1, Number(sp.page) || 1);
 
   const board = await getMonthBoard(y, m - 1);
@@ -146,12 +148,18 @@ export default async function AdminDashboard({
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
   const navHref = (yy: number, mm: number) =>
-    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}`;
+    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}&past=${hidePast ? 'hide' : 'show'}`;
   const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
   const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
   // 기본 리스트 URL 빌더 — 지정 안 한 항목은 현재값 유지, 페이지는 명시(변경 시 1로 리셋)
-  const listHref = (o: { sort?: string; range?: string; dir?: string; page?: number }) =>
-    `/admin?y=${y}&m=${m}&sort=${o.sort ?? sort}&range=${o.range ?? range}&dir=${o.dir ?? dir}&page=${o.page ?? listPage}`;
+  const listHref = (o: {
+    sort?: string;
+    range?: string;
+    dir?: string;
+    page?: number;
+    past?: string;
+  }) =>
+    `/admin?y=${y}&m=${m}&sort=${o.sort ?? sort}&range=${o.range ?? range}&dir=${o.dir ?? dir}&past=${o.past ?? (hidePast ? 'hide' : 'show')}&page=${o.page ?? listPage}`;
 
   // 기본 리스트: 기간 필터 + 정렬(필드+방향). pending_payment(결제 미완, 임시)는 제외.
   const monthPrefix = `${y}-${pad(m)}`;
@@ -168,6 +176,8 @@ export default async function AdminDashboard({
   if (range === 'month') listRows = listRows.filter((b) => b.date?.startsWith(monthPrefix));
   else if (range === 'week')
     listRows = listRows.filter((b) => b.date && b.date >= weekStart && b.date <= weekEnd);
+  // 이용일이 오늘(KST) 이전인 예약 숨기기(오늘 이용분은 유지)
+  if (hidePast) listRows = listRows.filter((b) => b.date && b.date >= todayStr);
   // 오름차순 비교자(이용일순: 날짜→부 / 예약순: created_at) → 방향에 따라 뒤집기
   const cmpAsc = (a: (typeof listRows)[number], b: (typeof listRows)[number]) => {
     if (sort === 'usage') {
@@ -352,10 +362,24 @@ export default async function AdminDashboard({
               >
                 {dir === 'asc' ? '오름차순 ↑' : '내림차순 ↓'}
               </Link>
+              {/* 지난 이용일 숨기기 토글 */}
+              <Link
+                href={listHref({ past: hidePast ? 'show' : 'hide', page: 1 })}
+                scroll={false}
+                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                  hidePast
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-line text-muted hover:bg-line-soft'
+                }`}
+                title="이용일이 지난 예약 숨기기"
+              >
+                지난 예약 숨기기{hidePast ? ' ✓' : ''}
+              </Link>
             </div>
           </div>
           <p className="mt-1 text-sm text-muted">
             {rangeLabel} · 총 {totalRows}건 · {sort === 'usage' ? '이용일순' : '예약순'} · {dirLabel}
+            {hidePast ? ' · 지난 예약 제외' : ''}
           </p>
 
           <div className="mt-3 space-y-2">
