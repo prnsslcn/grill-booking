@@ -56,6 +56,8 @@ export default async function AdminDashboard({
     q?: string;
     sort?: string;
     range?: string;
+    dir?: string;
+    page?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -107,9 +109,12 @@ export default async function AdminDashboard({
   const m = Number(sp.m) || now.getMonth() + 1; // 1-based
   const date = sp.date ?? '';
   const dp = sp.dp === '1' || sp.dp === '2' ? sp.dp : ''; // 상세 예약목록 부 필터('' = 전체)
-  // 기본 화면(날짜 미선택) 리스트: 정렬·기간 옵션
-  const sort = sp.sort === 'usage' ? 'usage' : 'confirmed'; // confirmed=최근 예약순, usage=이용일순
+  // 기본 화면(날짜 미선택) 리스트: 정렬(필드+방향)·기간·페이지 옵션
+  const sort = sp.sort === 'usage' ? 'usage' : 'confirmed'; // confirmed=예약순(created_at), usage=이용일순
   const range = sp.range === 'week' || sp.range === 'all' ? sp.range : 'month'; // 기본 이 달
+  // 방향: 미지정 시 필드별 자연스러운 기본값(예약순=최근 먼저=desc, 이용일순=가까운 먼저=asc)
+  const dir = sp.dir === 'asc' || sp.dir === 'desc' ? sp.dir : sort === 'usage' ? 'asc' : 'desc';
+  const listPage = Math.max(1, Number(sp.page) || 1);
 
   const board = await getMonthBoard(y, m - 1);
   const dateBookings = date ? await listBookings({ date }) : [];
@@ -141,12 +146,14 @@ export default async function AdminDashboard({
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
   const navHref = (yy: number, mm: number) =>
-    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}`;
+    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}`;
   const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
   const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
-  const listHref = (s: string, r: string) => `/admin?y=${y}&m=${m}&sort=${s}&range=${r}`;
+  // 기본 리스트 URL 빌더 — 지정 안 한 항목은 현재값 유지, 페이지는 명시(변경 시 1로 리셋)
+  const listHref = (o: { sort?: string; range?: string; dir?: string; page?: number }) =>
+    `/admin?y=${y}&m=${m}&sort=${o.sort ?? sort}&range=${o.range ?? range}&dir=${o.dir ?? dir}&page=${o.page ?? listPage}`;
 
-  // 기본 리스트: 기간 필터 + 정렬. pending_payment(결제 미완, 임시)는 제외.
+  // 기본 리스트: 기간 필터 + 정렬(필드+방향). pending_payment(결제 미완, 임시)는 제외.
   const monthPrefix = `${y}-${pad(m)}`;
   const todayStr = kstToday();
   const t = new Date(`${todayStr}T00:00:00Z`);
@@ -161,14 +168,26 @@ export default async function AdminDashboard({
   if (range === 'month') listRows = listRows.filter((b) => b.date?.startsWith(monthPrefix));
   else if (range === 'week')
     listRows = listRows.filter((b) => b.date && b.date >= weekStart && b.date <= weekEnd);
-  if (sort === 'usage') {
-    listRows = [...listRows].sort((a, b) => {
+  // 오름차순 비교자(이용일순: 날짜→부 / 예약순: created_at) → 방향에 따라 뒤집기
+  const cmpAsc = (a: (typeof listRows)[number], b: (typeof listRows)[number]) => {
+    if (sort === 'usage') {
       const da = a.date ?? '9999-99-99';
       const db = b.date ?? '9999-99-99';
       return da !== db ? da.localeCompare(db) : (a.part ?? 9) - (b.part ?? 9);
-    });
-  } // sort === 'confirmed' 은 listBookings의 created_at desc(최근 예약순) 유지
+    }
+    return (a.createdAt ?? '').localeCompare(b.createdAt ?? '');
+  };
+  listRows = [...listRows].sort((a, b) => (dir === 'asc' ? cmpAsc(a, b) : -cmpAsc(a, b)));
+
+  // 페이지네이션(10개씩)
+  const PER_PAGE = 10;
+  const totalRows = listRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / PER_PAGE));
+  const curPage = Math.min(listPage, totalPages);
+  const pageRows = listRows.slice((curPage - 1) * PER_PAGE, curPage * PER_PAGE);
+
   const rangeLabel = range === 'week' ? '이번 주' : range === 'all' ? '전체' : `${y}년 ${m}월`;
+  const dirLabel = dir === 'asc' ? '오름차순' : '내림차순';
 
   return (
     <div>
@@ -294,7 +313,7 @@ export default async function AdminDashboard({
                 ).map(([v, label]) => (
                   <Link
                     key={v}
-                    href={listHref(v, range)}
+                    href={listHref({ sort: v, dir: v === 'usage' ? 'asc' : 'desc', page: 1 })}
                     scroll={false}
                     className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                       sort === v ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
@@ -314,7 +333,7 @@ export default async function AdminDashboard({
                 ).map(([v, label]) => (
                   <Link
                     key={v}
-                    href={listHref(sort, v)}
+                    href={listHref({ range: v, page: 1 })}
                     scroll={false}
                     className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                       range === v ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
@@ -324,15 +343,23 @@ export default async function AdminDashboard({
                   </Link>
                 ))}
               </div>
+              {/* 정렬 방향 토글 */}
+              <Link
+                href={listHref({ dir: dir === 'asc' ? 'desc' : 'asc', page: 1 })}
+                scroll={false}
+                className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-semibold text-muted hover:bg-line-soft"
+                title="정렬 방향 전환"
+              >
+                {dir === 'asc' ? '오름차순 ↑' : '내림차순 ↓'}
+              </Link>
             </div>
           </div>
           <p className="mt-1 text-sm text-muted">
-            {rangeLabel} · {listRows.length}건 ·{' '}
-            {sort === 'usage' ? '이용일 가까운 순' : '최근 예약순'}
+            {rangeLabel} · 총 {totalRows}건 · {sort === 'usage' ? '이용일순' : '예약순'} · {dirLabel}
           </p>
 
           <div className="mt-3 space-y-2">
-            {listRows.map((b) => {
+            {pageRows.map((b) => {
               const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
               const offline = b.source === 'offline';
               return (
@@ -361,10 +388,47 @@ export default async function AdminDashboard({
                 </Card>
               );
             })}
-            {listRows.length === 0 && (
+            {totalRows === 0 && (
               <p className="py-10 text-center text-sm text-subtle">해당 조건의 예약이 없습니다.</p>
             )}
           </div>
+
+          {/* 페이지네이션 (10개씩) */}
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              {curPage > 1 ? (
+                <Link
+                  href={listHref({ page: curPage - 1 })}
+                  scroll={false}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
+                  aria-label="이전 페이지"
+                >
+                  ‹
+                </Link>
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-subtle/40">
+                  ‹
+                </span>
+              )}
+              <span className="min-w-16 text-center text-sm font-medium text-ink">
+                {curPage} / {totalPages}
+              </span>
+              {curPage < totalPages ? (
+                <Link
+                  href={listHref({ page: curPage + 1 })}
+                  scroll={false}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-line-soft"
+                  aria-label="다음 페이지"
+                >
+                  ›
+                </Link>
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-subtle/40">
+                  ›
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
