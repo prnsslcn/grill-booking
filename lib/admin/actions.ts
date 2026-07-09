@@ -110,13 +110,6 @@ export async function adminSetSlotStatus(
   revalidatePath('/admin/slots');
 }
 
-export async function adminCloseDate(date: string): Promise<void> {
-  await requireAdmin();
-  const supabase = createAdminClient();
-  await supabase.from('slots').update({ status: 'closed' }).eq('date', date).eq('status', 'open');
-  revalidatePath('/admin/slots');
-}
-
 /** 특정일 오픈(성수기 등) — 금·토 외 날짜를 운영일로 등록하고 슬롯 즉시 생성. */
 export async function adminAddOpenDate(date: string, note?: string): Promise<void> {
   await requireAdmin();

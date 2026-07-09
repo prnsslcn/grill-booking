@@ -1,4 +1,5 @@
 import { CloseDateButton } from '@/components/admin/CloseDateButton';
+import { ReopenDateButton } from '@/components/admin/ReopenDateButton';
 import { GenerateSlotsForm } from '@/components/admin/GenerateSlotsForm';
 import { OpenDatesCalendar } from '@/components/admin/OpenDatesCalendar';
 import { SlotToggle } from '@/components/admin/SlotToggle';
@@ -64,7 +65,12 @@ export default async function AdminSlotsPage({
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-bold text-ink">슬롯 열기/닫기</h2>
-          {date && slots.length > 0 && <CloseDateButton date={date} />}
+          {date && slots.length > 0 && (
+            <div className="flex items-center gap-2">
+              <ReopenDateButton date={date} />
+              <CloseDateButton date={date} />
+            </div>
+          )}
         </div>
         <form className="mt-4 flex items-end gap-3" method="get">
           <div className="text-sm">

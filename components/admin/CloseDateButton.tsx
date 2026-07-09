@@ -2,13 +2,13 @@
 
 import { useTransition } from 'react';
 
-import { adminCloseDate } from '@/lib/admin/actions';
+import { adminCloseOperatingDate } from '@/lib/admin/actions';
 
 export function CloseDateButton({ date }: { date: string }) {
   const [pending, startTransition] = useTransition();
   function onClick() {
-    if (!confirm(`${date}의 열린 슬롯을 모두 닫습니다(휴무 처리).`)) return;
-    startTransition(async () => adminCloseDate(date));
+    if (!confirm(`${date}을(를) 휴무 처리합니다. 고객 예약 달력에서도 닫힙니다(확정 예약은 유지).`)) return;
+    startTransition(async () => adminCloseOperatingDate(date));
   }
   return (
     <button
