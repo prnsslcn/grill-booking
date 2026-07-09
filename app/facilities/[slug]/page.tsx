@@ -5,7 +5,7 @@ import { notFound, redirect } from 'next/navigation';
 import { FacilityGallery } from '@/components/site/FacilityGallery';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { FACILITIES, facilityBySlug, meatGrams } from '@/lib/facilities';
+import { FACILITIES, facilityBySlug, isHiddenFacilityType, meatGrams } from '@/lib/facilities';
 import { BEEF_ENABLED } from '@/lib/config';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -13,8 +13,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export const revalidate = 60;
 
 export function generateStaticParams() {
-  // 준비 중 시설은 /soon으로 리다이렉트되므로 상세는 사전 생성하지 않음
-  return FACILITIES.filter((f) => !f.comingSoon).map((f) => ({ slug: f.slug }));
+  // 준비 중·판매 중단 시설은 상세를 사전 생성하지 않음
+  return FACILITIES.filter((f) => !f.comingSoon && !isHiddenFacilityType(f.type)).map((f) => ({
+    slug: f.slug,
+  }));
 }
 
 export async function generateMetadata({
@@ -48,11 +50,11 @@ export default async function FacilityPage({
 }) {
   const { slug } = await params;
   const f = facilityBySlug(slug);
-  if (!f) notFound();
+  if (!f || isHiddenFacilityType(f.type)) notFound();
   if (f.comingSoon) redirect(`/facilities/${f.slug}/soon`);
 
   const prices = await getPrices(f.type);
-  const others = FACILITIES.filter((o) => o.slug !== f.slug);
+  const others = FACILITIES.filter((o) => o.slug !== f.slug && !isHiddenFacilityType(o.type));
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">

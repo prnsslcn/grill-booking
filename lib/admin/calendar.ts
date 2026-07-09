@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { isHiddenFacilityType } from '@/lib/facilities';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface BoardFacility {
@@ -55,12 +56,15 @@ export async function getMonthBoard(year: number, month0: number): Promise<Month
   }
 
   return {
-    facilities: (facs ?? []).map((f) => ({
-      type: f.type,
-      name: f.name,
-      totalUnits: f.total_units,
-      capacity: f.capacity,
-    })),
+    // 판매 중단(숨김) 시설은 보드·유선예약 폼에서 제외(기존 예약은 리스트에서 계속 조회됨)
+    facilities: (facs ?? [])
+      .filter((f) => !isHiddenFacilityType(f.type))
+      .map((f) => ({
+        type: f.type,
+        name: f.name,
+        totalUnits: f.total_units,
+        capacity: f.capacity,
+      })),
     openDates: (opens ?? []).map((o) => o.date),
     closedDates: (closes ?? []).map((c) => c.date),
     counts,

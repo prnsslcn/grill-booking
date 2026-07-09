@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { BEEF_ENABLED, isBeefAddonKey } from '@/lib/config';
-import { isComingSoonType } from '@/lib/facilities';
+import { isComingSoonType, isHiddenFacilityType } from '@/lib/facilities';
 import { isWithinBookingWindow } from '@/lib/policy/booking-window';
 import type { FacilityType, Part } from '@/types/domain';
 
@@ -73,8 +73,10 @@ export async function getAvailability(date: string): Promise<FacilityAvailabilit
 
   if (!facilities) return [];
 
-  // 준비 중(comingSoon) 시설은 예약 목록에서 제외 — slotId 자체를 노출하지 않는다(선점 불가).
-  const bookable = facilities.filter((f) => !isComingSoonType(f.type));
+  // 준비 중(comingSoon)·판매 중단(hidden) 시설은 예약 목록에서 제외 — slotId 자체를 노출하지 않는다(선점 불가).
+  const bookable = facilities.filter(
+    (f) => !isComingSoonType(f.type) && !isHiddenFacilityType(f.type),
+  );
 
   // facility_id → { 1: slotId|null, 2: slotId|null }
   const openByFacility = new Map<string, Map<number, string>>();

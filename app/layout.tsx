@@ -5,6 +5,7 @@ import './globals.css';
 import 'lenis/dist/lenis.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 import { ScrollResetOnNavigate } from '@/components/site/ScrollResetOnNavigate';
+import { OUTDOOR_TABLE_ENABLED } from '@/lib/config';
 
 // 캠프·그릴·숲 컨셉의 묵직한 슬랩 세리프. 영문 브랜드 워드마크에 사용(대소문자 구분).
 const brandFont = Alfa_Slab_One({
@@ -16,8 +17,9 @@ const brandFont = Alfa_Slab_One({
 
 export const metadata: Metadata = {
   title: '알펜시아 BBQ — 예약',
-  description:
-    '대관령 알펜시아 BBQ — 야외 테이블·타프·카바나에서 즐기는 프리미엄 BBQ. 금·토 운영, 2부제 사전 예약.',
+  description: OUTDOOR_TABLE_ENABLED
+    ? '대관령 알펜시아 BBQ — 야외 테이블·타프·카바나에서 즐기는 프리미엄 BBQ. 금·토 운영, 2부제 사전 예약.'
+    : '대관령 알펜시아 BBQ — 타프·카바나에서 즐기는 프리미엄 BBQ. 금·토 운영, 2부제 사전 예약.',
 };
 
 export default function RootLayout({

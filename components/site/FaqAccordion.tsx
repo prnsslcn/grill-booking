@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { BEEF_ENABLED } from '@/lib/config';
+import { BEEF_ENABLED, OUTDOOR_TABLE_ENABLED } from '@/lib/config';
 
 type Faq = { q: string; a: string[] };
 
@@ -47,10 +47,14 @@ const FAQS: Faq[] = [
       '단체 BBQ(최대 200명)는 사전 예약·문의로 진행됩니다. 단체 예약은 최소 일주일 전에 문의해 주세요.',
     ],
   },
-  {
-    q: '우천 시에는 어떻게 되나요?',
-    a: ['야외 테이블(4인)은 우천 시 운영이 제한될 수 있습니다.'],
-  },
+  ...(OUTDOOR_TABLE_ENABLED
+    ? [
+        {
+          q: '우천 시에는 어떻게 되나요?',
+          a: ['야외 테이블(4인)은 우천 시 운영이 제한될 수 있습니다.'],
+        },
+      ]
+    : []),
 ];
 
 export function FaqAccordion() {

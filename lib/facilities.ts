@@ -3,6 +3,8 @@
  * 가격·정원 등 변동값은 DB(facilities)에서 가져오고, 여기엔 정적 소개 콘텐츠만 둔다.
  */
 
+import { OUTDOOR_TABLE_ENABLED } from '@/lib/config';
+
 export type FacilityType = 'tarp_tent' | 'cabin' | 'outdoor_table';
 
 export interface FacilityContent {
@@ -114,6 +116,19 @@ export function facilityByType(type: string): FacilityContent | undefined {
 /** 준비 중(comingSoon) 시설 종류인지 — 예약 노출/생성 차단의 단일 기준. */
 export function isComingSoonType(type: string): boolean {
   return FACILITIES.some((f) => f.type === type && f.comingSoon);
+}
+
+/**
+ * 판매 중단으로 숨긴 시설 종류인지 — 노출/예약/어드민 보드 차단의 단일 기준.
+ * 현재는 OUTDOOR_TABLE_ENABLED=false면 outdoor_table을 숨긴다.
+ */
+export function isHiddenFacilityType(type: string): boolean {
+  return !OUTDOOR_TABLE_ENABLED && type === 'outdoor_table';
+}
+
+/** 고객 노출용(숨김 제외) 시설 콘텐츠 목록 — 헤더 드롭다운·시설 상세가 공유. */
+export function visibleFacilities(): FacilityContent[] {
+  return FACILITIES.filter((f) => !isHiddenFacilityType(f.type));
 }
 
 /** 1인 기준 고기 제공량(g) */

@@ -6,8 +6,8 @@ import { MissionBricks } from '@/components/site/MissionBricks';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { TempHeader } from '@/components/site/TempHeader';
 import { getAddons } from '@/lib/booking/availability';
-import { meatGrams } from '@/lib/facilities';
-import { BEEF_ENABLED } from '@/lib/config';
+import { isHiddenFacilityType, meatGrams } from '@/lib/facilities';
+import { BEEF_ENABLED, OUTDOOR_TABLE_ENABLED } from '@/lib/config';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -17,8 +17,9 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: '알펜시아 BBQ — 대관령 프리미엄 BBQ',
-  description:
-    '대관령 알펜시아 BBQ. 타프 텐트·카바나·야외 테이블에서 즐기는 고기세트 포함 프리미엄 BBQ. 금·토 2부제 운영. 예약 문의 010-3045-2994.',
+  description: OUTDOOR_TABLE_ENABLED
+    ? '대관령 알펜시아 BBQ. 타프 텐트·카바나·야외 테이블에서 즐기는 고기세트 포함 프리미엄 BBQ. 금·토 2부제 운영. 예약 문의 010-3045-2994.'
+    : '대관령 알펜시아 BBQ. 타프 텐트·카바나에서 즐기는 고기세트 포함 프리미엄 BBQ. 금·토 2부제 운영. 예약 문의 010-3045-2994.',
 };
 
 const PHONE = '010-3045-2994';
@@ -53,7 +54,8 @@ async function getFacilities() {
     .select('type, name, capacity, price_pork, price_beef, total_units')
     .eq('is_active', true)
     .order('capacity', { ascending: true });
-  return data ?? [];
+  // 판매 중단(숨김) 시설 제외
+  return (data ?? []).filter((f) => !isHiddenFacilityType(f.type));
 }
 
 export default async function TempLanding() {

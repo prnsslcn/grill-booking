@@ -2,6 +2,8 @@
 
 import { motion, type TargetAndTransition } from 'framer-motion';
 
+import { OUTDOOR_TABLE_ENABLED } from '@/lib/config';
+
 // 스크롤 진입 시 브릭이 화면 밖(좌·우·하단)에서 슬라이드 인. 각 요소가 뷰포트에 들어올 때
 // 개별 발화하므로 섹션이 길면 자연스러운 스태거가 된다. (섹션에 overflow-hidden 필요)
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -134,8 +136,8 @@ export function MissionBricks() {
             transition={TRANS}
           >
             <p>
-              이용 2일 전까지 100% 환불, 1일 전 50% 환불됩니다. 이용 당일·노쇼는 환불이 불가하며,
-              우천 시 야외 테이블은 운영이 제한될 수 있습니다.
+              이용 2일 전까지 100% 환불, 1일 전 50% 환불됩니다. 이용 당일·노쇼는 환불이 불가합니다.
+              {OUTDOOR_TABLE_ENABLED && ' 우천 시 야외 테이블은 운영이 제한될 수 있습니다.'}
             </p>
             <p>
               예약·문의 및 단체 BBQ(최대 200명)는 010-3045-2994 (11:00~19:00)로 연락 주세요.

@@ -7,7 +7,7 @@ import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { NoticePopup } from '@/components/site/NoticePopup';
 import { BEEF_ENABLED } from '@/lib/config';
-import { facilityByType, isComingSoonType, meatGrams } from '@/lib/facilities';
+import { facilityByType, isComingSoonType, isHiddenFacilityType, meatGrams } from '@/lib/facilities';
 import { formatWon } from '@/lib/format';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -45,7 +45,8 @@ async function getFacilities() {
     .select('type, name, capacity, price_pork, price_beef, total_units')
     .eq('is_active', true)
     .order('capacity', { ascending: true });
-  return data ?? [];
+  // 판매 중단(숨김) 시설 제외
+  return (data ?? []).filter((f) => !isHiddenFacilityType(f.type));
 }
 
 

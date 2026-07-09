@@ -4,10 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { FACILITIES } from '@/lib/facilities';
+import { visibleFacilities } from '@/lib/facilities';
 
-// nav 상품 리스트는 정원(4·6·8인) 오름차순으로 노출
-const NAV_FACILITIES = [...FACILITIES].sort((a, b) => a.capacity - b.capacity);
+// nav 상품 리스트는 정원(4·6·8인) 오름차순으로 노출 (판매 중단 시설은 제외)
+const NAV_FACILITIES = visibleFacilities().sort((a, b) => a.capacity - b.capacity);
 
 /**
  * 사이트 헤더. 3분할 레이아웃: 좌측 로고 · 중앙 메뉴(시설안내 드롭다운) · 우측 예약 CTA.

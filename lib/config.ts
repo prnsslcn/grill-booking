@@ -13,3 +13,10 @@ export const BEEF_ENABLED = false;
 export function isBeefAddonKey(key: string): boolean {
   return key.startsWith('beef');
 }
+
+/**
+ * 야외 테이블(outdoor_table) 판매 여부.
+ * false면 홈·/phone·헤더 드롭다운·시설상세·예약·어드민 보드에서 숨긴다.
+ * 되살리려면 이 값만 true로 바꾸면 된다(시설 콘텐츠·DB·타입은 그대로 유지).
+ */
+export const OUTDOOR_TABLE_ENABLED = false;
