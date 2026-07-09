@@ -129,6 +129,15 @@ export async function adminAddOpenDate(date: string, note?: string): Promise<voi
   // 오픈일 등록 후 해당 날짜 슬롯 멱등 생성(이제 운영일로 인정됨)
   const { error: genErr } = await supabase.rpc('generate_slots', { p_from: date, p_to: date });
   if (genErr) throw new Error(`슬롯 생성 실패: ${genErr.message}`);
+  // 이전에 오픈→해제했던 날짜면 슬롯이 closed로 남아 있고 generate_slots는 기존 슬롯 상태를
+  // 바꾸지 않으므로(ON CONFLICT DO NOTHING), 닫혀 있던 슬롯을 다시 연다(재오픈과 동일 동작).
+  // 예약된(booked) 슬롯은 그대로 둔다.
+  const { error: openErr } = await supabase
+    .from('slots')
+    .update({ status: 'open' })
+    .eq('date', date)
+    .eq('status', 'closed');
+  if (openErr) throw new Error(`슬롯 열기 실패: ${openErr.message}`);
   revalidatePath('/admin/slots');
   revalidatePath('/booking');
 }
