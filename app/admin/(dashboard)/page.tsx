@@ -8,6 +8,7 @@ import { listBookings } from '@/lib/admin/bookings';
 import { getMonthBoard } from '@/lib/admin/calendar';
 import { getAddons } from '@/lib/booking/availability';
 import { formatDateKorean, formatWon } from '@/lib/format';
+import { kstToday } from '@/lib/policy/booking-window';
 import { PARTS } from '@/types/domain';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,15 @@ function SearchForm({ defaultValue = '' }: { defaultValue?: string }) {
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ y?: string; m?: string; date?: string; dp?: string; q?: string }>;
+  searchParams: Promise<{
+    y?: string;
+    m?: string;
+    date?: string;
+    dp?: string;
+    q?: string;
+    sort?: string;
+    range?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const q = (sp.q ?? '').trim();
@@ -98,11 +107,16 @@ export default async function AdminDashboard({
   const m = Number(sp.m) || now.getMonth() + 1; // 1-based
   const date = sp.date ?? '';
   const dp = sp.dp === '1' || sp.dp === '2' ? sp.dp : ''; // 상세 예약목록 부 필터('' = 전체)
+  // 기본 화면(날짜 미선택) 리스트: 정렬·기간 옵션
+  const sort = sp.sort === 'usage' ? 'usage' : 'confirmed'; // confirmed=최근 예약순, usage=이용일순
+  const range = sp.range === 'week' || sp.range === 'all' ? sp.range : 'month'; // 기본 이 달
 
   const board = await getMonthBoard(y, m - 1);
   const dateBookings = date ? await listBookings({ date }) : [];
   const shownBookings = dp ? dateBookings.filter((b) => String(b.part) === dp) : dateBookings;
   const addons = date ? await getAddons() : [];
+  // 날짜 미선택 시에만 기본 리스트를 조회(넉넉히 가져와 기간·정렬은 서버에서 적용)
+  const baseBookings = date ? [] : await listBookings({ limit: 1000 });
 
   const firstDow = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
@@ -126,9 +140,35 @@ export default async function AdminDashboard({
 
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
-  const navHref = (yy: number, mm: number) => `/admin?y=${yy}&m=${mm}`;
+  const navHref = (yy: number, mm: number) =>
+    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}`;
   const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
   const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
+  const listHref = (s: string, r: string) => `/admin?y=${y}&m=${m}&sort=${s}&range=${r}`;
+
+  // 기본 리스트: 기간 필터 + 정렬. pending_payment(결제 미완, 임시)는 제외.
+  const monthPrefix = `${y}-${pad(m)}`;
+  const todayStr = kstToday();
+  const t = new Date(`${todayStr}T00:00:00Z`);
+  const monday = new Date(t);
+  monday.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7)); // 이번 주 월요일(KST)
+  const weekStart = monday.toISOString().slice(0, 10);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const weekEnd = sunday.toISOString().slice(0, 10);
+
+  let listRows = baseBookings.filter((b) => b.status !== 'pending_payment');
+  if (range === 'month') listRows = listRows.filter((b) => b.date?.startsWith(monthPrefix));
+  else if (range === 'week')
+    listRows = listRows.filter((b) => b.date && b.date >= weekStart && b.date <= weekEnd);
+  if (sort === 'usage') {
+    listRows = [...listRows].sort((a, b) => {
+      const da = a.date ?? '9999-99-99';
+      const db = b.date ?? '9999-99-99';
+      return da !== db ? da.localeCompare(db) : (a.part ?? 9) - (b.part ?? 9);
+    });
+  } // sort === 'confirmed' 은 listBookings의 created_at desc(최근 예약순) 유지
+  const rangeLabel = range === 'week' ? '이번 주' : range === 'all' ? '전체' : `${y}년 ${m}월`;
 
   return (
     <div>
@@ -238,6 +278,95 @@ export default async function AdminDashboard({
           );
         })}
       </div>
+
+      {/* 기본 리스트 (날짜 미선택 시) — 정렬·기간 옵션 */}
+      {!date && (
+        <div className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-ink">예약 리스트</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex rounded-lg border border-line p-0.5">
+                {(
+                  [
+                    ['confirmed', '예약 확정순'],
+                    ['usage', '이용일순'],
+                  ] as const
+                ).map(([v, label]) => (
+                  <Link
+                    key={v}
+                    href={listHref(v, range)}
+                    scroll={false}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
+                      sort === v ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex rounded-lg border border-line p-0.5">
+                {(
+                  [
+                    ['week', '이번 주'],
+                    ['month', '이 달'],
+                    ['all', '전체'],
+                  ] as const
+                ).map(([v, label]) => (
+                  <Link
+                    key={v}
+                    href={listHref(sort, v)}
+                    scroll={false}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
+                      range === v ? 'bg-accent text-white' : 'text-muted hover:bg-line-soft'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-muted">
+            {rangeLabel} · {listRows.length}건 ·{' '}
+            {sort === 'usage' ? '이용일 가까운 순' : '최근 예약순'}
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {listRows.map((b) => {
+              const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
+              const offline = b.source === 'offline';
+              return (
+                <Card key={b.bookingNumber} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3">
+                  <Badge tone={meta.tone}>{meta.label}</Badge>
+                  {offline && <Badge tone="neutral">유선</Badge>}
+                  <span className="text-sm font-medium text-muted">
+                    {b.date ? formatDateKorean(b.date) : '-'}
+                    {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                  </span>
+                  <span className="font-medium text-ink">{b.facilityName}</span>
+                  <span className="text-sm text-muted">
+                    {b.guestName} · {b.guestPhone} · {b.guestCount}명
+                  </span>
+                  <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
+                  {offline && b.status === 'confirmed' ? (
+                    <OfflineCancelButton bookingId={b.id} />
+                  ) : (
+                    <Link
+                      href={`/admin/bookings/${b.bookingNumber}`}
+                      className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted hover:bg-line-soft"
+                    >
+                      상세
+                    </Link>
+                  )}
+                </Card>
+              );
+            })}
+            {listRows.length === 0 && (
+              <p className="py-10 text-center text-sm text-subtle">해당 조건의 예약이 없습니다.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 선택 날짜 상세 */}
       {date && (

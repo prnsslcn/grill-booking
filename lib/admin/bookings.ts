@@ -118,6 +118,7 @@ export async function listBookings(filter: {
   date?: string;
   status?: string;
   q?: string;
+  limit?: number;
 }): Promise<AdminBooking[]> {
   const supabase = createAdminClient();
 
@@ -127,7 +128,7 @@ export async function listBookings(filter: {
       'id, booking_number, status, source, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, slots(date, part)',
     )
     .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(filter.limit ?? 200);
 
   if (filter.status) query = query.eq('status', filter.status);
 
