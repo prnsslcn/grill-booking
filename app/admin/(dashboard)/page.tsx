@@ -58,6 +58,8 @@ export default async function AdminDashboard({
     dir?: string;
     page?: string;
     past?: string;
+    cx?: string;
+    rf?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -115,6 +117,8 @@ export default async function AdminDashboard({
   // 방향: 미지정 시 필드별 자연스러운 기본값(예약순=최근 먼저=desc, 이용일순=가까운 먼저=asc)
   const dir = sp.dir === 'asc' || sp.dir === 'desc' ? sp.dir : sort === 'usage' ? 'asc' : 'desc';
   const hidePast = sp.past === 'hide'; // 이용일이 오늘(KST) 이전인 예약 숨기기
+  const showCancelled = sp.cx === '1'; // 취소 예약 표시(기본 숨김)
+  const showRefunded = sp.rf === '1'; // 환불완료 예약 표시(기본 숨김)
   const listPage = Math.max(1, Number(sp.page) || 1);
 
   const board = await getMonthBoard(y, m - 1);
@@ -146,8 +150,9 @@ export default async function AdminDashboard({
 
   const prev = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
   const next = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
+  const cxrf = `&cx=${showCancelled ? '1' : '0'}&rf=${showRefunded ? '1' : '0'}`;
   const navHref = (yy: number, mm: number) =>
-    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}&past=${hidePast ? 'hide' : 'show'}`;
+    `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}&past=${hidePast ? 'hide' : 'show'}${cxrf}`;
   const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
   const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
   // 기본 리스트 URL 빌더 — 지정 안 한 항목은 현재값 유지, 페이지는 명시(변경 시 1로 리셋)
@@ -157,8 +162,10 @@ export default async function AdminDashboard({
     dir?: string;
     page?: number;
     past?: string;
+    cx?: string;
+    rf?: string;
   }) =>
-    `/admin?y=${y}&m=${m}&sort=${o.sort ?? sort}&range=${o.range ?? range}&dir=${o.dir ?? dir}&past=${o.past ?? (hidePast ? 'hide' : 'show')}&page=${o.page ?? listPage}`;
+    `/admin?y=${y}&m=${m}&sort=${o.sort ?? sort}&range=${o.range ?? range}&dir=${o.dir ?? dir}&past=${o.past ?? (hidePast ? 'hide' : 'show')}&cx=${o.cx ?? (showCancelled ? '1' : '0')}&rf=${o.rf ?? (showRefunded ? '1' : '0')}&page=${o.page ?? listPage}`;
 
   // 기본 리스트: 기간 필터 + 정렬(필드+방향). pending_payment(결제 미완, 임시)는 제외.
   const monthPrefix = `${y}-${pad(m)}`;
@@ -172,6 +179,9 @@ export default async function AdminDashboard({
   const weekEnd = sunday.toISOString().slice(0, 10);
 
   let listRows = baseBookings.filter((b) => b.status !== 'pending_payment');
+  // 취소·환불완료는 토글로 표시 여부 제어(기본 숨김)
+  if (!showCancelled) listRows = listRows.filter((b) => b.status !== 'cancelled');
+  if (!showRefunded) listRows = listRows.filter((b) => b.status !== 'refunded');
   if (range === 'month') listRows = listRows.filter((b) => b.date?.startsWith(monthPrefix));
   else if (range === 'week')
     listRows = listRows.filter((b) => b.date && b.date >= weekStart && b.date <= weekEnd);
@@ -374,11 +384,40 @@ export default async function AdminDashboard({
               >
                 지난 예약 숨기기{hidePast ? ' ✓' : ''}
               </Link>
+              {/* 취소 표시 토글 */}
+              <Link
+                href={listHref({ cx: showCancelled ? '0' : '1', page: 1 })}
+                scroll={false}
+                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                  showCancelled
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-line text-muted hover:bg-line-soft'
+                }`}
+                title="취소 예약 표시"
+              >
+                취소{showCancelled ? ' ✓' : ''}
+              </Link>
+              {/* 환불완료 표시 토글 */}
+              <Link
+                href={listHref({ rf: showRefunded ? '0' : '1', page: 1 })}
+                scroll={false}
+                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                  showRefunded
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-line text-muted hover:bg-line-soft'
+                }`}
+                title="환불완료 예약 표시"
+              >
+                환불완료{showRefunded ? ' ✓' : ''}
+              </Link>
             </div>
           </div>
           <p className="mt-1 text-sm text-muted">
             {rangeLabel} · 총 {totalRows}건 · {sort === 'usage' ? '이용일순' : '예약순'} · {dirLabel}
             {hidePast ? ' · 지난 예약 제외' : ''}
+            {!showCancelled || !showRefunded
+              ? ` · ${[!showCancelled ? '취소' : '', !showRefunded ? '환불완료' : ''].filter(Boolean).join('·')} 숨김`
+              : ''}
           </p>
 
           <div className="mt-3 space-y-2">
