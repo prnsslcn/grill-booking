@@ -32,6 +32,8 @@ export async function adminCreateBooking(input: {
   meat?: 'pork' | 'beef';
   note?: string;
   addons?: Record<string, number>;
+  /** 상품가 오버라이드(원). 지정 시 시설 기본가 대신 사용(예: 타프 4인 특가). */
+  amount?: number;
 }): Promise<ActionResult> {
   await requireAdmin();
   if (input.meat === 'beef' && !BEEF_ENABLED) {
@@ -52,6 +54,7 @@ export async function adminCreateBooking(input: {
     p_meat: input.meat ?? 'pork',
     p_note: input.note?.trim() || undefined,
     p_addons: cleanAddons,
+    ...(input.amount != null ? { p_amount: input.amount } : {}),
   });
   if (error) {
     const m = error.message;

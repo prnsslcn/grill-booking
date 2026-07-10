@@ -33,6 +33,8 @@ interface SnapshotShape {
 const MEAT_LABEL: Record<string, string> = { pork: 'Pork', beef: 'Beef' };
 
 export interface BookingDetail {
+  id: string;
+  source: string;
   bookingNumber: string;
   status: string;
   guestName: string;
@@ -69,7 +71,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
   const { data } = await supabase
     .from('bookings')
     .select(
-      'booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, updated_at, slots(date, part), payments(status, method, amount, approved_at, cancelled_at, toss_payment_key, created_at), notifications(type, channel, recipient, status, sent_at)',
+      'id, source, booking_number, status, guest_name, guest_phone, guest_count, facility_snapshot, amount, created_at, updated_at, slots(date, part), payments(status, method, amount, approved_at, cancelled_at, toss_payment_key, created_at), notifications(type, channel, recipient, status, sent_at)',
     )
     .eq('booking_number', bookingNumber)
     .maybeSingle();
@@ -89,6 +91,8 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     }));
 
   return {
+    id: data.id,
+    source: data.source,
     bookingNumber: data.booking_number,
     status: data.status,
     guestName: data.guest_name,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { adminCreateBooking } from '@/lib/admin/actions';
 import { BEEF_ENABLED } from '@/lib/config';
@@ -29,12 +29,36 @@ export function OfflineBookingForm({
   addons: AddonOpt[];
   defaultPart: number;
 }) {
-  const [facilityType, setFacilityType] = useState(facilities[0]?.type ?? '');
+  // 상품 목록: 각 시설 + 특가 프리셋(타프 4인). amount가 있으면 시설 기본가 대신 그 값으로 등록.
+  const products = useMemo(() => {
+    const list: {
+      key: string;
+      facilityType: string;
+      label: string;
+      guests: number;
+      amount?: number;
+    }[] = [];
+    for (const f of facilities) {
+      list.push({ key: f.type, facilityType: f.type, label: `${f.name} · ${f.capacity}인`, guests: f.capacity });
+      if (f.type === 'tarp_tent') {
+        list.push({
+          key: 'tarp_tent_4',
+          facilityType: 'tarp_tent',
+          label: '타프 텐트 · 4인 특가 (130,000원)',
+          guests: 4,
+          amount: 130000,
+        });
+      }
+    }
+    return list;
+  }, [facilities]);
+
+  const [productKey, setProductKey] = useState(products[0]?.key ?? '');
+  const product = products.find((p) => p.key === productKey) ?? products[0];
   const [part, setPart] = useState(defaultPart);
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const cap = facilities.find((f) => f.type === facilityType)?.capacity ?? 4;
-  const [guestCount, setGuestCount] = useState(cap);
+  const [guestCount, setGuestCount] = useState(products[0]?.guests ?? 4);
   const [meat, setMeat] = useState<'pork' | 'beef'>('pork');
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [note, setNote] = useState('유선 예약');
@@ -42,9 +66,10 @@ export function OfflineBookingForm({
   const [ok, setOk] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function onFacility(type: string) {
-    setFacilityType(type);
-    setGuestCount(facilities.find((f) => f.type === type)?.capacity ?? guestCount);
+  function onProduct(key: string) {
+    setProductKey(key);
+    const p = products.find((x) => x.key === key);
+    if (p) setGuestCount(p.guests);
   }
 
   function submit(e: React.FormEvent) {
@@ -61,7 +86,7 @@ export function OfflineBookingForm({
     startTransition(async () => {
       try {
         const res = await adminCreateBooking({
-          facilityType,
+          facilityType: product?.facilityType ?? '',
           date,
           part,
           guestName,
@@ -70,6 +95,7 @@ export function OfflineBookingForm({
           meat,
           note,
           addons,
+          amount: product?.amount,
         });
         if (!res.ok) {
           setErr(res.error);
@@ -93,11 +119,11 @@ export function OfflineBookingForm({
     <form onSubmit={submit} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-ink">시설</span>
-          <select value={facilityType} onChange={(e) => onFacility(e.target.value)} className={inputCls}>
-            {facilities.map((f) => (
-              <option key={f.type} value={f.type}>
-                {f.name}
+          <span className="mb-1 block font-medium text-ink">상품</span>
+          <select value={productKey} onChange={(e) => onProduct(e.target.value)} className={inputCls}>
+            {products.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.label}
               </option>
             ))}
           </select>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { CancelButton } from '@/components/admin/CancelButton';
+import { OfflineCancelButton } from '@/components/admin/OfflineCancelButton';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { getBookingDetail } from '@/lib/admin/bookings';
@@ -48,6 +49,7 @@ export default async function BookingDetailPage({
   }
 
   const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
+  const isOffline = b.source === 'offline';
   const refundPreview =
     b.status === 'confirmed' && b.date ? refundAmount(b.amount, b.date, new Date()) : 0;
 
@@ -59,6 +61,7 @@ export default async function BookingDetailPage({
 
       <div className="flex flex-wrap items-center gap-3">
         <Badge tone={meta.tone}>{meta.label}</Badge>
+        {isOffline && <Badge tone="neutral">유선</Badge>}
         <h1 className="font-mono text-lg font-bold text-ink">{b.bookingNumber}</h1>
       </div>
 
@@ -89,17 +92,28 @@ export default async function BookingDetailPage({
       </Card>
 
       {/* 취소·환불 */}
-      {b.status === 'confirmed' && (
-        <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
-          <div>
-            <p className="font-semibold text-ink">예약 취소 · 환불</p>
-            <p className="mt-1 text-sm text-muted">
-              지금 취소 시 환불 예상: <span className="font-semibold text-ink">{formatWon(refundPreview)}</span>
-            </p>
-          </div>
-          <CancelButton bookingNumber={b.bookingNumber} refundAmount={refundPreview} />
-        </Card>
-      )}
+      {b.status === 'confirmed' &&
+        (isOffline ? (
+          <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div>
+              <p className="font-semibold text-ink">유선 예약 취소</p>
+              <p className="mt-1 text-sm text-muted">
+                결제 없이 등록된 유선 예약입니다. 취소 시 결제 환불 없이 슬롯만 해제됩니다.
+              </p>
+            </div>
+            <OfflineCancelButton bookingId={b.id} />
+          </Card>
+        ) : (
+          <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div>
+              <p className="font-semibold text-ink">예약 취소 · 환불</p>
+              <p className="mt-1 text-sm text-muted">
+                지금 취소 시 환불 예상: <span className="font-semibold text-ink">{formatWon(refundPreview)}</span>
+              </p>
+            </div>
+            <CancelButton bookingNumber={b.bookingNumber} refundAmount={refundPreview} />
+          </Card>
+        ))}
 
       {/* 결제 내역 */}
       <div>

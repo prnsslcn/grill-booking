@@ -382,6 +382,7 @@ export type Database = {
           p_meat?: string
           p_note?: string
           p_addons?: Json
+          p_amount?: number
         }
         Returns: {
           booking_id: string

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { OfflineBookingForm } from '@/components/admin/OfflineBookingForm';
-import { OfflineCancelButton } from '@/components/admin/OfflineCancelButton';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { listBookings } from '@/lib/admin/bookings';
@@ -387,29 +386,21 @@ export default async function AdminDashboard({
               const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
               const offline = b.source === 'offline';
               return (
-                <Card key={b.bookingNumber} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3">
-                  <Badge tone={meta.tone}>{meta.label}</Badge>
-                  {offline && <Badge tone="neutral">유선</Badge>}
-                  <span className="text-sm font-medium text-muted">
-                    {b.date ? formatDateKorean(b.date) : '-'}
-                    {b.part ? ` · ${PARTS[b.part].label}` : ''}
-                  </span>
-                  <span className="font-medium text-ink">{b.facilityName}</span>
-                  <span className="text-sm text-muted">
-                    {b.guestName} · {b.guestPhone} · {b.guestCount}명
-                  </span>
-                  <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
-                  {offline && b.status === 'confirmed' ? (
-                    <OfflineCancelButton bookingId={b.id} />
-                  ) : (
-                    <Link
-                      href={`/admin/bookings/${b.bookingNumber}`}
-                      className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted hover:bg-line-soft"
-                    >
-                      상세
-                    </Link>
-                  )}
-                </Card>
+                <Link key={b.bookingNumber} href={`/admin/bookings/${b.bookingNumber}`} className="block">
+                  <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
+                    <Badge tone={meta.tone}>{meta.label}</Badge>
+                    {offline && <Badge tone="neutral">유선</Badge>}
+                    <span className="text-sm font-medium text-muted">
+                      {b.date ? formatDateKorean(b.date) : '-'}
+                      {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                    </span>
+                    <span className="font-medium text-ink">{b.facilityName}</span>
+                    <span className="text-sm text-muted">
+                      {b.guestName} · {b.guestPhone} · {b.guestCount}명
+                    </span>
+                    <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
+                  </Card>
+                </Link>
               );
             })}
             {totalRows === 0 && (
@@ -522,26 +513,18 @@ export default async function AdminDashboard({
                 const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
                 const offline = b.source === 'offline';
                 return (
-                  <Card key={b.bookingNumber} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3">
-                    <Badge tone={meta.tone}>{meta.label}</Badge>
-                    {offline && <Badge tone="neutral">유선</Badge>}
-                    <span className="font-medium text-ink">{b.facilityName}</span>
-                    <span className="text-sm text-muted">{b.part ? PARTS[b.part].label : '-'}</span>
-                    <span className="text-sm text-muted">
-                      {b.guestName} · {b.guestPhone} · {b.guestCount}명
-                    </span>
-                    <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
-                    {offline && b.status === 'confirmed' ? (
-                      <OfflineCancelButton bookingId={b.id} />
-                    ) : (
-                      <Link
-                        href={`/admin/bookings/${b.bookingNumber}`}
-                        className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted hover:bg-line-soft"
-                      >
-                        상세
-                      </Link>
-                    )}
-                  </Card>
+                  <Link key={b.bookingNumber} href={`/admin/bookings/${b.bookingNumber}`} className="block">
+                    <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
+                      <Badge tone={meta.tone}>{meta.label}</Badge>
+                      {offline && <Badge tone="neutral">유선</Badge>}
+                      <span className="font-medium text-ink">{b.facilityName}</span>
+                      <span className="text-sm text-muted">{b.part ? PARTS[b.part].label : '-'}</span>
+                      <span className="text-sm text-muted">
+                        {b.guestName} · {b.guestPhone} · {b.guestCount}명
+                      </span>
+                      <span className="ml-auto text-sm font-semibold text-ink">{formatWon(b.amount)}</span>
+                    </Card>
+                  </Link>
                 );
               })}
               {shownBookings.length === 0 && (

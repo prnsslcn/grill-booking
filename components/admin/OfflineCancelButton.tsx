@@ -1,11 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
 import { adminCancelOfflineBooking } from '@/lib/admin/actions';
 
 /** 오프라인(유선) 예약 취소 — 슬롯 복구. 오등록 정정용. */
 export function OfflineCancelButton({ bookingId }: { bookingId: string }) {
+  const router = useRouter();
   const [pending, start] = useTransition();
   return (
     <button
@@ -16,7 +18,11 @@ export function OfflineCancelButton({ bookingId }: { bookingId: string }) {
         start(async () => {
           try {
             const res = await adminCancelOfflineBooking(bookingId);
-            if (!res.ok) alert(res.error);
+            if (!res.ok) {
+              alert(res.error);
+              return;
+            }
+            router.refresh();
           } catch (e) {
             alert(e instanceof Error ? e.message : '취소 실패');
           }
