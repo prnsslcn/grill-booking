@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
-import { getSalesSummary } from '@/lib/admin/sales';
+import { getOfflineSummary, getSalesSummary } from '@/lib/admin/sales';
 import { formatDateKorean, formatWon } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export default async function AdminSalesPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { from = monthStart(), to = kstToday() } = await searchParams;
-  const s = await getSalesSummary(from, to);
+  const [s, off] = await Promise.all([getSalesSummary(from, to), getOfflineSummary(from, to)]);
 
   return (
     <div>
@@ -52,6 +52,28 @@ export default async function AdminSalesPage({
           <p className="mt-1 text-2xl font-extrabold text-ink">{s.partialCount}건</p>
         </Card>
       </div>
+
+      {/* 유선 예약 매출 — 토스 결제 미포함(현장·전화), 별도 합산 */}
+      <Card className="mt-4 flex flex-wrap items-center justify-between gap-3 border-dashed p-5">
+        <div>
+          <p className="text-sm font-semibold text-ink">유선 예약 매출</p>
+          <p className="mt-0.5 text-xs text-subtle">현장·전화 등록분 · 토스 결제(위 매출) 미포함</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <div className="text-right">
+            <p className="text-xs text-muted">기간({formatDateKorean(from)}~{formatDateKorean(to)}) · 이용일 기준</p>
+            <p className="text-lg font-extrabold text-ink">
+              {formatWon(off.periodAmount)} <span className="text-xs font-normal text-subtle">· {off.periodCount}건</span>
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-muted">누적 전체</p>
+            <p className="text-lg font-extrabold text-ink">
+              {formatWon(off.totalAmount)} <span className="text-xs font-normal text-subtle">· {off.totalCount}건</span>
+            </p>
+          </div>
+        </div>
+      </Card>
 
       <h2 className="mt-8 text-lg font-bold text-ink">결제수단별</h2>
       <Card className="mt-2 divide-y divide-line">

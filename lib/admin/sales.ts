@@ -16,6 +16,43 @@ export interface SalesSummary {
   byDate: { date: string; count: number; amount: number }[];
 }
 
+/**
+ * 유선(오프라인) 예약 매출 집계. 토스 결제가 없어 매출/정산(getSalesSummary)에 안 잡히므로 별도 합산.
+ * 대상: source='offline' && status='confirmed'(취소된 유선은 제외). amount는 등록 시 확정 금액.
+ *   - total*: 누적(전체 기간)
+ *   - period*: 이용일(slot.date) 기준 [from, to] 구간
+ */
+export interface OfflineSummary {
+  totalAmount: number;
+  totalCount: number;
+  periodAmount: number;
+  periodCount: number;
+}
+
+export async function getOfflineSummary(from: string, to: string): Promise<OfflineSummary> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from('bookings')
+    .select('amount, slots(date)')
+    .eq('source', 'offline')
+    .eq('status', 'confirmed');
+
+  let totalAmount = 0;
+  let totalCount = 0;
+  let periodAmount = 0;
+  let periodCount = 0;
+  for (const b of data ?? []) {
+    totalAmount += b.amount;
+    totalCount += 1;
+    const d = b.slots?.date ?? null;
+    if (d && d >= from && d <= to) {
+      periodAmount += b.amount;
+      periodCount += 1;
+    }
+  }
+  return { totalAmount, totalCount, periodAmount, periodCount };
+}
+
 function kstDate(iso: string): string {
   return new Date(new Date(iso).getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
