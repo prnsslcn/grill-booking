@@ -87,6 +87,7 @@ export default async function BookingDetailPage({
         />
         <Row label="예약자" value={`${b.guestName} · ${b.guestPhone} · ${b.guestCount}명`} />
         <Row label="결제 금액" value={formatWon(b.amount)} />
+        {b.note && <Row label="메모" value={b.note} />}
         <Row label="예약 일시" value={formatDateTimeKorean(b.createdAt)} />
         <Row label="최종 변경" value={formatDateTimeKorean(b.updatedAt)} />
       </Card>

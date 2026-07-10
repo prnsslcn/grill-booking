@@ -28,6 +28,7 @@ interface SnapshotShape {
   unit_label?: string;
   meat?: string;
   addons?: SnapshotAddon[];
+  note?: string;
 }
 
 const MEAT_LABEL: Record<string, string> = { pork: 'Pork', beef: 'Beef' };
@@ -44,6 +45,7 @@ export interface BookingDetail {
   unitLabel: string;
   meatLabel: string;
   addons: SnapshotAddon[];
+  note: string | null;
   date: string | null;
   part: Part | null;
   amount: number;
@@ -102,6 +104,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     unitLabel: snapshot.unit_label ?? '',
     meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
     addons: snapshot.addons ?? [],
+    note: snapshot.note ?? null,
     date: data.slots?.date ?? null,
     part: (data.slots?.part as Part) ?? null,
     amount: data.amount,
