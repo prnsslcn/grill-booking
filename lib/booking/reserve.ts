@@ -2,7 +2,7 @@ import 'server-only';
 
 import { toReservationError, ReservationError } from '@/lib/booking/errors';
 import { isComingSoonType } from '@/lib/facilities';
-import { isWithinBookingWindow } from '@/lib/policy/booking-window';
+import { isWithinBookingWindow, SAME_DAY_CUTOFF_HOUR } from '@/lib/policy/booking-window';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -45,7 +45,7 @@ export async function reserveSlot(input: ReserveInput): Promise<ReserveResult> {
   if (slot && !isWithinBookingWindow(slot.date)) {
     throw new ReservationError(
       'SLOT_CLOSED',
-      '예약 가능 시간이 지났거나(당일 15:00 마감) 예약 가능 기간을 벗어났습니다.',
+      `예약 가능 시간이 지났거나(당일 ${String(SAME_DAY_CUTOFF_HOUR).padStart(2, '0')}:00 마감) 예약 가능 기간을 벗어났습니다.`,
     );
   }
 

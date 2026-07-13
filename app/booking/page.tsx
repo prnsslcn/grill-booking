@@ -14,7 +14,13 @@ import { SiteHeader } from '@/components/site/SiteHeader';
 import { BEEF_ENABLED } from '@/lib/config';
 import { meatGrams } from '@/lib/facilities';
 import { formatPhone, formatWon } from '@/lib/format';
-import { bookingMaxDate, firstBookableDate } from '@/lib/policy/booking-window';
+import {
+  bookingMaxDate,
+  firstBookableDate,
+  SAME_DAY_CUTOFF_HOUR,
+} from '@/lib/policy/booking-window';
+
+const CUTOFF_LABEL = `${String(SAME_DAY_CUTOFF_HOUR).padStart(2, '0')}:00`;
 import { PARTS, type Part } from '@/types/domain';
 
 type Meat = 'pork' | 'beef';
@@ -57,7 +63,7 @@ function BookingFlow() {
 
   // 예약 가능한 마지막 날짜(오늘 + 1개월 − 1일). 달력 상한·안내에 사용.
   const maxBookable = bookingMaxDate();
-  // 선택 가능한 가장 이른 날짜. 당일 15:00 마감이면 내일부터. 달력 하한.
+  // 선택 가능한 가장 이른 날짜. 당일 마감 시각 지나면 내일부터. 달력 하한.
   const minBookable = firstBookableDate();
 
   const [step, setStep] = useState(1);
@@ -165,7 +171,7 @@ function BookingFlow() {
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
               <p className="mt-1 text-sm text-muted">
                 금·토{openDates.length > 0 ? ' 및 지정 오픈일' : ''}에 운영합니다. 예약은 오늘부터
-                1개월 이내({maxBookable}까지) 날짜만 가능하며, 당일 예약은 15:00까지입니다.
+                1개월 이내({maxBookable}까지) 날짜만 가능하며, 당일 예약은 {CUTOFF_LABEL}까지입니다.
               </p>
               <div className="mt-3">
                 <Calendar
@@ -177,7 +183,7 @@ function BookingFlow() {
                   disablePast
                   minDate={minBookable}
                   maxDate={maxBookable}
-                  hint={`금·토${openDates.length > 0 ? ' 및 지정 오픈일' : ''} · ${maxBookable}까지 · 당일은 15:00까지`}
+                  hint={`금·토${openDates.length > 0 ? ' 및 지정 오픈일' : ''} · ${maxBookable}까지 · 당일은 ${CUTOFF_LABEL}까지`}
                 />
               </div>
             </div>
