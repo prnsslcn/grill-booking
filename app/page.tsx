@@ -123,7 +123,7 @@ export default async function Home() {
           <div className="mx-auto max-w-5xl px-5">
             <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
             <p className="mt-2 text-muted">모든 상품에 고기세트가 포함됩니다.</p>
-            <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-5">
+            <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-5">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
                 const soon = isComingSoonType(f.type);
@@ -134,11 +134,11 @@ export default async function Home() {
                     from={FACILITY_FROM[i % FACILITY_FROM.length]}
                     duration={0.8}
                     ease="cubic-bezier(0.16,1,0.3,1)"
-                    className="w-full sm:w-[400px]"
+                    className="w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[480px]"
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
-                    className={`group relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1.5 sm:p-7 ${s.card}`}
+                    className={`group relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:p-8 ${s.card}`}
                   >
                     {FACILITY_IMAGE[f.type] && (
                       <>
@@ -182,7 +182,7 @@ export default async function Home() {
                         <p className={`mt-3 text-xs ${s.muted}`}>곧 만나보실 수 있습니다.</p>
                       </div>
                     ) : (
-                      <div className="relative z-10 mt-6 space-y-1.5 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-md">
+                      <div className="relative z-10 mt-6 space-y-1.5">
                         <div className="flex items-baseline justify-between">
                           <span className={`text-sm ${s.muted}`}>Pork Set</span>
                           <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
