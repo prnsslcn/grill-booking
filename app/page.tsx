@@ -32,17 +32,18 @@ const FACILITY_STYLE: Record<
     arrow: 'text-brand',
     overlay: '',
   },
+  // 메인 상품 카드(홈)만: 타프·카바나 모두 딥그린 톤으로 통일(카드색·포인트색 동일).
   tarp_tent: {
     card: 'bg-[#23322d] text-white',
-    muted: 'text-white/80',
-    arrow: 'text-white',
-    overlay: 'bg-gradient-to-b from-[#23322d]/85 via-[#23322d]/25 to-[#1b2620]',
-  },
-  cabin: {
-    card: 'bg-brand text-white',
     muted: 'text-white/85',
     arrow: 'text-white',
-    overlay: 'bg-gradient-to-b from-brand-strong/90 via-brand/30 to-brand-strong',
+    overlay: 'bg-gradient-to-b from-[#23322d]/75 via-[#23322d]/10 to-[#1b2620]/85',
+  },
+  cabin: {
+    card: 'bg-[#23322d] text-white',
+    muted: 'text-white/85',
+    arrow: 'text-white',
+    overlay: 'bg-gradient-to-b from-[#23322d]/75 via-[#23322d]/10 to-[#1b2620]/85',
   },
 };
 const FACILITY_STYLE_DEFAULT = {
@@ -133,11 +134,11 @@ export default async function Home() {
                     from={FACILITY_FROM[i % FACILITY_FROM.length]}
                     duration={0.8}
                     ease="cubic-bezier(0.16,1,0.3,1)"
-                    className="h-full w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[420px]"
+                    className="w-full sm:w-[400px]"
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
-                    className={`group relative flex h-full min-h-[380px] flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:min-h-[460px] sm:p-8 ${s.card}`}
+                    className={`group relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1.5 sm:p-7 ${s.card}`}
                   >
                     {FACILITY_IMAGE[f.type] && (
                       <>
@@ -181,7 +182,7 @@ export default async function Home() {
                         <p className={`mt-3 text-xs ${s.muted}`}>곧 만나보실 수 있습니다.</p>
                       </div>
                     ) : (
-                      <div className="relative z-10 mt-6 space-y-1.5">
+                      <div className="relative z-10 mt-6 space-y-1.5 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-md">
                         <div className="flex items-baseline justify-between">
                           <span className={`text-sm ${s.muted}`}>Pork Set</span>
                           <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
