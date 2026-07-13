@@ -120,7 +120,7 @@ export default async function Home() {
 
         {/* 시설 */}
         <section id="facilities" className="overflow-hidden bg-surface py-16 scroll-mt-24">
-          <div className="mx-auto max-w-6xl px-5">
+          <div className="mx-auto max-w-7xl px-5">
             <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
             <p className="mt-2 text-muted">모든 상품에 고기세트가 포함됩니다.</p>
             <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-5">
@@ -134,7 +134,7 @@ export default async function Home() {
                     from={FACILITY_FROM[i % FACILITY_FROM.length]}
                     duration={0.8}
                     ease="cubic-bezier(0.16,1,0.3,1)"
-                    className="w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[520px]"
+                    className="w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[560px]"
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
