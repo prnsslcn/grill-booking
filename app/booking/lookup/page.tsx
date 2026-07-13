@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { ChangeBookingForm } from '@/components/booking/ChangeBookingForm';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -9,6 +10,7 @@ import { Field, Input } from '@/components/ui/Field';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { formatDateKorean, formatWon } from '@/lib/format';
+import { kstToday } from '@/lib/policy/booking-window';
 
 interface LookupResult {
   bookingNumber: string;
@@ -41,11 +43,14 @@ export default function LookupPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [changing, setChanging] = useState(false);
+  const [notice, setNotice] = useState('');
 
   async function lookup() {
     setLoading(true);
     setError('');
     setResult(null);
+    setChanging(false);
     try {
       const res = await fetch('/api/bookings/lookup', {
         method: 'POST',
@@ -88,6 +93,15 @@ export default function LookupPage() {
   }
 
   const st = result ? (STATUS[result.status] ?? { tone: 'neutral' as const, label: result.status }) : null;
+  // 변경 가능: 확정 상태 + 이용일까지 KST 2일 이상 남음
+  const daysUntil = result
+    ? Math.round(
+        (Date.parse(`${result.date}T00:00:00+09:00`) -
+          Date.parse(`${kstToday()}T00:00:00+09:00`)) /
+          86_400_000,
+      )
+    : 0;
+  const changeable = result?.status === 'confirmed' && daysUntil >= 2;
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
@@ -135,6 +149,12 @@ export default function LookupPage() {
               <Row label="결제 금액" value={formatWon(result.amount)} />
             </div>
 
+            {notice && (
+              <div className="border-t border-line bg-accent-soft/60 p-5">
+                <p className="text-sm font-medium text-ink">{notice}</p>
+              </div>
+            )}
+
             {result.refundPreview?.cancellable && (
               <div className="border-t border-line p-5">
                 <p className="text-sm text-muted">
@@ -144,16 +164,36 @@ export default function LookupPage() {
                   </span>{' '}
                   ({Math.round(result.refundPreview.rate * 100)}%)
                 </p>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="mt-3"
-                  onClick={cancel}
-                  disabled={cancelling}
-                >
-                  {cancelling ? '취소 처리 중…' : '예약 취소'}
-                </Button>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {changeable && !changing && (
+                    <Button size="lg" onClick={() => { setChanging(true); setNotice(''); }}>
+                      예약 변경
+                    </Button>
+                  )}
+                  <Button variant="secondary" size="lg" onClick={cancel} disabled={cancelling}>
+                    {cancelling ? '취소 처리 중…' : '예약 취소'}
+                  </Button>
+                </div>
+                {result.status === 'confirmed' && !changeable && (
+                  <p className="mt-2 text-xs text-subtle">
+                    예약 변경은 이용 2일 전까지 가능합니다.
+                  </p>
+                )}
               </div>
+            )}
+
+            {changing && result && (
+              <ChangeBookingForm
+                bookingNumber={bookingNumber.trim()}
+                phone={phone.trim()}
+                currentAmount={result.amount}
+                onChanged={(msg) => {
+                  setNotice(msg);
+                  setChanging(false);
+                  lookup();
+                }}
+                onClose={() => setChanging(false)}
+              />
             )}
           </Card>
         )}

@@ -389,6 +389,29 @@ export type Database = {
           booking_number: string
         }[]
       }
+      change_booking_apply_tx: {
+        Args: {
+          p_booking_number: string
+          p_phone: string
+          p_new_slot_id: string
+          p_guest_count: number
+          p_meat: string
+          p_addons: Json
+          p_expected_amount: number
+        }
+        Returns: {
+          booking_id: string
+          old_amount: number
+          new_amount: number
+          delta: number
+          payment_key: string | null
+          slot_changed: boolean
+        }[]
+      }
+      change_settle_refund: {
+        Args: { p_booking_id: string; p_new_amount: number; p_raw: Json }
+        Returns: undefined
+      }
       confirm_booking_tx: {
         Args: {
           p_amount: number
