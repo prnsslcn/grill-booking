@@ -21,12 +21,42 @@ const FACILITY_DESC: Record<string, string> = {
 };
 
 // 시설별 카드 색(브랜드 그린 계열 변주). 미정 type은 기본 연그린.
-const FACILITY_STYLE: Record<string, { card: string; muted: string; arrow: string }> = {
-  outdoor_table: { card: 'bg-brand-soft text-ink', muted: 'text-muted', arrow: 'text-brand' },
-  tarp_tent: { card: 'bg-[#23322d] text-white', muted: 'text-white/65', arrow: 'text-white' },
-  cabin: { card: 'bg-brand text-white', muted: 'text-white/75', arrow: 'text-white' },
+// overlay: 배경 사진 위에 카드색으로 위·아래는 진하게(텍스트 가독성) 가운데는 옅게(사진 노출) 덮는 그라디언트.
+const FACILITY_STYLE: Record<
+  string,
+  { card: string; muted: string; arrow: string; overlay: string }
+> = {
+  outdoor_table: {
+    card: 'bg-brand-soft text-ink',
+    muted: 'text-muted',
+    arrow: 'text-brand',
+    overlay: '',
+  },
+  tarp_tent: {
+    card: 'bg-[#23322d] text-white',
+    muted: 'text-white/80',
+    arrow: 'text-white',
+    overlay: 'bg-gradient-to-b from-[#23322d]/85 via-[#23322d]/25 to-[#1b2620]',
+  },
+  cabin: {
+    card: 'bg-brand text-white',
+    muted: 'text-white/85',
+    arrow: 'text-white',
+    overlay: 'bg-gradient-to-b from-brand-strong/90 via-brand/30 to-brand-strong',
+  },
 };
-const FACILITY_STYLE_DEFAULT = { card: 'bg-brand-soft text-ink', muted: 'text-muted', arrow: 'text-brand' };
+const FACILITY_STYLE_DEFAULT = {
+  card: 'bg-brand-soft text-ink',
+  muted: 'text-muted',
+  arrow: 'text-brand',
+  overlay: '',
+};
+
+// 카드 배경 사진(카드색 그라디언트로 자연스럽게 블렌딩). 없으면 단색 카드.
+const FACILITY_IMAGE: Record<string, string> = {
+  tarp_tent: '/images/facilities/tarp-tent/3.jpg',
+  cabin: '/images/facilities/cabana/2.jpg',
+};
 
 // 카드별 등장 시작값 — 모두 우측 화면 밖에서 슬라이드 인. stagger로 차례로 들어온다.
 const FACILITY_FROM = [
@@ -103,15 +133,27 @@ export default async function Home() {
                     from={FACILITY_FROM[i % FACILITY_FROM.length]}
                     duration={0.8}
                     ease="cubic-bezier(0.16,1,0.3,1)"
-                    className="h-full w-full sm:w-auto sm:flex-1 sm:min-w-[260px] sm:max-w-[360px]"
+                    className="h-full w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[420px]"
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
-                    className={`group relative flex h-full min-h-[260px] flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:min-h-[300px] sm:p-8 ${s.card}`}
+                    className={`group relative flex h-full min-h-[380px] flex-col justify-between overflow-hidden rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:min-h-[460px] sm:p-8 ${s.card}`}
                   >
-                    <div>
+                    {FACILITY_IMAGE[f.type] && (
+                      <>
+                        <Image
+                          src={FACILITY_IMAGE[f.type]}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, 420px"
+                          className="pointer-events-none absolute inset-0 object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className={`pointer-events-none absolute inset-0 ${s.overlay}`} />
+                      </>
+                    )}
+                    <div className="relative z-10">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-2xl font-bold leading-tight">{f.name}</h3>
+                        <h3 className="text-2xl font-bold leading-tight drop-shadow-sm sm:text-3xl">{f.name}</h3>
                         <span
                           className={`mt-0.5 flex h-9 w-9 flex-none items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${s.arrow}`}
                         >
@@ -132,14 +174,14 @@ export default async function Home() {
                     </div>
 
                     {soon ? (
-                      <div className="mt-6">
+                      <div className="relative z-10 mt-6">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3.5 py-1.5 text-sm font-bold text-brand-strong">
                           오픈 준비 중
                         </span>
                         <p className={`mt-3 text-xs ${s.muted}`}>곧 만나보실 수 있습니다.</p>
                       </div>
                     ) : (
-                      <div className="mt-6 space-y-1.5">
+                      <div className="relative z-10 mt-6 space-y-1.5">
                         <div className="flex items-baseline justify-between">
                           <span className={`text-sm ${s.muted}`}>Pork Set</span>
                           <span className="text-lg font-bold">{formatWon(f.price_pork)}</span>
