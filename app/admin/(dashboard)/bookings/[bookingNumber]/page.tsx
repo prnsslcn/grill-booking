@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { CancelButton } from '@/components/admin/CancelButton';
+import { FullRefundButton } from '@/components/admin/FullRefundButton';
 import { OfflineCancelButton } from '@/components/admin/OfflineCancelButton';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -111,8 +112,14 @@ export default async function BookingDetailPage({
               <p className="mt-1 text-sm text-muted">
                 지금 취소 시 환불 예상: <span className="font-semibold text-ink">{formatWon(refundPreview)}</span>
               </p>
+              <p className="mt-1 text-xs text-subtle">
+                전액 환불은 규정을 무시하고 {formatWon(b.amount)} 전액을 돌려줍니다(자연재해 등 예외).
+              </p>
             </div>
-            <CancelButton bookingNumber={b.bookingNumber} refundAmount={refundPreview} />
+            <div className="flex flex-wrap items-center gap-2">
+              <CancelButton bookingNumber={b.bookingNumber} refundAmount={refundPreview} />
+              <FullRefundButton bookingNumber={b.bookingNumber} amount={b.amount} />
+            </div>
           </Card>
         ))}
 

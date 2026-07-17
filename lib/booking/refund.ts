@@ -73,6 +73,11 @@ export function refundHttpStatus(code: RefundErrorCode): number {
 export interface RefundInput {
   bookingNumber: string;
   reason: string;
+  /**
+   * 환불 규정(2일전 100%/1일전 50%/당일 0%)을 무시하고 결제액 전액 환불.
+   * 자연재해 등 예외 상황에서 관리자만 사용한다(고객 취소 API는 이 값을 넘기지 않음).
+   */
+  fullRefund?: boolean;
 }
 
 export interface RefundResult {
@@ -100,9 +105,9 @@ export async function refundBooking(
     return { bookingId: req.booking_id, refundedAmount: 0, outcome: 'ALREADY_REFUNDED' };
   }
 
-  // 2) 환불액 계산(서버, KST)
+  // 2) 환불액 계산(서버, KST). fullRefund면 규정 무시하고 전액(관리자 예외 처리).
   const paid = req.paid_amount ?? 0;
-  const refund = refundAmount(paid, req.slot_date, new Date());
+  const refund = input.fullRefund ? paid : refundAmount(paid, req.slot_date, new Date());
   const isPartial = refund > 0 && refund < paid;
 
   // 3) 환불액>0이면 토스 취소 — 성공 후에만 DB 확정

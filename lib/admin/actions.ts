@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { requireAdmin } from '@/lib/admin/auth';
-import { refundBooking } from '@/lib/booking/refund';
+import { RefundError, refundBooking } from '@/lib/booking/refund';
 import { BEEF_ENABLED, isBeefAddonKey } from '@/lib/config';
 import { generateSlots } from '@/lib/booking/slots';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -85,10 +85,50 @@ export async function adminCancelOfflineBooking(bookingId: string): Promise<Acti
   return { ok: true };
 }
 
-export async function adminCancelRefund(bookingNumber: string): Promise<void> {
+/** 환불 실패 사유를 사람이 읽을 문구로. (throw하면 Next 프로덕션이 가리므로 값으로 반환) */
+function refundErrorMessage(e: unknown): string {
+  if (e instanceof RefundError) {
+    switch (e.code) {
+      case 'BOOKING_NOT_FOUND':
+        return '예약을 찾을 수 없습니다.';
+      case 'NOT_CANCELLABLE':
+        return '취소할 수 없는 예약 상태입니다.';
+      case 'NO_PAYMENT':
+        return '취소할 결제 정보가 없습니다.';
+      case 'TOSS_CANCEL_FAILED':
+        return '토스 결제 취소에 실패했습니다. 잠시 후 다시 시도하세요.';
+      default:
+        return `환불 실패: ${e.message}`;
+    }
+  }
+  return e instanceof Error ? `환불 실패: ${e.message}` : '환불 실패';
+}
+
+/** 관리자 취소·환불 — 환불 규정(2일전 100%/1일전 50%/당일 0%) 적용. */
+export async function adminCancelRefund(bookingNumber: string): Promise<ActionResult> {
   await requireAdmin();
-  await refundBooking({ bookingNumber, reason: '관리자 취소' });
+  try {
+    await refundBooking({ bookingNumber, reason: '관리자 취소' });
+  } catch (e) {
+    return { ok: false, error: refundErrorMessage(e) };
+  }
   revalidatePath('/admin');
+  return { ok: true };
+}
+
+/**
+ * 관리자 전액 환불 — 환불 규정을 무시하고 결제액 100% 환불.
+ * 자연재해·우천 등 매장 사유로 부득이하게 전액 돌려줘야 하는 예외 상황 전용.
+ */
+export async function adminCancelFullRefund(bookingNumber: string): Promise<ActionResult> {
+  await requireAdmin();
+  try {
+    await refundBooking({ bookingNumber, reason: '관리자 전액 환불(예외)', fullRefund: true });
+  } catch (e) {
+    return { ok: false, error: refundErrorMessage(e) };
+  }
+  revalidatePath('/admin');
+  return { ok: true };
 }
 
 export async function adminGenerateSlots(from: string, to: string): Promise<number> {

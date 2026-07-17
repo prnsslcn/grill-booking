@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
 import { adminCancelRefund } from '@/lib/admin/actions';
@@ -12,6 +13,7 @@ export function CancelButton({
   bookingNumber: string;
   refundAmount: number;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function onClick() {
@@ -19,7 +21,12 @@ export function CancelButton({
       return;
     }
     startTransition(async () => {
-      await adminCancelRefund(bookingNumber);
+      const res = await adminCancelRefund(bookingNumber);
+      if (!res.ok) {
+        alert(res.error);
+        return;
+      }
+      router.refresh();
     });
   }
 
