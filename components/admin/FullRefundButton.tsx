@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { adminCancelFullRefund } from '@/lib/admin/actions';
 import { formatWon } from '@/lib/format';
 
@@ -19,33 +20,52 @@ export function FullRefundButton({
   amount: number;
 }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function onClick() {
-    if (
-      !confirm(
-        `[전액 환불] ${bookingNumber}\n\n환불 규정(2일전 100%/1일전 50%/당일 0%)을 무시하고 결제액 전액 ${formatWon(amount)}을 환불합니다.\n자연재해 등 예외 상황에만 사용하세요.\n\n진행할까요?`,
-      )
-    ) {
-      return;
-    }
+  function confirm() {
     startTransition(async () => {
       const res = await adminCancelFullRefund(bookingNumber);
       if (!res.ok) {
+        setOpen(false);
         alert(res.error);
         return;
       }
+      setOpen(false);
       router.refresh();
     });
   }
 
   return (
-    <button
-      onClick={onClick}
-      disabled={pending}
-      className="rounded-lg border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-[#fdecec] disabled:opacity-40"
-    >
-      {pending ? '처리 중…' : '전액 환불'}
-    </button>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="rounded-lg border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-[#fdecec]"
+      >
+        전액 환불
+      </button>
+
+      <ConfirmDialog
+        open={open}
+        tone="danger"
+        title="전액 환불할까요?"
+        confirmLabel="전액 환불"
+        pending={pending}
+        onConfirm={confirm}
+        onCancel={() => setOpen(false)}
+        description={
+          <>
+            <p>
+              <span className="font-mono font-semibold text-ink">{bookingNumber}</span> 예약을 취소하고
+              결제액 <span className="font-semibold text-ink">{formatWon(amount)}</span> 전액을 환불합니다.
+            </p>
+            <p className="mt-2 rounded-xl bg-[#fdecec] px-3 py-2 text-danger">
+              환불 규정(2일 전 100% / 1일 전 50% / 당일 0%)을 <b>무시</b>합니다. 자연재해 등 예외
+              상황에만 사용하세요.
+            </p>
+          </>
+        }
+      />
+    </>
   );
 }
