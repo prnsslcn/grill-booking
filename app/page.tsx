@@ -127,7 +127,7 @@ export default async function Home() {
                   >
                   <Link
                     href={facilityByType(f.type) ? `/facilities/${facilityByType(f.type)!.slug}` : '/booking'}
-                    className={`group relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-[2rem] p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:p-8 ${s.card}`}
+                    className={`group relative flex aspect-[4/3] w-full flex-col justify-between overflow-hidden rounded-[2.5rem] p-7 transition-transform duration-300 hover:-translate-y-1.5 sm:p-8 ${s.card}`}
                   >
                     {FACILITY_IMAGE[f.type] && (
                       <>
