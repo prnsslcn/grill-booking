@@ -69,7 +69,7 @@ export function SiteHeader({
 
   return (
     <>
-      {/* fixed 헤더 높이(pt-4 + 바 높이)만큼 레이아웃 자리 확보. 모바일 h-16 → 5rem, sm+ h-24 → 7rem */}
+      {/* fixed 헤더 높이만큼 레이아웃 자리 확보. 모바일=바(h-20) 밀착, sm+=인셋(top-4)+바(h-24) */}
       <div aria-hidden className="h-20 sm:h-28" />
       {/* sticky 대신 fixed — Lenis(부드러운 스크롤)에서 sticky는 매 프레임 위치 보정으로 떨리므로 fixed 사용 */}
       <header className="fixed inset-x-0 top-0 z-40">
@@ -98,10 +98,10 @@ export function SiteHeader({
                 : 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface sm:inset-x-4 sm:top-4 sm:rounded-[1.5rem] sm:border-white/30 sm:bg-surface/55 sm:backdrop-blur-xl md:rounded-full'
           }`}
         >
-        {/* 바 행 (모바일 h-16, sm+ h-24) */}
-        <div className="flex h-16 shrink-0 items-center sm:h-24">
+        {/* 바 행 (모바일 h-20, sm+ h-24) */}
+        <div className="flex h-20 shrink-0 items-center sm:h-24">
         {/* 좌: 로고 (heroWordmark 페이지에선 히어로 워드마크가 사라질 때 화면 위에서 슬라이드 인) */}
-        <div className="flex h-16 flex-1 items-center [clip-path:inset(0_-100vw)] sm:h-24">
+        <div className="flex h-20 flex-1 items-center [clip-path:inset(0_-100vw)] sm:h-24">
           <Link
             href="/"
             className={`flex h-full items-center whitespace-nowrap font-display text-3xl tracking-wide text-wood transition-transform duration-[600ms] ease-out sm:text-5xl ${
