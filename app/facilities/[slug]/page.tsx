@@ -70,7 +70,7 @@ export default async function FacilityPage({
             <h2 className="text-2xl font-bold text-ink">이런 점이 좋아요</h2>
             <div className="mt-7 grid gap-4 sm:grid-cols-3">
               {f.features.map((feat) => (
-                <div key={feat.title} className="rounded-2xl border border-line bg-canvas p-6">
+                <div key={feat.title} className="rounded-[2rem] border border-line bg-canvas p-6">
                   <h3 className="font-bold text-ink">{feat.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{feat.desc}</p>
                 </div>
@@ -82,7 +82,7 @@ export default async function FacilityPage({
         {/* 가격 + 예약 CTA */}
         <section className="py-16 bg-surface">
           <div className="mx-auto max-w-5xl px-5">
-            <div className="flex flex-col gap-6 rounded-3xl border border-line bg-surface p-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-6 rounded-[2rem] border border-line bg-surface p-8 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-ink">{f.label} 가격</h2>
                 <p className="mt-1 text-sm text-muted">
@@ -115,7 +115,7 @@ export default async function FacilityPage({
               </div>
               <Link
                 href={`/booking?facility=${f.type}`}
-                className="inline-flex justify-center rounded-2xl bg-brand px-7 py-3.5 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong"
+                className="inline-flex justify-center rounded-full bg-brand px-7 py-3.5 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong"
               >
                 예약하기
               </Link>
@@ -132,7 +132,7 @@ export default async function FacilityPage({
                 <Link
                   key={o.slug}
                   href={`/facilities/${o.slug}`}
-                  className={`group flex items-center justify-between rounded-3xl border border-line bg-surface p-7 text-ink transition duration-300 hover:-translate-y-1.5 ${o.heroHover}`}
+                  className={`group flex items-center justify-between rounded-[2rem] border border-line bg-surface p-7 text-ink transition duration-300 hover:-translate-y-1.5 ${o.heroHover}`}
                 >
                   <div>
                     <p className="text-sm font-semibold opacity-70">{o.tagline}</p>
