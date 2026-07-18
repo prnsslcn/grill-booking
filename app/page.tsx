@@ -88,32 +88,32 @@ export default async function Home() {
       <SiteHeader heroWordmark />
 
       <main className="flex-1">
-        {/* 히어로 — 중앙 헤드라인 + 그릴 이미지 */}
+        {/* 히어로 — 좌: 헤드라인/설명, 우: 그릴 이미지 (모바일은 세로 스택) */}
         <section className="relative overflow-hidden bg-surface">
-          <div className="mx-auto max-w-5xl px-5 pb-16 pt-14 text-center sm:pt-20">
-            {/* <span className="inline-flex items-center rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-medium text-muted">
-              대관령 숯불 바비큐
-            </span> */}
-            <h1
-              data-hero-wordmark
-              className="mt-6 whitespace-nowrap font-display text-[clamp(2rem,10vw,6rem)] tracking-wide text-wood"
-            >
-              Alpensia BBQ
-            </h1>
-            <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted">
-              대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
-            </p>
-            {/* 가운데 그릴 이미지 */}
-            <div className="mx-auto mt-12 flex max-w-xl justify-center">
-              <Image
-                src="/images/grill.png"
-                alt="숯불 그릴"
-                width={706}
-                height={1000}
-                priority
-                sizes="(max-width: 768px) 88vw, 520px"
-                className="h-auto w-[88%] max-w-[520px]"
-              />
+          <div className="mx-auto max-w-6xl px-5 pb-8 pt-14 sm:pt-16">
+            <div className="flex flex-col items-center gap-6 text-center lg:flex-row lg:items-center lg:justify-between lg:gap-12 lg:text-left">
+              <div className="lg:flex-1">
+                <h1
+                  data-hero-wordmark
+                  className="whitespace-nowrap font-display text-[clamp(2rem,8vw,4.75rem)] tracking-wide text-wood"
+                >
+                  Alpensia BBQ
+                </h1>
+                <p className="mx-auto mt-5 max-w-md text-lg leading-relaxed text-muted lg:mx-0">
+                  대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
+                </p>
+              </div>
+              <div className="flex w-full justify-center lg:w-auto lg:flex-1 lg:justify-end">
+                <Image
+                  src="/images/grill.png"
+                  alt="숯불 그릴"
+                  width={706}
+                  height={1000}
+                  priority
+                  sizes="(max-width: 1024px) 60vw, 440px"
+                  className="h-auto w-[60%] max-w-[300px] lg:w-full lg:max-w-[440px]"
+                />
+              </div>
             </div>
           </div>
         </section>
