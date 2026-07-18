@@ -108,8 +108,7 @@ export default async function Home() {
         {/* 시설 */}
         <section id="facilities" className="overflow-hidden bg-surface py-16 scroll-mt-24">
           <div className="mx-auto max-w-7xl px-5">
-            <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
-            <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-5">
+            <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-5">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
                 const soon = isComingSoonType(f.type);
