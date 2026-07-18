@@ -278,7 +278,9 @@ function BookingFlow() {
                             : 'border-line bg-surface hover:border-accent/40'
                         }`}
                       >
-                        <span className="block font-semibold text-ink">{MEAT_LABEL[m]} Set</span>
+                        <span className="block font-semibold text-ink">
+                          {MEAT_LABEL[m]} Set{m === 'pork' ? ' (목살)' : ''}
+                        </span>
                         <span className="mt-1 block text-sm text-muted">
                           {formatWon(price)} · {meatGrams(selected.capacity)}g
                         </span>
