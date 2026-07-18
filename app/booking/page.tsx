@@ -349,49 +349,61 @@ function BookingFlow() {
         {/* 2단계: 정보 입력 */}
         {step === 2 && selected && (
           <div className="space-y-5">
-            <h2 className="text-lg font-bold text-ink">예약자 정보</h2>
-            <Card className="bg-line-soft/50 p-4 text-sm text-muted">
-              {selected.facilityName} · {selected.capacity}인 · {meat && MEAT_LABEL[meat]} Set · {formatWon(amount)}
-            </Card>
-            <Field label="이름" error={errors.name}>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
-            </Field>
-            <Field label="휴대폰 번호" error={errors.phone} hint="예약 조회·알림에 사용됩니다.">
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(formatPhone(e.target.value))}
-                placeholder="010-1234-5678"
-                inputMode="numeric"
-                maxLength={13}
-              />
-            </Field>
+            <DropletReveal>
+              <h2 className="text-lg font-bold text-ink">예약자 정보</h2>
+            </DropletReveal>
+            <DropletReveal delay={90}>
+              <Card className="bg-line-soft/50 p-4 text-sm text-muted">
+                {selected.facilityName} · {selected.capacity}인 · {meat && MEAT_LABEL[meat]} Set · {formatWon(amount)}
+              </Card>
+            </DropletReveal>
+            <DropletReveal delay={180}>
+              <Field label="이름" error={errors.name}>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동" />
+              </Field>
+            </DropletReveal>
+            <DropletReveal delay={270}>
+              <Field label="휴대폰 번호" error={errors.phone} hint="예약 조회·알림에 사용됩니다.">
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="010-1234-5678"
+                  inputMode="numeric"
+                  maxLength={13}
+                />
+              </Field>
+            </DropletReveal>
 
-            <label className="flex items-start gap-2.5 rounded-xl bg-line-soft p-4">
-              <input
-                type="checkbox"
-                checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-accent"
-              />
-              <span className="text-sm text-muted">
-                환불 규정(2일 전 100% · 1일 전 50% · 당일 0%)을 확인했으며 이에 동의합니다.
-              </span>
-            </label>
+            <DropletReveal delay={360}>
+              <label className="flex items-start gap-2.5 rounded-xl bg-line-soft p-4">
+                <input
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) => setAgree(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-accent"
+                />
+                <span className="text-sm text-muted">
+                  환불 규정(2일 전 100% · 1일 전 50% · 당일 0%)을 확인했으며 이에 동의합니다.
+                </span>
+              </label>
+            </DropletReveal>
             {errors.agree && <p className="-mt-2 text-sm text-danger">{errors.agree}</p>}
 
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => setStep(1)} className="flex-1">
-                이전
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  if (validateInfo()) setStep(3);
-                }}
-              >
-                다음
-              </Button>
-            </div>
+            <DropletReveal delay={450}>
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={() => setStep(1)} className="flex-1">
+                  이전
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    if (validateInfo()) setStep(3);
+                  }}
+                >
+                  다음
+                </Button>
+              </div>
+            </DropletReveal>
           </div>
         )}
 
