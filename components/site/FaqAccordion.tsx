@@ -79,8 +79,8 @@ export function FaqAccordion() {
             return (
               <DropletReveal key={f.q} delay={80 + i * 90}>
               <div
-                className={`rounded-3xl border bg-surface transition-colors ${
-                  isOpen ? 'border-brand/40' : 'border-line'
+                className={`border bg-surface transition-[border-radius,border-color] duration-300 ${
+                  isOpen ? 'rounded-3xl border-brand/40' : 'rounded-full border-line'
                 }`}
               >
                 <button
