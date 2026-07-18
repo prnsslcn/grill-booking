@@ -6,7 +6,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-5xl px-5 py-10 text-sm text-subtle">
         <p className="font-semibold text-muted">알펜시아 BBQ</p>
         <p className="mt-2 leading-relaxed">
-          운영일 금·토 (성수기 주중 운영 · 동계 휴장) / 1부 17:00~19:00 · 2부 19:30~21:30
+          운영일 금·토 (성수기 주중 운영(수 휴무) · 동계 휴장) / 1부 17:00~19:00 · 2부 19:30~21:30
           <br />
           전액 선결제 · 회차당 2시간 · 환불 규정은 예약 시 안내됩니다.
           <br />
