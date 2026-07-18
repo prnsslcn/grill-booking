@@ -429,9 +429,11 @@ function BookingFlow() {
                 if (date) void selectDate(date);
               }}
             />
-            <Button variant="ghost" onClick={() => setStep(2)} className="w-full">
-              이전
-            </Button>
+            <DropletReveal delay={270}>
+              <Button variant="ghost" onClick={() => setStep(2)} className="w-full">
+                이전
+              </Button>
+            </DropletReveal>
           </div>
         )}
       </main>

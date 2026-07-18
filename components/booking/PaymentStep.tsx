@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { DropletReveal } from '@/components/site/DropletReveal';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -93,7 +94,10 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
 
   return (
     <div className="space-y-5">
-      <h2 className="text-lg font-bold text-ink">결제</h2>
+      <DropletReveal>
+        <h2 className="text-lg font-bold text-ink">결제</h2>
+      </DropletReveal>
+      <DropletReveal delay={90}>
       <Card className="divide-y divide-line">
         <Row label="시설" value={`${selected.facilityName} · ${selected.capacity}인`} />
         <Row label="일시" value={`${formatDateKorean(date)} · ${PARTS[selected.part].label}`} />
@@ -119,6 +123,7 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
           <span className="text-xl font-extrabold text-ink">{formatWon(selected.amount)}</span>
         </div>
       </Card>
+      </DropletReveal>
 
       {PAYMENTS_FAKE && (
         <div className="rounded-xl bg-[#fff5e5] px-4 py-3 text-sm text-[#c2780f]">
@@ -127,9 +132,11 @@ export function PaymentStep({ selected, date, guest, onSlotTaken }: Props) {
       )}
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      <Button size="lg" onClick={PAYMENTS_FAKE ? payFake : payReal} disabled={submitting}>
-        {submitting ? '처리 중…' : `${formatWon(selected.amount)} 결제하기`}
-      </Button>
+      <DropletReveal delay={180}>
+        <Button size="lg" onClick={PAYMENTS_FAKE ? payFake : payReal} disabled={submitting}>
+          {submitting ? '처리 중…' : `${formatWon(selected.amount)} 결제하기`}
+        </Button>
+      </DropletReveal>
     </div>
   );
 }
