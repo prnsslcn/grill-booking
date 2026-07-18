@@ -59,12 +59,12 @@ const FACILITY_IMAGE: Record<string, string> = {
   cabin: '/images/facilities/cabana/2.jpg',
 };
 
-// 카드별 등장 시작값 — 모두 우측 화면 밖에서 슬라이드 인. stagger로 차례로 들어온다.
-const FACILITY_FROM = [
-  { x: 760 },
-  { x: 760 },
-  { x: 760 },
-];
+// 물방울 등장 — scale 0.85→1 + 페이드, 부드러운 이징. 헤드라인·카드 공통(자식 stagger로 순차).
+const DROPLET = {
+  from: { scale: 0.85, y: 0 },
+  duration: 0.5,
+  ease: 'cubic-bezier(0.22,1,0.36,1)',
+} as const;
 
 // 이용 안내 3카드 — 아이콘 + 항목. Reveal stagger로 순차 등장.
 
@@ -92,15 +92,19 @@ export default async function Home() {
         <section className="relative overflow-hidden bg-surface">
           <div className="mx-auto max-w-6xl px-5 pb-8 pt-14 sm:pt-16">
             <div className="text-center">
-              <h1
-                data-hero-wordmark
-                className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
-              >
-                Alpensia BBQ
-              </h1>
-              <p className="mt-6 text-base leading-relaxed text-muted sm:text-xl">
-                대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
-              </p>
+              <Reveal delay={0} from={DROPLET.from} duration={DROPLET.duration} ease={DROPLET.ease}>
+                <h1
+                  data-hero-wordmark
+                  className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
+                >
+                  Alpensia BBQ
+                </h1>
+              </Reveal>
+              <Reveal delay={110} from={DROPLET.from} duration={DROPLET.duration} ease={DROPLET.ease}>
+                <p className="mt-6 text-base leading-relaxed text-muted sm:text-xl">
+                  대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
+                </p>
+              </Reveal>
             </div>
           </div>
         </section>
@@ -115,10 +119,10 @@ export default async function Home() {
                 return (
                   <Reveal
                     key={f.type}
-                    delay={i * 150}
-                    from={FACILITY_FROM[i % FACILITY_FROM.length]}
-                    duration={0.8}
-                    ease="cubic-bezier(0.16,1,0.3,1)"
+                    delay={220 + i * 110}
+                    from={DROPLET.from}
+                    duration={DROPLET.duration}
+                    ease={DROPLET.ease}
                     className="w-full sm:w-auto sm:flex-1 sm:min-w-[300px] sm:max-w-[560px]"
                   >
                   <Link
