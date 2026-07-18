@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { DropletReveal } from '@/components/site/DropletReveal';
 import { BEEF_ENABLED, OUTDOOR_TABLE_ENABLED } from '@/lib/config';
 
 type Faq = { q: string; a: string[] };
@@ -66,9 +67,9 @@ export function FaqAccordion() {
       <div className="mx-auto grid max-w-5xl gap-10 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         {/* 좌: 헤딩 */}
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <h1 className="text-4xl font-bold leading-tight text-ink sm:text-5xl">
-            FAQ
-          </h1>
+          <DropletReveal>
+            <h1 className="text-4xl font-bold leading-tight text-ink sm:text-5xl">FAQ</h1>
+          </DropletReveal>
         </div>
 
         {/* 우: 아코디언 */}
@@ -76,8 +77,8 @@ export function FaqAccordion() {
           {FAQS.map((f, i) => {
             const isOpen = open.has(i);
             return (
+              <DropletReveal key={f.q} delay={80 + i * 90}>
               <div
-                key={f.q}
                 className={`rounded-3xl border bg-surface transition-colors ${
                   isOpen ? 'border-brand/40' : 'border-line'
                 }`}
@@ -137,6 +138,7 @@ export function FaqAccordion() {
                   </div>
                 </div>
               </div>
+              </DropletReveal>
             );
           })}
         </div>

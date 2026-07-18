@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Field, Input } from '@/components/ui/Field';
+import { DropletReveal } from '@/components/site/DropletReveal';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { formatDateKorean, formatWon } from '@/lib/format';
@@ -93,32 +94,43 @@ export default function LookupPage() {
     <div className="flex min-h-[100dvh] flex-col bg-surface">
       <SiteHeader />
       <main className="mx-auto w-full max-w-md flex-1 px-5 py-10">
-        <h1 className="text-2xl font-bold text-ink">예약 조회</h1>
-        <p className="mt-2 text-muted">예약번호와 연락처로 조회하세요.</p>
+        <DropletReveal>
+          <h1 className="text-2xl font-bold text-ink">예약 조회</h1>
+        </DropletReveal>
+        <DropletReveal delay={90}>
+          <p className="mt-2 text-muted">예약번호와 연락처로 조회하세요.</p>
+        </DropletReveal>
 
         <div className="mt-6 space-y-4">
-          <Field label="예약번호">
-            <Input
-              value={bookingNumber}
-              onChange={(e) => setBookingNumber(e.target.value)}
-              placeholder="R-20260612-XXXXXX"
-            />
-          </Field>
-          <Field label="휴대폰 번호">
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="010-1234-5678"
-              inputMode="numeric"
-            />
-          </Field>
-          <Button size="lg" onClick={lookup} disabled={loading || !bookingNumber || !phone}>
-            {loading ? '조회 중…' : '조회하기'}
-          </Button>
+          <DropletReveal delay={180}>
+            <Field label="예약번호">
+              <Input
+                value={bookingNumber}
+                onChange={(e) => setBookingNumber(e.target.value)}
+                placeholder="R-20260612-XXXXXX"
+              />
+            </Field>
+          </DropletReveal>
+          <DropletReveal delay={270}>
+            <Field label="휴대폰 번호">
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="010-1234-5678"
+                inputMode="numeric"
+              />
+            </Field>
+          </DropletReveal>
+          <DropletReveal delay={360}>
+            <Button size="lg" onClick={lookup} disabled={loading || !bookingNumber || !phone}>
+              {loading ? '조회 중…' : '조회하기'}
+            </Button>
+          </DropletReveal>
           {error && <p className="text-sm text-danger">{error}</p>}
         </div>
 
         {result && st && (
+          <DropletReveal>
           <Card className="mt-8 overflow-hidden">
             <div className="flex items-center justify-between border-b border-line p-5">
               <span className="text-sm text-muted">{result.bookingNumber}</span>
@@ -156,6 +168,7 @@ export default function LookupPage() {
               </div>
             )}
           </Card>
+          </DropletReveal>
         )}
       </main>
       <SiteFooter />
