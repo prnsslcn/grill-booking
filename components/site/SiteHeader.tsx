@@ -94,8 +94,8 @@ export function SiteHeader({
             mobileOpen
               ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface md:inset-x-4 md:top-4 md:rounded-[1.5rem] md:border-line md:bg-surface/80 md:backdrop-blur-xl'
               : solid
-                ? 'inset-x-3 top-3 rounded-[1.5rem] border-white/40 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/70 sm:backdrop-blur-xl md:rounded-full'
-                : 'inset-x-3 top-3 rounded-[1.5rem] border-white/30 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/55 sm:backdrop-blur-xl md:rounded-full'
+                ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface sm:inset-x-4 sm:top-4 sm:rounded-[1.5rem] sm:border-white/40 sm:bg-surface/70 sm:backdrop-blur-xl md:rounded-full'
+                : 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface sm:inset-x-4 sm:top-4 sm:rounded-[1.5rem] sm:border-white/30 sm:bg-surface/55 sm:backdrop-blur-xl md:rounded-full'
           }`}
         >
         {/* 바 행 (모바일 h-16, sm+ h-24) */}
