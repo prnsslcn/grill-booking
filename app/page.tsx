@@ -95,7 +95,7 @@ export default async function Home() {
               <Reveal delay={0} from={DROPLET.from} duration={DROPLET.duration} ease={DROPLET.ease}>
                 <h1
                   data-hero-wordmark
-                  className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
+                  className="whitespace-nowrap font-display text-[clamp(2.45rem,11.2vw,6rem)] tracking-wide text-wood"
                 >
                   Alpensia BBQ
                 </h1>
