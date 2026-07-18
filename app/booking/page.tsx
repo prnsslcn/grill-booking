@@ -295,6 +295,9 @@ function BookingFlow() {
               <DropletReveal>
               <div>
                 <h2 className="text-lg font-bold text-ink">추가 메뉴 <span className="text-sm font-normal text-subtle">(선택)</span></h2>
+                <p className="mt-1 text-sm text-muted">
+                  현장에서는 추가가 불가하오니 미리 선택해주시면 감사하겠습니다.
+                </p>
                 <div className="mt-3 space-y-2">
                   {addonsCatalog.map((a) => {
                     const qty = addonQty[a.key] ?? 0;
