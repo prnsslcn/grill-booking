@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 import { Calendar } from '@/components/booking/Calendar';
+import { DropletReveal } from '@/components/site/DropletReveal';
 import { PaymentStep } from '@/components/booking/PaymentStep';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -167,6 +168,7 @@ function BookingFlow() {
         {/* 1단계: 날짜·시설·시간·고기 */}
         {step === 1 && (
           <div className="space-y-6">
+            <DropletReveal>
             <div>
               <h2 className="text-lg font-bold text-ink">날짜 선택</h2>
               <p className="mt-1 text-sm text-muted">
@@ -187,8 +189,10 @@ function BookingFlow() {
                 />
               </div>
             </div>
+            </DropletReveal>
 
             {date && (
+              <DropletReveal>
               <div>
                 <h2 className="text-lg font-bold text-ink">시설·시간 선택</h2>
                 <p className="mt-1 text-sm text-muted">인원에 맞는 시설이 배정됩니다(동 지정 불가).</p>
@@ -253,10 +257,12 @@ function BookingFlow() {
                   </div>
                 )}
               </div>
+              </DropletReveal>
             )}
 
             {/* 고기 선택 */}
             {selected && (
+              <DropletReveal>
               <div>
                 <h2 className="text-lg font-bold text-ink">고기 선택</h2>
                 <div className={`mt-3 grid gap-2 ${BEEF_ENABLED ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -281,10 +287,12 @@ function BookingFlow() {
                   })}
                 </div>
               </div>
+              </DropletReveal>
             )}
 
             {/* 추가메뉴 (선택) */}
             {selected && meat && addonsCatalog.length > 0 && (
+              <DropletReveal>
               <div>
                 <h2 className="text-lg font-bold text-ink">추가 메뉴 <span className="text-sm font-normal text-subtle">(선택)</span></h2>
                 <div className="mt-3 space-y-2">
@@ -319,6 +327,7 @@ function BookingFlow() {
                   })}
                 </div>
               </div>
+              </DropletReveal>
             )}
 
             {selected && meat && (
