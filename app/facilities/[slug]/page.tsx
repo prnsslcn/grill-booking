@@ -64,58 +64,43 @@ export default async function FacilityPage({
         {/* 헤드라인 + 가로 스크롤 이미지 갤러리 (홈 히어로 설명 블록 대체) */}
         <FacilityGallery name={f.label} tagline={f.intro} oneLine={f.headlineOneLine} images={f.images} />
 
-        {/* 특징 */}
-        <section className="bg-surface py-16">
-          <div className="mx-auto max-w-5xl px-5">
-            <h2 className="text-2xl font-bold text-ink">이런 점이 좋아요</h2>
-            <div className="mt-7 grid gap-4 sm:grid-cols-3">
-              {f.features.map((feat) => (
-                <div key={feat.title} className="rounded-[2rem] border border-line bg-canvas p-6">
-                  <h3 className="font-bold text-ink">{feat.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{feat.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 가격 + 예약 CTA */}
-        <section className="py-16 bg-surface">
-          <div className="mx-auto max-w-5xl px-5">
-            <div className="flex flex-col gap-6 rounded-[2rem] border border-line bg-surface p-8 sm:flex-row sm:items-center sm:justify-between">
+        {/* 가격 + 예약 CTA (넓고 크게) */}
+        <section className="bg-surface py-20 sm:py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <div className="flex flex-col gap-8 rounded-[2.5rem] border border-line bg-surface p-8 sm:flex-row sm:items-center sm:justify-between sm:p-12 lg:p-16">
               <div>
-                <h2 className="text-xl font-bold text-ink">{f.label} 가격</h2>
-                <p className="mt-1 text-sm text-muted">
+                <h2 className="text-2xl font-bold text-ink sm:text-3xl">{f.label} 가격</h2>
+                <p className="mt-2 text-base text-muted">
                   고기세트 포함 · 전액 선결제 · 기준 {f.capacity}인 (1인 150g)
                 </p>
-                <div className="mt-5 space-y-1.5">
+                <div className="mt-7 space-y-2">
                   {prices && prices.is_active ? (
                     <>
                       <div className="flex items-baseline gap-6">
-                        <span className="w-16 text-sm text-muted">Pork Set</span>
-                        <span className="text-lg font-bold text-ink">
+                        <span className="w-20 text-base text-muted">Pork Set</span>
+                        <span className="text-3xl font-extrabold text-ink">
                           {formatWon(prices.price_pork)}
                         </span>
-                        <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
+                        <span className="text-base text-subtle">{meatGrams(f.capacity)}g</span>
                       </div>
                       {BEEF_ENABLED && (
                         <div className="flex items-baseline gap-6">
-                          <span className="w-16 text-sm text-muted">Beef Set</span>
-                          <span className="text-lg font-bold text-ink">
+                          <span className="w-20 text-base text-muted">Beef Set</span>
+                          <span className="text-3xl font-extrabold text-ink">
                             {formatWon(prices.price_beef)}
                           </span>
-                          <span className="text-sm text-subtle">{meatGrams(f.capacity)}g</span>
+                          <span className="text-base text-subtle">{meatGrams(f.capacity)}g</span>
                         </div>
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-subtle">현재 예약을 받지 않는 시설입니다.</p>
+                    <p className="text-base text-subtle">현재 예약을 받지 않는 시설입니다.</p>
                   )}
                 </div>
               </div>
               <Link
                 href={`/booking?facility=${f.type}`}
-                className="inline-flex justify-center rounded-full bg-brand px-7 py-3.5 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong"
+                className="inline-flex justify-center rounded-full bg-brand px-10 py-5 text-lg font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong sm:px-12"
               >
                 예약하기
               </Link>
