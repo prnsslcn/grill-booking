@@ -91,26 +91,14 @@ export default async function Home() {
         {/* 히어로 — 좌: 헤드라인/설명, 우: 그릴 이미지 (모바일은 세로 스택) */}
         <section className="relative overflow-hidden bg-surface">
           <div className="mx-auto max-w-6xl px-5 pb-8 pt-14 sm:pt-16">
-            <div className="text-center lg:text-left">
-              {/* 헤드라인 + 그릴 이미지를 한 컨테이너에 → 한 줄로, 이미지 높이=글자 높이 */}
-              <div className="flex items-center justify-center gap-2 sm:gap-4 lg:justify-start">
-                <h1
-                  data-hero-wordmark
-                  className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
-                >
-                  Alpensia BBQ
-                </h1>
-                <Image
-                  src="/images/grill.png"
-                  alt="숯불 그릴"
-                  width={706}
-                  height={1000}
-                  priority
-                  sizes="120px"
-                  className="h-[clamp(2.5rem,9vw,6rem)] w-auto object-contain"
-                />
-              </div>
-              <p className="mx-auto mt-6 max-w-md text-xl leading-relaxed text-muted lg:mx-0">
+            <div className="text-center">
+              <h1
+                data-hero-wordmark
+                className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
+              >
+                Alpensia BBQ
+              </h1>
+              <p className="mt-6 text-base leading-relaxed text-muted sm:text-xl">
                 대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
               </p>
             </div>
@@ -121,7 +109,6 @@ export default async function Home() {
         <section id="facilities" className="overflow-hidden bg-surface py-16 scroll-mt-24">
           <div className="mx-auto max-w-7xl px-5">
             <h2 className="text-2xl font-bold text-ink">시설 안내</h2>
-            <p className="mt-2 text-muted">모든 상품에 고기세트가 포함됩니다.</p>
             <div className="mt-7 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-5">
               {facilities.map((f, i) => {
                 const s = FACILITY_STYLE[f.type] ?? FACILITY_STYLE_DEFAULT;
