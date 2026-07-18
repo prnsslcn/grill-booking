@@ -94,8 +94,8 @@ export function SiteHeader({
             mobileOpen
               ? 'inset-x-0 top-0 rounded-b-[1.5rem] border-transparent bg-surface md:inset-x-4 md:top-4 md:rounded-[1.5rem] md:border-line md:bg-surface/80 md:backdrop-blur-xl'
               : solid
-                ? 'inset-x-3 top-3 rounded-[1.5rem] border-white/40 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/70 sm:backdrop-blur-xl'
-                : 'inset-x-3 top-3 rounded-[1.5rem] border-white/30 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/55 sm:backdrop-blur-xl'
+                ? 'inset-x-3 top-3 rounded-[1.5rem] border-white/40 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/70 sm:backdrop-blur-xl md:rounded-full'
+                : 'inset-x-3 top-3 rounded-[1.5rem] border-white/30 bg-surface sm:inset-x-4 sm:top-4 sm:bg-surface/55 sm:backdrop-blur-xl md:rounded-full'
           }`}
         >
         {/* 바 행 (모바일 h-16, sm+ h-24) */}
@@ -112,8 +112,8 @@ export function SiteHeader({
           </Link>
         </div>
 
-        {/* 중앙: 데스크탑 메뉴 */}
-        <nav className="hidden items-center gap-8 text-[17px] font-medium md:flex">
+        {/* 중앙: 데스크탑 메뉴 (pill 칩) */}
+        <nav className="hidden items-center gap-1 text-[17px] font-medium md:flex">
           <div
             className="relative"
             onMouseEnter={() => setFacilityOpen(true)}
@@ -121,7 +121,9 @@ export function SiteHeader({
           >
             <button
               type="button"
-              className="flex items-center gap-1 py-2 text-ink transition-colors hover:text-muted"
+              className={`flex items-center gap-1 rounded-full px-4 py-2 text-ink transition-colors hover:bg-brand-soft ${
+                facilityOpen ? 'bg-brand-soft' : ''
+              }`}
             >
               시설안내
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -157,13 +159,16 @@ export function SiteHeader({
             </div>
           </div>
 
-          <Link href="/faq" className="py-2 text-ink transition-colors hover:text-muted">
+          <Link
+            href="/faq"
+            className="rounded-full px-4 py-2 text-ink transition-colors hover:bg-brand-soft"
+          >
             FAQ
           </Link>
 
           <Link
             href="/booking/lookup"
-            className="py-2 text-ink transition-colors hover:text-muted"
+            className="rounded-full px-4 py-2 text-ink transition-colors hover:bg-brand-soft"
           >
             예약조회
           </Link>
@@ -173,7 +178,7 @@ export function SiteHeader({
         <div className="flex items-center justify-end gap-2 md:flex-1">
           <Link
             href="/booking"
-            className="hidden rounded-2xl bg-brand px-6 py-3 text-[17px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong md:inline-flex"
+            className="hidden rounded-full bg-brand px-6 py-3 text-[17px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-strong md:inline-flex"
           >
             예약하기
           </Link>
