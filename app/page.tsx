@@ -91,30 +91,28 @@ export default async function Home() {
         {/* 히어로 — 좌: 헤드라인/설명, 우: 그릴 이미지 (모바일은 세로 스택) */}
         <section className="relative overflow-hidden bg-surface">
           <div className="mx-auto max-w-6xl px-5 pb-8 pt-14 sm:pt-16">
-            <div className="flex flex-col items-center gap-6 text-center lg:flex-row lg:items-stretch lg:justify-center lg:gap-10 lg:text-left">
-              <div className="lg:max-w-xl">
+            <div className="text-center lg:text-left">
+              {/* 헤드라인 + 그릴 이미지를 한 컨테이너에 → 한 줄로, 이미지 높이=글자 높이 */}
+              <div className="flex items-center justify-center gap-2 sm:gap-4 lg:justify-start">
                 <h1
                   data-hero-wordmark
-                  className="font-display text-[clamp(2.5rem,10vw,6rem)] leading-[0.92] tracking-wide text-wood"
+                  className="whitespace-nowrap font-display text-[clamp(1.75rem,8vw,5rem)] tracking-wide text-wood"
                 >
-                  Alpensia
-                  <br className="hidden lg:block" /> BBQ
+                  Alpensia BBQ
                 </h1>
-                <p className="mx-auto mt-6 max-w-md text-xl leading-relaxed text-muted lg:mx-0">
-                  대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
-                </p>
-              </div>
-              <div className="flex justify-center lg:justify-start">
                 <Image
                   src="/images/grill.png"
                   alt="숯불 그릴"
                   width={706}
                   height={1000}
                   priority
-                  sizes="(max-width: 1024px) 60vw, 240px"
-                  className="h-auto w-[60%] max-w-[300px] object-contain lg:h-full lg:w-auto lg:max-w-none"
+                  sizes="120px"
+                  className="h-[clamp(2.5rem,9vw,6rem)] w-auto object-contain"
                 />
               </div>
+              <p className="mx-auto mt-6 max-w-md text-xl leading-relaxed text-muted lg:mx-0">
+                대관령의 아름다운 자연 속에서 가족, 친구, 연인과 함께 프리미엄 BBQ를 즐겨보세요.
+              </p>
             </div>
           </div>
         </section>
