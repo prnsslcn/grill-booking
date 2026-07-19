@@ -204,15 +204,6 @@ export function FacilityGallery({
   // pin 전엔 헤드라인과 카드가 같은 속도로 자연스럽게 함께 스크롤된다.
   const x = useTransform(scrollYProgress, [0, 1], [0, -trackOverflow]);
 
-  // 모바일 음식 사진 핀: 스크롤 진행에 따라 텍스트가 아래에서 올라와 사진 아래에 도착
-  const foodPinRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: foodProgress } = useScroll({
-    target: foodPinRef,
-    offset: ['start start', 'end end'],
-  });
-  // 위 사진들이 빠지는 초반 구간에 아래에서 올라와 사진 아래 도착 → 이후 유지(페이드아웃 X)
-  const foodTextY = useTransform(foodProgress, [0.06, 0.42], [340, 0]);
-  const foodTextOpacity = useTransform(foodProgress, [0.1, 0.36], [0, 1]);
 
   const [direction, setDirection] = useState<'down' | 'up'>('down');
   useMotionValueEvent(x, 'change', () => {
@@ -288,9 +279,9 @@ export function FacilityGallery({
         {/* 마지막(음식) 사진 — 스택과 같은 간격으로 이어지다가 중앙에서 sticky로 멈춤.
             텍스트는 사진에 붙어(absolute) 아래에서 올라와 도착하고, 유지된 채 사진과 함께 위로 빠짐. */}
         {foodImage && (
-          <div ref={foodPinRef} className="relative mt-4">
-            {/* 사진 top이 여기에 고정 → 사진이 화면 중앙. 텍스트는 흐름상 사진 아래(overflow 미적용). */}
-            <div className="sticky" style={{ top: 'calc(50dvh - 37.5vw + 15px)' }}>
+          <div className="relative mt-4">
+            {/* 사진 — 화면 중앙에 sticky 고정. 위 사진들만 계속 올라감. */}
+            <div className="sticky z-10" style={{ top: 'calc(50dvh - 37.5vw + 15px)' }}>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                 <Image
                   src={foodImage}
@@ -302,16 +293,18 @@ export function FacilityGallery({
                   draggable={false}
                 />
               </div>
-              {/* 아래에서 올라와 사진 아래 도착 → 유지된 채 사진과 함께 위로(같은 sticky 안이라 함께 이동) */}
-              <motion.p
-                className="mt-5 text-center text-lg font-bold text-ink"
-                style={{ y: foodTextY, opacity: foodTextOpacity }}
-              >
-                고기, 상추, 김치
-              </motion.p>
             </div>
-            {/* sticky 지속(핀) 구간 */}
-            <div className="h-[90vh]" />
+            {/* 이 여백만큼 스크롤하는 동안 텍스트가 아래에서 자연 스크롤(1:1)로 올라옴 */}
+            <div className="h-[60vh]" />
+            {/* 텍스트 — 스크롤 속도 그대로 올라오다 사진 하단에 닿으면 sticky로 고정(페이드 없음) */}
+            <p
+              className="sticky text-center text-lg font-bold text-ink"
+              style={{ top: 'calc(50dvh + 37.5vw + 5px)' }}
+            >
+              고기, 상추, 김치
+            </p>
+            {/* 이후 스크롤 시 사진+텍스트가 함께 위로 빠짐 */}
+            <div className="h-[45vh]" />
           </div>
         )}
       </div>
