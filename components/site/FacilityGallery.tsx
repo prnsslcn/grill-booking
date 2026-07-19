@@ -290,7 +290,9 @@ export function FacilityGallery({
             트레일링 여백 없이 도착 직후 릴리즈(헛스크롤 최소). */}
         {foodImage && (
           <div ref={foodPinRef} className="relative mt-4 h-[150vh]">
-            <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-5">
+            {/* 사진을 100svh 블록의 '맨 위'에 두고 top으로 중앙에 오게 → 앞 사진 바로 뒤(균등 간격)에서
+                시작해 중앙으로 올라와 고정. 사진+텍스트가 한 sticky라 함께 나감(텍스트가 사진 뒤로 안 감). */}
+            <div className="sticky h-[100svh]" style={{ top: 'calc(50svh - 37.5vw + 15px)' }}>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                 <Image
                   src={foodImage}
@@ -302,8 +304,9 @@ export function FacilityGallery({
                   draggable={false}
                 />
               </div>
+              {/* 아래에서 올라와 사진 아래 도착(페이드 없음), 도착 후 사진과 함께 위로 */}
               <motion.p
-                className="text-center text-lg font-bold text-ink"
+                className="mt-5 text-center text-lg font-bold text-ink"
                 style={{ y: foodTextY }}
               >
                 고기, 상추, 김치
