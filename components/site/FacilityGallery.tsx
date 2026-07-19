@@ -288,9 +288,10 @@ export function FacilityGallery({
         {/* 마지막(음식) 사진 — 스택과 같은 간격으로 이어지다가 중앙에서 sticky로 멈춤.
             텍스트는 사진에 붙어(absolute) 아래에서 올라와 도착하고, 유지된 채 사진과 함께 위로 빠짐. */}
         {foodImage && (
-          <div ref={foodPinRef} className="relative">
-            <div className="sticky" style={{ top: 'calc(50dvh - 37.5vw)' }}>
-              <div className="relative mt-4 aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
+          <div ref={foodPinRef} className="relative mt-4">
+            {/* 사진 top이 여기에 고정 → 사진이 화면 중앙. 텍스트는 흐름상 사진 아래(overflow 미적용). */}
+            <div className="sticky" style={{ top: 'calc(50dvh - 37.5vw + 15px)' }}>
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                 <Image
                   src={foodImage}
                   alt={`${name} 제공 음식`}
@@ -300,16 +301,16 @@ export function FacilityGallery({
                   className="object-cover"
                   draggable={false}
                 />
-                {/* 사진 바로 아래에 도착하는 텍스트(사진 박스 기준 absolute라 사진과 함께 이동) */}
-                <motion.p
-                  className="absolute inset-x-0 top-[calc(100%+1.25rem)] text-center text-lg font-bold text-ink"
-                  style={{ y: foodTextY, opacity: foodTextOpacity }}
-                >
-                  고기, 상추, 김치
-                </motion.p>
               </div>
+              {/* 아래에서 올라와 사진 아래 도착 → 유지된 채 사진과 함께 위로(같은 sticky 안이라 함께 이동) */}
+              <motion.p
+                className="mt-5 text-center text-lg font-bold text-ink"
+                style={{ y: foodTextY, opacity: foodTextOpacity }}
+              >
+                고기, 상추, 김치
+              </motion.p>
             </div>
-            {/* sticky 지속(핀) 구간 — 이만큼 스크롤하는 동안 사진이 중앙에 멈춰 있음 */}
+            {/* sticky 지속(핀) 구간 */}
             <div className="h-[90vh]" />
           </div>
         )}
