@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+
+import { DropletReveal } from '@/components/site/DropletReveal';
 import {
   motion,
   useScroll,
@@ -238,6 +240,41 @@ export function FacilityGallery({
 
   return (
     <section className="carousel-section">
+      {/* 모바일 — 캐러셀 대신 세로 1열(헤드라인 + 이미지), 스크롤 시 물방울 등장 */}
+      <div className="px-5 pb-16 pt-24 md:hidden">
+        {headline && (
+          <div className="flex flex-col items-center text-center">
+            <DropletReveal>
+              <div className="headline text-1 text-1--carousel">{name}</div>
+            </DropletReveal>
+            {tagline && (
+              <DropletReveal delay={90} className="w-full">
+                <p className="carousel-tagline text-5">{tagline}</p>
+              </DropletReveal>
+            )}
+          </div>
+        )}
+        <div className="mt-10 space-y-4">
+          {IMAGES.map((src, i) => (
+            <DropletReveal key={i} delay={i * 40}>
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
+                <Image
+                  src={src}
+                  alt={`${name} ${i + 1}`}
+                  fill
+                  sizes="100vw"
+                  quality={90}
+                  className="object-cover"
+                  draggable={false}
+                />
+              </div>
+            </DropletReveal>
+          ))}
+        </div>
+      </div>
+
+      {/* 데스크톱 — 기존 가로 스크롤 캐러셀 */}
+      <div className="hidden md:block">
       {/* Headline — 좌측에서 슬라이드 (headline=false면 생략) */}
       {headline && (
       <div ref={headlineRef} className="carousel-headline-stack">
@@ -287,6 +324,7 @@ export function FacilityGallery({
             ))}
           </div>
         </div>
+      </div>
       </div>
 
       {/* Genie 팝업 — 클릭한 카드 위치에서 fullscreen 확장 */}
