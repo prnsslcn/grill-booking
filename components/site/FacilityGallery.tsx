@@ -99,6 +99,9 @@ export function FacilityGallery({
   cardsTop?: boolean;
 }) {
   const IMAGES = images ?? DEFAULT_IMAGES;
+  // 모바일: 마지막 사진(음식)은 중앙 핀 + 텍스트 상승으로, 나머지는 세로 스택
+  const foodImage = IMAGES.length > 0 ? IMAGES[IMAGES.length - 1] : undefined;
+  const stackImages = IMAGES.length > 1 ? IMAGES.slice(0, -1) : IMAGES;
   const outerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -201,6 +204,15 @@ export function FacilityGallery({
   // pin 전엔 헤드라인과 카드가 같은 속도로 자연스럽게 함께 스크롤된다.
   const x = useTransform(scrollYProgress, [0, 1], [0, -trackOverflow]);
 
+  // 모바일 음식 사진 핀: 스크롤 진행에 따라 텍스트가 아래에서 올라와 사진 아래에 도착
+  const foodPinRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: foodProgress } = useScroll({
+    target: foodPinRef,
+    offset: ['start start', 'end end'],
+  });
+  const foodTextY = useTransform(foodProgress, [0, 0.55], [220, 0]);
+  const foodTextOpacity = useTransform(foodProgress, [0.12, 0.5], [0, 1]);
+
   const [direction, setDirection] = useState<'down' | 'up'>('down');
   useMotionValueEvent(x, 'change', () => {
     const vel = x.getVelocity();
@@ -255,7 +267,7 @@ export function FacilityGallery({
           </div>
         )}
         <div className="mt-10 space-y-4">
-          {IMAGES.map((src, i) => (
+          {stackImages.map((src, i) => (
             <DropletReveal key={i} delay={i * 40}>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                 <Image
@@ -271,6 +283,33 @@ export function FacilityGallery({
             </DropletReveal>
           ))}
         </div>
+
+        {/* 마지막(음식) 사진 — 중앙 고정 + 아래에서 텍스트 상승 후 스크롤 진행 */}
+        {foodImage && (
+          <div ref={foodPinRef} className="relative mt-4 h-[220vh]">
+            <div className="sticky top-0 h-screen">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
+                  <Image
+                    src={foodImage}
+                    alt={`${name} 제공 음식`}
+                    fill
+                    sizes="100vw"
+                    quality={90}
+                    className="object-cover"
+                    draggable={false}
+                  />
+                </div>
+              </div>
+              <motion.p
+                className="absolute inset-x-0 px-5 text-center text-lg font-bold text-ink"
+                style={{ top: 'calc(50% + 38vw)', y: foodTextY, opacity: foodTextOpacity }}
+              >
+                고기, 상추, 김치
+              </motion.p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 데스크톱 — 기존 가로 스크롤 캐러셀 */}
