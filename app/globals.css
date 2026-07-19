@@ -100,7 +100,7 @@ h1, h2, h3, h4 {
 }
 .text-1 {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   font-size: var(--text-1);
   line-height: 0.85;
   letter-spacing: -0.03em;
