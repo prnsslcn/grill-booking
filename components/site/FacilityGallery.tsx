@@ -306,10 +306,11 @@ export function FacilityGallery({
               </div>
               {/* 아래에서 올라와 사진 아래 도착(페이드 없음), 도착 후 사진과 함께 위로 */}
               <motion.p
-                className="mt-5 text-center text-lg font-bold text-ink"
+                className="mx-auto mt-5 max-w-md break-keep px-2 text-center text-base font-semibold leading-relaxed text-ink"
                 style={{ y: foodTextY }}
               >
-                고기, 상추, 김치
+                고기, 소시지, 상추, 고추, 버섯, 김치, 쌈장, 소금, 마늘, 생수 그리고 기본적인 일회용
+                식기도구가 제공됩니다.
               </motion.p>
             </div>
           </div>
