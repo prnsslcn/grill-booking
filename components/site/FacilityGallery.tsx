@@ -295,16 +295,15 @@ export function FacilityGallery({
               </div>
             </div>
             {/* 이 여백만큼 스크롤하는 동안 텍스트가 아래에서 자연 스크롤(1:1)로 올라옴 */}
-            <div className="h-[60vh]" />
-            {/* 텍스트 — 스크롤 속도 그대로 올라오다 사진 하단에 닿으면 sticky로 고정(페이드 없음) */}
+            <div className="h-[40vh]" />
+            {/* 텍스트 — 스크롤 속도(1:1)로 올라와 사진 하단에 도착. 트레일링 여백이 없어
+                도착 즉시 핀이 풀리며 곧바로 기본 스크롤로 사진과 함께 위로 올라간다(헛스크롤 없음). */}
             <p
               className="sticky text-center text-lg font-bold text-ink"
               style={{ top: 'calc(50dvh + 37.5vw + 5px)' }}
             >
               고기, 상추, 김치
             </p>
-            {/* 이후 스크롤 시 사진+텍스트가 함께 위로 빠짐 */}
-            <div className="h-[45vh]" />
           </div>
         )}
       </div>
