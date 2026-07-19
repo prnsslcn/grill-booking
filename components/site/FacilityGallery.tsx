@@ -210,8 +210,9 @@ export function FacilityGallery({
     target: foodPinRef,
     offset: ['start start', 'end end'],
   });
-  const foodTextY = useTransform(foodProgress, [0, 0.55], [220, 0]);
-  const foodTextOpacity = useTransform(foodProgress, [0.12, 0.5], [0, 1]);
+  // 위 사진들이 빠지는 초반 구간에 아래에서 올라와 사진 아래 도착 → 이후 유지(페이드아웃 X)
+  const foodTextY = useTransform(foodProgress, [0.06, 0.42], [340, 0]);
+  const foodTextOpacity = useTransform(foodProgress, [0.1, 0.36], [0, 1]);
 
   const [direction, setDirection] = useState<'down' | 'up'>('down');
   useMotionValueEvent(x, 'change', () => {
@@ -284,30 +285,32 @@ export function FacilityGallery({
           ))}
         </div>
 
-        {/* 마지막(음식) 사진 — 중앙 고정 + 아래에서 텍스트 상승 후 스크롤 진행 */}
+        {/* 마지막(음식) 사진 — 스택과 같은 간격으로 이어지다가 중앙에서 sticky로 멈춤.
+            텍스트는 사진에 붙어(absolute) 아래에서 올라와 도착하고, 유지된 채 사진과 함께 위로 빠짐. */}
         {foodImage && (
-          <div ref={foodPinRef} className="relative mt-4 h-[220vh]">
-            <div className="sticky top-0 h-screen">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
-                  <Image
-                    src={foodImage}
-                    alt={`${name} 제공 음식`}
-                    fill
-                    sizes="100vw"
-                    quality={90}
-                    className="object-cover"
-                    draggable={false}
-                  />
-                </div>
+          <div ref={foodPinRef} className="relative">
+            <div className="sticky" style={{ top: 'calc(50dvh - 37.5vw)' }}>
+              <div className="relative mt-4 aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
+                <Image
+                  src={foodImage}
+                  alt={`${name} 제공 음식`}
+                  fill
+                  sizes="100vw"
+                  quality={90}
+                  className="object-cover"
+                  draggable={false}
+                />
+                {/* 사진 바로 아래에 도착하는 텍스트(사진 박스 기준 absolute라 사진과 함께 이동) */}
+                <motion.p
+                  className="absolute inset-x-0 top-[calc(100%+1.25rem)] text-center text-lg font-bold text-ink"
+                  style={{ y: foodTextY, opacity: foodTextOpacity }}
+                >
+                  고기, 상추, 김치
+                </motion.p>
               </div>
-              <motion.p
-                className="absolute inset-x-0 px-5 text-center text-lg font-bold text-ink"
-                style={{ top: 'calc(50% + 38vw)', y: foodTextY, opacity: foodTextOpacity }}
-              >
-                고기, 상추, 김치
-              </motion.p>
             </div>
+            {/* sticky 지속(핀) 구간 — 이만큼 스크롤하는 동안 사진이 중앙에 멈춰 있음 */}
+            <div className="h-[90vh]" />
           </div>
         )}
       </div>
