@@ -269,7 +269,7 @@ export function FacilityGallery({
         )}
         <div className="mt-10 space-y-4">
           {stackImages.map((src, i) => (
-            <DropletReveal key={i} delay={i < 2 ? 220 + i * 110 : 0}>
+            <DropletReveal key={i} delay={Math.min(160 + i * 90, 340)}>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                 <Image
                   src={src}
