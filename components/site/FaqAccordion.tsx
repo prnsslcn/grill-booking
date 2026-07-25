@@ -79,7 +79,7 @@ export function FaqAccordion() {
             return (
               <DropletReveal key={f.q} delay={80 + i * 90}>
               <div
-                className={`rounded-[2.5rem] border bg-surface transition-colors ${
+                className={`squircle rounded-[2.5rem] border bg-surface transition-colors ${
                   isOpen ? 'border-brand/40' : 'border-line'
                 }`}
               >
