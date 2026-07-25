@@ -71,7 +71,9 @@ export function NoticePopup() {
             role="dialog"
             aria-modal="true"
             aria-label="이용 안내"
-            className="squircle relative w-full max-w-sm overflow-hidden rounded-[5rem] bg-surface/70 shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+            // iOS 웹킷은 backdrop-filter를 clip-path(스퀴클 폴리필)로 못 자름 → 카드 블러가 모서리에
+            // 사각으로 남는다. 스퀴클 유지 위해 카드 배경은 불투명 처리(글래스는 배경 딤에만).
+            className="squircle relative w-full max-w-sm overflow-hidden rounded-[5rem] bg-surface shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)]"
             initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
