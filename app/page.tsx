@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Reveal } from '@/components/ui/Reveal';
 import { MissionBricks } from '@/components/site/MissionBricks';
+import { NoticePopup } from '@/components/site/NoticePopup';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { BEEF_ENABLED } from '@/lib/config';
@@ -85,6 +86,8 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-surface">
+      {/* 홈 진입 안내 팝업 — 철회 시 이 한 줄만 제거 */}
+      <NoticePopup />
       <SiteHeader heroWordmark />
 
       <main className="flex-1">

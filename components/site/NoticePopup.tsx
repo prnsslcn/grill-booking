@@ -3,15 +3,30 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-const PHONE = '010-3045-2994';
-const TEL = 'tel:01030452994';
-
 /**
- * 홈 진입 안내 팝업 — "홈페이지 준비 중, 전화로 예약" 유도. 매 방문마다 노출(저장 없음).
- * 정식 오픈 시 app/page.tsx 에서 <NoticePopup /> 한 줄(+import)만 제거하면 철회된다.
+ * 홈 진입 안내 팝업 — 고객 혼란이 잦은 핵심 2가지(당일 13:00 마감 · 성수기 주중 운영)를 강조.
+ * '오늘 하루 보지 않기'는 localStorage(날짜)로 저장해 당일엔 재노출하지 않는다.
+ * 철회 시 app/page.tsx 에서 <NoticePopup /> 한 줄(+import)만 제거.
  */
+
+const STORAGE_KEY = 'notice-dismissed-date';
+
+function todayKey(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
 export function NoticePopup() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  // 최초 마운트 시: 오늘 '보지 않기' 했으면 열지 않음(깜빡임 방지 위해 false로 시작 후 판정).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY) !== todayKey()) setOpen(true);
+    } catch {
+      setOpen(true);
+    }
+  }, []);
 
   // 열린 동안 스크롤 잠금(Lenis + body) + ESC 닫기
   useEffect(() => {
@@ -31,12 +46,21 @@ export function NoticePopup() {
     };
   }, [open]);
 
+  function dismissToday() {
+    try {
+      localStorage.setItem(STORAGE_KEY, todayKey());
+    } catch {
+      /* 저장 불가 시 이번 세션만 닫힘 */
+    }
+    setOpen(false);
+  }
+
   return (
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-5">
           <motion.div
-            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-ink/45 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -46,66 +70,73 @@ export function NoticePopup() {
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label="안내"
-            className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-line bg-surface p-7 text-center shadow-[0_24px_60px_-12px_rgba(0,0,0,0.35)]"
-            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            aria-label="이용 안내"
+            className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-surface/70 shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+            initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="닫기"
-              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-line-soft text-subtle transition-colors hover:bg-line hover:text-muted"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </button>
-
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft text-brand-strong">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-                {/* 눈 */}
-                <path
-                  d="M9 10.5h.01M15 10.5h.01"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-                {/* 찡그린 입(frown) */}
-                <path
-                  d="M8.5 16Q12 13.4 15.5 16"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
+            {/* 헤더 밴드 */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-brand/85 to-brand-strong/85 px-7 pb-7 pt-8 text-white">
+              <span className="text-xs font-semibold tracking-[0.14em] text-white/75">
+                알펜시아 BBQ
+              </span>
+              <h2 className="mt-1.5 text-[26px] font-extrabold leading-tight">
+                예약 전<br />꼭 확인해 주세요
+              </h2>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="닫기"
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                </svg>
+              </button>
             </div>
 
-            <h2 className="mt-5 text-2xl font-bold text-ink">온라인 예약 준비 중입니다</h2>
-            <p className="mt-2 leading-relaxed text-muted">
-              홈페이지를 준비하고 있습니다.
-              <br />
-              예약·문의는 전화로 편하게 연락 주세요.
-            </p>
+            {/* 핵심 안내 2가지 */}
+            <div className="space-y-3 p-6">
+              <div className="flex items-start gap-3.5 rounded-2xl bg-canvas/50 p-4">
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.7" />
+                    <path d="M12 7.5V12l3 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="font-bold text-ink">당일 예약 13:00 마감</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-muted">
+                    당일 예약은 <strong className="text-ink">오후 1시(13:00)까지</strong>만 가능합니다.
+                  </p>
+                </div>
+              </div>
 
-            <a
-              href={TEL}
-              className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-brand px-6 py-4 text-lg font-bold text-white transition-colors hover:bg-brand-strong"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M6.5 3h3l1.5 5-2 1.5a11 11 0 005 5l1.5-2 5 1.5v3a2 2 0 01-2 2A16 16 0 014.5 5a2 2 0 012-2z"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {PHONE}
-            </a>
-            <p className="mt-3 text-sm text-subtle">상담 시간 11:00 ~ 19:00</p>
+              <div className="flex items-start gap-3.5 rounded-2xl bg-canvas/50 p-4">
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
+                    <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="font-bold text-ink">성수기 주중에도 운영</p>
+                  <p className="mt-0.5 text-sm leading-relaxed text-muted">
+                    평소 금·토 운영이지만, <strong className="text-ink">성수기엔 주중에도 운영</strong>합니다. (수 휴무)
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={dismissToday}
+                className="mt-1 w-full py-1.5 text-center text-sm font-medium text-subtle transition-colors hover:text-muted"
+              >
+                오늘 하루 보지 않기
+              </button>
+            </div>
           </motion.div>
         </div>
       )}
