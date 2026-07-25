@@ -425,10 +425,10 @@ h1, h2, h3, h4 {
    크롬 등 네이티브는 corner-shape로 렌더, 사파리/파이어폭스는 폴리필이 --corner-shape를
    읽어 clip-path/SVG로 폴백. border-radius 값은 각 요소의 rounded-* 유틸을 그대로 사용. */
 .squircle {
-  /* superellipse(K): 값이 낮을수록 둥글다. K=1 일반 원형, 2 스퀴클(약간 각짐),
-     0~1 은 원보다 더 볼록(둥글게). 곡률 조절은 이 숫자 하나만 바꾸면 됨. */
-  --corner-shape: superellipse(0.5);
-  corner-shape: superellipse(0.5);
+  /* iOS 앱 아이콘·사파리 바와 같은 정석 스퀴클(연속 곡률). 모양은 이걸로 고정하고,
+     "더 둥글게/덜 둥글게"는 각 요소의 border-radius(rounded-*) 크기로 조절한다. */
+  --corner-shape: squircle;
+  corner-shape: squircle;
 }
 /* 폴백 브라우저에서 JS 로드 전 '너무 둥근' 첫 페인트 완화(스퀴클은 같은 반경에서 덜 둥글게 보임) */
 @supports not (corner-shape: squircle) {
