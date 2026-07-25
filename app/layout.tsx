@@ -5,6 +5,7 @@ import './globals.css';
 import 'lenis/dist/lenis.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 import { ScrollResetOnNavigate } from '@/components/site/ScrollResetOnNavigate';
+import { SquircleProvider } from '@/components/site/SquircleProvider';
 import { OUTDOOR_TABLE_ENABLED } from '@/lib/config';
 
 // 캠프·그릴·숲 컨셉의 묵직한 슬랩 세리프. 영문 브랜드 워드마크에 사용(대소문자 구분).
@@ -44,6 +45,7 @@ export default function RootLayout({
           }}
         />
         <ScrollResetOnNavigate />
+        <SquircleProvider />
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
