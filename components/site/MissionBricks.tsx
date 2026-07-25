@@ -80,7 +80,7 @@ export function MissionBricks() {
             transition={TRANS}
           >
             <p>
-              <strong>당일 예약은 13시까지</strong> 가능합니다.
+              <strong>당일 예약은 13:00까지</strong> 가능합니다.
             </p>
             <p>
               운영일 금·토 (성수기 주중 운영(수 휴무) · 동계 휴장). 1부 17:00~19:00 / 2부
