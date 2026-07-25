@@ -78,7 +78,8 @@ export function NoticePopup() {
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
             {/* 헤더 밴드 */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-brand/85 to-brand-strong/85 px-7 pb-7 pt-8 text-white">
+            {/* iOS 웹킷 버그 회피: 부모 overflow-hidden 클리핑 대신 헤더가 상단 모서리를 직접 둥글게 처리 */}
+            <div className="squircle relative overflow-hidden rounded-t-[5rem] bg-gradient-to-br from-brand/85 to-brand-strong/85 px-7 pb-7 pt-8 text-white">
               <span className="text-xs font-semibold tracking-[0.14em] text-white/75">
                 알펜시아 BBQ
               </span>
