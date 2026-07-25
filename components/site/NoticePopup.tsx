@@ -71,7 +71,7 @@ export function NoticePopup() {
             role="dialog"
             aria-modal="true"
             aria-label="이용 안내"
-            className="squircle relative w-full max-w-sm overflow-hidden rounded-3xl bg-surface/70 shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)] backdrop-blur-xl"
+            className="squircle relative w-full max-w-sm overflow-hidden rounded-[5rem] bg-surface/70 shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)] backdrop-blur-xl"
             initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
