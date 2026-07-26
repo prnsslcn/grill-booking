@@ -81,6 +81,7 @@ export default async function AdminDashboard({
                 <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
                   <Badge tone={meta.tone}>{meta.label}</Badge>
                   {b.source === 'offline' && <Badge tone="neutral">유선</Badge>}
+                  {b.source === 'comp' && <Badge tone="accent">지인</Badge>}
                   <span className="font-mono text-xs text-muted">{b.bookingNumber}</span>
                   <span className="font-medium text-ink">{b.facilityName}</span>
                   <span className="text-sm text-muted">
@@ -429,6 +430,7 @@ export default async function AdminDashboard({
                   <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
                     <Badge tone={meta.tone}>{meta.label}</Badge>
                     {offline && <Badge tone="neutral">유선</Badge>}
+                    {b.source === 'comp' && <Badge tone="accent">지인</Badge>}
                     <span className="text-sm font-medium text-muted">
                       {b.date ? formatDateKorean(b.date) : '-'}
                       {b.part ? ` · ${PARTS[b.part].label}` : ''}
@@ -556,6 +558,7 @@ export default async function AdminDashboard({
                     <Card className="flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 hover:border-accent/40 hover:bg-line-soft/50">
                       <Badge tone={meta.tone}>{meta.label}</Badge>
                       {offline && <Badge tone="neutral">유선</Badge>}
+                      {b.source === 'comp' && <Badge tone="accent">지인</Badge>}
                       <span className="font-medium text-ink">{b.facilityName}</span>
                       <span className="text-sm text-muted">{b.part ? PARTS[b.part].label : '-'}</span>
                       <span className="text-sm text-muted">

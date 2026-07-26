@@ -62,6 +62,8 @@ export function OfflineBookingForm({
   const [meat, setMeat] = useState<'pork' | 'beef'>('pork');
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [note, setNote] = useState('유선 예약');
+  // 무상(지인) 예약: 슬롯은 점유하되 금액 0원·매출 미집계
+  const [isComp, setIsComp] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -96,6 +98,7 @@ export function OfflineBookingForm({
           note,
           addons,
           amount: product?.amount,
+          comp: isComp,
         });
         if (!res.ok) {
           setErr(res.error);
@@ -220,6 +223,25 @@ export function OfflineBookingForm({
         <input value={note} onChange={(e) => setNote(e.target.value)} className={inputCls} placeholder="유선 예약 / 요청사항" />
       </label>
 
+      {/* 무상(지인) 예약 — 슬롯 점유·매출 미집계 */}
+      <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-line-soft/40 p-3">
+        <input
+          type="checkbox"
+          checked={isComp}
+          onChange={(e) => {
+            setIsComp(e.target.checked);
+            setNote(e.target.checked ? '지인 예약(무상)' : '유선 예약');
+          }}
+          className="mt-0.5 h-4 w-4 accent-accent"
+        />
+        <span className="text-sm">
+          <span className="font-medium text-ink">지인 예약 (무상)</span>
+          <span className="mt-0.5 block text-xs text-muted">
+            자리만 점유하고 <strong className="text-ink">금액 0원</strong>으로 등록됩니다. 매출·정산에는 잡히지 않습니다.
+          </span>
+        </span>
+      </label>
+
       {err && <p className="text-sm font-medium text-danger">{err}</p>}
       {ok && <p className="text-sm font-medium text-success">예약이 추가되었습니다.</p>}
 
@@ -228,7 +250,7 @@ export function OfflineBookingForm({
         disabled={pending}
         className="h-11 w-full rounded-xl bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
       >
-        {pending ? '추가 중…' : '유선 예약 추가'}
+        {pending ? '추가 중…' : isComp ? '지인 예약 추가' : '유선 예약 추가'}
       </button>
     </form>
   );

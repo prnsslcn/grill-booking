@@ -51,6 +51,9 @@ export default async function BookingDetailPage({
 
   const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
   const isOffline = b.source === 'offline';
+  const isComp = b.source === 'comp';
+  // 결제 없이 등록된 예약(유선·무상) — 취소 시 토스 환불 없이 슬롯만 해제
+  const isManual = isOffline || isComp;
   const refundPreview =
     b.status === 'confirmed' && b.date ? refundAmount(b.amount, b.date, new Date()) : 0;
 
@@ -63,6 +66,7 @@ export default async function BookingDetailPage({
       <div className="flex flex-wrap items-center gap-3">
         <Badge tone={meta.tone}>{meta.label}</Badge>
         {isOffline && <Badge tone="neutral">유선</Badge>}
+        {isComp && <Badge tone="accent">지인</Badge>}
         <h1 className="font-mono text-lg font-bold text-ink">{b.bookingNumber}</h1>
       </div>
 
@@ -95,12 +99,14 @@ export default async function BookingDetailPage({
 
       {/* 취소·환불 */}
       {b.status === 'confirmed' &&
-        (isOffline ? (
+        (isManual ? (
           <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
             <div>
-              <p className="font-semibold text-ink">유선 예약 취소</p>
+              <p className="font-semibold text-ink">{isComp ? '지인(무상) 예약 취소' : '유선 예약 취소'}</p>
               <p className="mt-1 text-sm text-muted">
-                결제 없이 등록된 유선 예약입니다. 취소 시 결제 환불 없이 슬롯만 해제됩니다.
+                {isComp
+                  ? '결제 없이 등록된 무상 예약입니다. 취소 시 슬롯만 해제됩니다.'
+                  : '결제 없이 등록된 유선 예약입니다. 취소 시 결제 환불 없이 슬롯만 해제됩니다.'}
               </p>
             </div>
             <OfflineCancelButton bookingId={b.id} />

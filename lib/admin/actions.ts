@@ -34,6 +34,8 @@ export async function adminCreateBooking(input: {
   addons?: Record<string, number>;
   /** 상품가 오버라이드(원). 지정 시 시설 기본가 대신 사용(예: 타프 4인 특가). */
   amount?: number;
+  /** 무상(지인) 예약. 슬롯은 점유하되 금액 0원·매출 미집계(source='comp'). */
+  comp?: boolean;
 }): Promise<ActionResult> {
   await requireAdmin();
   if (input.meat === 'beef' && !BEEF_ENABLED) {
@@ -54,7 +56,9 @@ export async function adminCreateBooking(input: {
     p_meat: input.meat ?? 'pork',
     p_note: input.note?.trim() || undefined,
     p_addons: cleanAddons,
-    ...(input.amount != null ? { p_amount: input.amount } : {}),
+    p_source: input.comp ? 'comp' : 'offline',
+    // 무상은 RPC에서 0원 강제 → amount 오버라이드 무시
+    ...(!input.comp && input.amount != null ? { p_amount: input.amount } : {}),
   });
   if (error) {
     const m = error.message;
