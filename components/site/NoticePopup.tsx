@@ -68,25 +68,17 @@ export function NoticePopup() {
           />
 
           <motion.div
-            className="relative w-full max-w-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label="이용 안내"
+            className="relative w-full max-w-sm overflow-hidden rounded-[5rem] bg-surface shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)]"
             initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
-          {/* 애니메이션(트랜스폼)과 clip-path(스퀴클)를 분리 — 웹킷에서 clip-path 요소를 직접
-              트랜스폼-애니메이션하면 프레임마다 재래스터화되어 버벅인다. 바깥은 애니메이션만,
-              안쪽 정적 카드가 스퀴클(clip-path)을 가져 한 번 그려진 뒤 GPU 트랜스폼만 됨.
-              iOS 웹킷: 스퀴클 요소엔 backdrop-filter·box-shadow 금지(모서리 사각 자국). */}
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="이용 안내"
-            className="squircle relative overflow-hidden rounded-[5rem] bg-surface"
-          >
-            {/* 헤더 밴드 */}
-            {/* iOS 웹킷 버그 회피: 부모 overflow-hidden 클리핑 대신 헤더가 상단 모서리를 직접 둥글게 처리 */}
-            <div className="squircle relative overflow-hidden rounded-t-[5rem] bg-gradient-to-br from-brand/85 to-brand-strong/85 px-7 pb-7 pt-8 text-white">
+            {/* 헤더 밴드 (일반 라운드 — 스퀴클 미적용) */}
+            <div className="relative overflow-hidden rounded-t-[5rem] bg-gradient-to-br from-brand to-brand-strong px-7 pb-7 pt-8 text-white">
               <span className="text-xs font-semibold tracking-[0.14em] text-white/75">
                 알펜시아 BBQ
               </span>
@@ -145,7 +137,6 @@ export function NoticePopup() {
                 오늘 하루 보지 않기
               </button>
             </div>
-          </div>
           </motion.div>
         </div>
       )}
