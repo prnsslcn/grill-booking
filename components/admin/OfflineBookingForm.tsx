@@ -108,6 +108,11 @@ export function OfflineBookingForm({
         setGuestName('');
         setGuestPhone('');
         setAddonQty({});
+        // 지인(무상) 체크는 완료 후 자동 해제 — 다음 등록은 기본(유선)으로
+        if (isComp) {
+          setIsComp(false);
+          setNote('유선 예약');
+        }
       } catch (e) {
         // 네트워크·직렬화 등 예기치 못한 오류만 여기로 온다(도메인 사유는 res.error).
         setErr(e instanceof Error ? e.message : '알 수 없는 오류');
