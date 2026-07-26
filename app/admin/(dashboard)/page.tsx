@@ -60,6 +60,8 @@ export default async function AdminDashboard({
     past?: string;
     cx?: string;
     rf?: string;
+    dcx?: string;
+    drf?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -120,11 +122,21 @@ export default async function AdminDashboard({
   const hidePast = sp.past === 'hide'; // 이용일이 오늘(KST) 이전인 예약 숨기기
   const showCancelled = sp.cx === '1'; // 취소 예약 표시(기본 숨김)
   const showRefunded = sp.rf === '1'; // 환불완료 예약 표시(기본 숨김)
+  const showDateCancelled = sp.dcx === '1'; // 날짜 상세 목록: 취소 표시(기본 숨김)
+  const showDateRefunded = sp.drf === '1'; // 날짜 상세 목록: 환불완료 표시(기본 숨김)
   const listPage = Math.max(1, Number(sp.page) || 1);
 
   const board = await getMonthBoard(y, m - 1);
   const dateBookings = date ? await listBookings({ date }) : [];
-  const shownBookings = dp ? dateBookings.filter((b) => String(b.part) === dp) : dateBookings;
+  let shownBookings = dp ? dateBookings.filter((b) => String(b.part) === dp) : dateBookings;
+  // 취소·환불완료는 기본 숨김, 토글로 표시
+  const dateHiddenCount = shownBookings.filter(
+    (b) =>
+      (!showDateCancelled && b.status === 'cancelled') ||
+      (!showDateRefunded && b.status === 'refunded'),
+  ).length;
+  if (!showDateCancelled) shownBookings = shownBookings.filter((b) => b.status !== 'cancelled');
+  if (!showDateRefunded) shownBookings = shownBookings.filter((b) => b.status !== 'refunded');
   const addons = date ? await getAddons() : [];
   // 날짜 미선택 시에만 기본 리스트를 조회(넉넉히 가져와 기간·정렬은 서버에서 적용)
   const baseBookings = date ? [] : await listBookings({ limit: 1000 });
@@ -155,7 +167,12 @@ export default async function AdminDashboard({
   const navHref = (yy: number, mm: number) =>
     `/admin?y=${yy}&m=${mm}&sort=${sort}&range=${range}&dir=${dir}&past=${hidePast ? 'hide' : 'show'}${cxrf}`;
   const cellHref = (d: number) => `/admin?y=${y}&m=${m}&date=${iso(d)}`;
-  const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}`;
+  const dcxrf = `${showDateCancelled ? '&dcx=1' : ''}${showDateRefunded ? '&drf=1' : ''}`;
+  const dpHref = (v: string) => `/admin?y=${y}&m=${m}&date=${date}${v ? `&dp=${v}` : ''}${dcxrf}`;
+  // 날짜 상세 목록 토글(취소·환불완료 표시) — date·dp·다른 토글 유지
+  const detailHref = (o: { dcx?: boolean; drf?: boolean }) =>
+    `/admin?y=${y}&m=${m}&date=${date}${dp ? `&dp=${dp}` : ''}` +
+    `${(o.dcx ?? showDateCancelled) ? '&dcx=1' : ''}${(o.drf ?? showDateRefunded) ? '&drf=1' : ''}`;
   // 기본 리스트 URL 빌더 — 지정 안 한 항목은 현재값 유지, 페이지는 명시(변경 시 1로 리셋)
   const listHref = (o: {
     sort?: string;
@@ -546,9 +563,40 @@ export default async function AdminDashboard({
               })}
             </div>
 
-            <h3 className="mt-6 text-sm font-bold text-ink">
-              예약 목록{dp ? ` · ${PARTS[Number(dp) as 1 | 2].label}` : ' · 전체'} ({shownBookings.length})
-            </h3>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-ink">
+                예약 목록{dp ? ` · ${PARTS[Number(dp) as 1 | 2].label}` : ' · 전체'} ({shownBookings.length})
+                {dateHiddenCount > 0 && (
+                  <span className="ml-1 font-normal text-subtle">· {dateHiddenCount}건 숨김</span>
+                )}
+              </h3>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href={detailHref({ dcx: !showDateCancelled })}
+                  scroll={false}
+                  title="취소 예약 표시"
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+                    showDateCancelled
+                      ? 'bg-accent text-white'
+                      : 'border border-line text-muted hover:bg-line-soft'
+                  }`}
+                >
+                  취소{showDateCancelled ? ' ✓' : ''}
+                </Link>
+                <Link
+                  href={detailHref({ drf: !showDateRefunded })}
+                  scroll={false}
+                  title="환불완료 예약 표시"
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+                    showDateRefunded
+                      ? 'bg-accent text-white'
+                      : 'border border-line text-muted hover:bg-line-soft'
+                  }`}
+                >
+                  환불완료{showDateRefunded ? ' ✓' : ''}
+                </Link>
+              </div>
+            </div>
             <div className="mt-2 space-y-2">
               {shownBookings.map((b) => {
                 const meta = STATUS_META[b.status] ?? { tone: 'neutral' as const, label: b.status };
