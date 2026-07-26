@@ -71,14 +71,14 @@ export function NoticePopup() {
             role="dialog"
             aria-modal="true"
             aria-label="이용 안내"
-            className="relative w-full max-w-sm overflow-hidden rounded-[5rem] bg-surface shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)]"
+            className="relative w-full max-w-sm overflow-hidden rounded-[2rem] bg-surface shadow-[0_28px_70px_-15px_rgba(0,0,0,0.4)]"
             initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
             {/* 헤더 밴드 (일반 라운드 — 스퀴클 미적용) */}
-            <div className="relative overflow-hidden rounded-t-[5rem] bg-gradient-to-br from-brand to-brand-strong px-7 pb-7 pt-8 text-white">
+            <div className="relative overflow-hidden rounded-t-[2rem] bg-gradient-to-br from-brand to-brand-strong px-7 pb-7 pt-8 text-white">
               <span className="text-xs font-semibold tracking-[0.14em] text-white/75">
                 알펜시아 BBQ
               </span>
