@@ -99,9 +99,6 @@ export function FacilityGallery({
   cardsTop?: boolean;
 }) {
   const IMAGES = images ?? DEFAULT_IMAGES;
-  // 모바일: 마지막 사진(음식)은 중앙 핀 + 텍스트 상승으로, 나머지는 세로 스택
-  const foodImage = IMAGES.length > 0 ? IMAGES[IMAGES.length - 1] : undefined;
-  const stackImages = IMAGES.length > 1 ? IMAGES.slice(0, -1) : IMAGES;
   const outerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -204,15 +201,6 @@ export function FacilityGallery({
   // pin 전엔 헤드라인과 카드가 같은 속도로 자연스럽게 함께 스크롤된다.
   const x = useTransform(scrollYProgress, [0, 1], [0, -trackOverflow]);
 
-  // 모바일 음식 사진 핀: 사진+텍스트를 한 sticky(100svh)에 넣어 함께 이동(뒤로 안 감).
-  // 텍스트는 y 트랜스폼으로 아래에서 올라와(1:1에 가깝게) 사진 아래 도착, 페이드 없음.
-  const foodPinRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: foodProgress } = useScroll({
-    target: foodPinRef,
-    offset: ['start start', 'end end'],
-  });
-  const foodTextY = useTransform(foodProgress, [0.15, 0.92], [320, 0]);
-
 
   const [direction, setDirection] = useState<'down' | 'up'>('down');
   useMotionValueEvent(x, 'change', () => {
@@ -253,8 +241,9 @@ export function FacilityGallery({
 
   return (
     <section className="carousel-section">
-      {/* 모바일 — 캐러셀 대신 세로 1열(헤드라인 + 이미지), 스크롤 시 물방울 등장 */}
-      <div className="px-5 pb-16 pt-24 md:hidden">
+      {/* 모바일 — 캐러셀 대신 세로 1열. 헤드라인·태그라인은 물방울, 이미지는 우측 밖에서 슬라이드 인.
+          (슬라이드 클리핑 위해 overflow-hidden) */}
+      <div className="overflow-hidden px-5 pb-16 pt-24 md:hidden">
         {headline && (
           <div className="flex flex-col items-center text-center">
             <DropletReveal>
@@ -268,53 +257,37 @@ export function FacilityGallery({
           </div>
         )}
         <div className="mt-10 space-y-4">
-          {stackImages.map((src, i) => (
-            <DropletReveal key={i} delay={Math.min(160 + i * 90, 340)}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
-                <Image
-                  src={src}
-                  alt={`${name} ${i + 1}`}
-                  fill
-                  sizes="100vw"
-                  quality={90}
-                  className="object-cover"
-                  draggable={false}
-                />
-              </div>
-            </DropletReveal>
-          ))}
-        </div>
-
-        {/* 마지막(음식) 사진 — 한 sticky(100svh) 안에서 사진 중앙 고정 + 텍스트가 아래에서 올라와
-            사진 아래 도착. 사진·텍스트가 한 몸이라 나갈 때 함께 위로(텍스트가 사진 뒤로 안 감).
-            트레일링 여백 없이 도착 직후 릴리즈(헛스크롤 최소). */}
-        {foodImage && (
-          <div ref={foodPinRef} className="relative mt-4 h-[150vh]">
-            {/* 사진을 100svh 블록의 '맨 위'에 두고 top으로 중앙에 오게 → 앞 사진 바로 뒤(균등 간격)에서
-                시작해 중앙으로 올라와 고정. 사진+텍스트가 한 sticky라 함께 나감(텍스트가 사진 뒤로 안 감). */}
-            <div className="sticky h-[100svh]" style={{ top: 'calc(50svh - 37.5vw + 15px)' }}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
-                <Image
-                  src={foodImage}
-                  alt={`${name} 제공 음식`}
-                  fill
-                  sizes="100vw"
-                  quality={90}
-                  className="object-cover"
-                  draggable={false}
-                />
-              </div>
-              {/* 아래에서 올라와 사진 아래 도착(페이드 없음), 도착 후 사진과 함께 위로 */}
-              <motion.p
-                className="mx-auto mt-5 max-w-md break-keep px-2 text-center text-base font-semibold leading-relaxed text-ink"
-                style={{ y: foodTextY }}
+          {IMAGES.map((src, i) => {
+            const isFood = i === IMAGES.length - 1;
+            return (
+              <motion.div
+                key={i}
+                initial={{ x: 180, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                viewport={{ once: true, margin: '0px 0px -12% 0px' }}
+                transition={{ duration: 0.7, ease: REVEAL_EASE }}
               >
-                고기, 소시지, 상추, 고추, 버섯, 김치, 쌈장, 소금, 마늘, 생수 그리고 기본적인 일회용
-                식기도구가 제공됩니다.
-              </motion.p>
-            </div>
-          </div>
-        )}
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
+                  <Image
+                    src={src}
+                    alt={isFood ? `${name} 제공 음식` : `${name} ${i + 1}`}
+                    fill
+                    sizes="100vw"
+                    quality={90}
+                    className="object-cover"
+                    draggable={false}
+                  />
+                </div>
+                {isFood && (
+                  <p className="mx-auto mt-5 max-w-md break-keep px-2 text-center text-base font-semibold leading-relaxed text-ink">
+                    고기, 소시지, 상추, 고추, 버섯, 김치, 쌈장, 소금, 마늘, 생수 그리고 기본적인 일회용
+                    식기도구가 제공됩니다.
+                  </p>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* 데스크톱 — 기존 가로 스크롤 캐러셀 */}
