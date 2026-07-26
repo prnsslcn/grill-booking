@@ -265,7 +265,7 @@ export function FacilityGallery({
                 initial={{ x: 180, opacity: 0 }}
                 whileInView={{ x: 0, opacity: 1 }}
                 viewport={{ once: true, margin: '0px 0px -12% 0px' }}
-                transition={{ duration: 0.7, ease: REVEAL_EASE }}
+                transition={{ duration: 1.5, ease: REVEAL_EASE }}
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-line-soft">
                   <Image
