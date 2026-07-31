@@ -280,13 +280,22 @@ export default async function AdminDashboard({
           const ds = iso(d);
           const operating = isOperating(d);
           const selected = ds === date;
+          // 모바일 요약용: 해당 날짜 전체 예약 수(부·시설 합계)
+          const dayTotal = operating
+            ? ([1, 2] as const).reduce(
+                (sum, p) =>
+                  sum +
+                  board.facilities.reduce((a, f) => a + (board.counts[ds]?.[p]?.[f.type] ?? 0), 0),
+                0,
+              )
+            : 0;
 
           return (
             <Link
               key={ds}
               href={cellHref(d)}
               scroll={false}
-              className={`flex min-h-[200px] flex-col rounded-xl border p-2.5 transition-colors ${
+              className={`flex min-h-[62px] flex-col rounded-xl border p-2 transition-colors md:min-h-[200px] md:p-2.5 ${
                 selected
                   ? 'border-accent bg-accent-soft'
                   : operating
@@ -301,8 +310,15 @@ export default async function AdminDashboard({
               >
                 {d}
               </span>
+              {/* 모바일: 가벼운 요약 — 예약이 있으면 총 예약 수만 작게 표시 */}
+              {operating && dayTotal > 0 && (
+                <span className="mt-auto inline-flex h-5 w-fit items-center justify-center rounded-full bg-accent-soft px-1.5 text-[11px] font-bold text-accent-strong md:hidden">
+                  {dayTotal}
+                </span>
+              )}
+              {/* 데스크톱: 부·시설 상세 */}
               {operating && (
-                <div className="mt-1.5 space-y-1.5 text-xs leading-snug">
+                <div className="mt-1.5 hidden space-y-1.5 text-xs leading-snug md:block">
                   {([1, 2] as const).map((p, idx) => (
                     <div key={p} className={idx === 1 ? 'border-t border-line pt-1.5' : ''}>
                       <span className="mb-0.5 block font-semibold text-subtle">{p}부</span>
