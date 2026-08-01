@@ -72,6 +72,7 @@ export default async function BookingDetailPage({
         <Badge tone={meta.tone}>{meta.label}</Badge>
         {isOffline && <Badge tone="neutral">유선</Badge>}
         {isComp && <Badge tone="accent">지인</Badge>}
+        {b.combined && <Badge tone="warning">1·2부 통합</Badge>}
         <h1 className="font-mono text-lg font-bold text-ink">{b.bookingNumber}</h1>
       </div>
 
@@ -101,7 +102,17 @@ export default async function BookingDetailPage({
         )}
         <Row
           label="이용 일시"
-          value={b.date ? `${formatDateKorean(b.date)} · ${b.part ? PARTS[b.part].label : ''}${b.part ? ` ${PARTS[b.part].start}~${PARTS[b.part].end}` : ''}` : '-'}
+          value={
+            b.date
+              ? `${formatDateKorean(b.date)} · ${
+                  b.combined
+                    ? '1·2부 통합 (17:00~21:30)'
+                    : b.part
+                      ? `${PARTS[b.part].label} ${PARTS[b.part].start}~${PARTS[b.part].end}`
+                      : ''
+                }`
+              : '-'
+          }
         />
         <Row label="예약자" value={`${b.guestName} · ${b.guestPhone} · ${b.guestCount}명`} />
         <Row label="결제 금액" value={formatWon(b.amount)} />

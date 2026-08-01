@@ -88,7 +88,7 @@ export default async function AdminDashboard({
                   <span className="font-medium text-ink">{b.facilityName}</span>
                   <span className="text-sm text-muted">
                     {b.date ? formatDateKorean(b.date) : '-'}
-                    {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                    {b.combined ? ' · 1·2부 통합' : b.part ? ` · ${PARTS[b.part].label}` : ''}
                   </span>
                   <span className="text-sm text-muted">
                     {b.guestName} · {b.guestPhone}
@@ -466,7 +466,7 @@ export default async function AdminDashboard({
                     {b.source === 'comp' && <Badge tone="accent">지인</Badge>}
                     <span className="text-sm font-medium text-muted">
                       {b.date ? formatDateKorean(b.date) : '-'}
-                      {b.part ? ` · ${PARTS[b.part].label}` : ''}
+                      {b.combined ? ' · 1·2부 통합' : b.part ? ` · ${PARTS[b.part].label}` : ''}
                     </span>
                     <span className="font-medium text-ink">{b.facilityName}</span>
                     <span className="text-sm text-muted">
@@ -624,7 +624,9 @@ export default async function AdminDashboard({
                       {offline && <Badge tone="neutral">유선</Badge>}
                       {b.source === 'comp' && <Badge tone="accent">지인</Badge>}
                       <span className="font-medium text-ink">{b.facilityName}</span>
-                      <span className="text-sm text-muted">{b.part ? PARTS[b.part].label : '-'}</span>
+                      <span className="text-sm text-muted">
+                        {b.combined ? '1·2부 통합' : b.part ? PARTS[b.part].label : '-'}
+                      </span>
                       <span className="text-sm text-muted">
                         {b.guestName} · {b.guestPhone} · {b.guestCount}명
                       </span>

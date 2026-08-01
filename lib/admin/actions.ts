@@ -36,6 +36,10 @@ export async function adminCreateBooking(input: {
   amount?: number;
   /** 무상(지인) 예약. 슬롯은 점유하되 금액 0원·매출 미집계(source='comp'). */
   comp?: boolean;
+  /** 1·2부 통합(연장) — 한 동의 1부·2부 슬롯을 함께 점유. */
+  combined?: boolean;
+  /** 시설 이용 추가 금액(통합 이용 시). 원 단위. */
+  facilityFee?: number;
 }): Promise<ActionResult> {
   await requireAdmin();
   if (input.meat === 'beef' && !BEEF_ENABLED) {
@@ -49,7 +53,8 @@ export async function adminCreateBooking(input: {
   const { error } = await supabase.rpc('admin_create_booking', {
     p_facility_type: input.facilityType,
     p_date: input.date,
-    p_part: input.part,
+    // 통합은 두 슬롯을 함께 점유 — RPC는 p_part 검증만 통과하면 되므로 1로 고정 전달
+    p_part: input.combined ? 1 : input.part,
     p_guest_name: input.guestName.trim(),
     p_guest_phone: input.guestPhone.trim(),
     p_guest_count: input.guestCount,
@@ -57,6 +62,8 @@ export async function adminCreateBooking(input: {
     p_note: input.note?.trim() || undefined,
     p_addons: cleanAddons,
     p_source: input.comp ? 'comp' : 'offline',
+    p_combined: input.combined ?? false,
+    ...(input.combined && input.facilityFee ? { p_facility_fee: input.facilityFee } : {}),
     // 무상은 RPC에서 0원 강제 → amount 오버라이드 무시
     ...(!input.comp && input.amount != null ? { p_amount: input.amount } : {}),
   });

@@ -14,6 +14,7 @@ export interface AdminBooking {
   facilityName: string;
   date: string | null;
   part: Part | null;
+  combined: boolean;
   amount: number;
   createdAt: string;
 }
@@ -35,6 +36,7 @@ interface SnapshotShape {
   addons?: SnapshotAddon[];
   extras?: SnapshotExtra[];
   note?: string;
+  combined?: boolean;
 }
 
 const MEAT_LABEL: Record<string, string> = { pork: 'Pork', beef: 'Beef' };
@@ -55,6 +57,7 @@ export interface BookingDetail {
   note: string | null;
   date: string | null;
   part: Part | null;
+  combined: boolean;
   amount: number;
   createdAt: string;
   updatedAt: string;
@@ -115,6 +118,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     note: snapshot.note ?? null,
     date: data.slots?.date ?? null,
     part: (data.slots?.part as Part) ?? null,
+    combined: snapshot.combined ?? false,
     amount: data.amount,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -172,6 +176,7 @@ export async function listBookings(filter: {
       facilityName: snapshot.facility_name ?? '',
       date: r.slots?.date ?? null,
       part: (r.slots?.part as Part) ?? null,
+      combined: snapshot.combined ?? false,
       amount: r.amount,
       createdAt: r.created_at,
     };

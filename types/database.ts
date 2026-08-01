@@ -375,7 +375,9 @@ export type Database = {
         Args: {
           p_addons?: Json
           p_amount?: number
+          p_combined?: boolean
           p_date: string
+          p_facility_fee?: number
           p_facility_type: string
           p_guest_count: number
           p_guest_name: string
