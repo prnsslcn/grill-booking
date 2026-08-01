@@ -78,6 +78,41 @@ export async function adminCreateBooking(input: {
   return { ok: true };
 }
 
+/**
+ * 유선(offline) 예약 내용 변경 — 현장 추가메뉴 반영해 금액 재계산.
+ * 기본 상품가는 보존(base = 현재 amount − 기존 추가메뉴 합계), 새 금액 = base + 새 추가메뉴 합계.
+ */
+export async function adminUpdateOfflineBooking(input: {
+  bookingId: string;
+  bookingNumber: string;
+  addons: Record<string, number>;
+}): Promise<ActionResult> {
+  await requireAdmin();
+  const addons = input.addons ?? {};
+  const cleanAddons = BEEF_ENABLED
+    ? addons
+    : Object.fromEntries(Object.entries(addons).filter(([k]) => !isBeefAddonKey(k)));
+  const supabase = createAdminClient();
+  const { error } = await supabase.rpc('admin_update_offline_booking', {
+    p_booking_id: input.bookingId,
+    p_addons: cleanAddons,
+  });
+  if (error) {
+    const m = error.message;
+    const friendly = m.includes('NOT_OFFLINE')
+      ? '유선 예약만 내용을 변경할 수 있습니다.'
+      : m.includes('NOT_EDITABLE')
+        ? '확정 상태의 예약만 변경할 수 있습니다.'
+        : m.includes('INVALID_ADDON')
+          ? '유효하지 않은 추가 옵션입니다.'
+          : `내용 변경 실패: ${m}`;
+    return { ok: false, error: friendly };
+  }
+  revalidatePath('/admin');
+  revalidatePath(`/admin/bookings/${input.bookingNumber}`);
+  return { ok: true };
+}
+
 /** 오프라인 예약 취소(오등록 정정) — 슬롯 open 복구. */
 export async function adminCancelOfflineBooking(bookingId: string): Promise<ActionResult> {
   await requireAdmin();

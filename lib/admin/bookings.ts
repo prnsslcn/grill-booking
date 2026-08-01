@@ -19,6 +19,7 @@ export interface AdminBooking {
 }
 
 interface SnapshotAddon {
+  key?: string;
   label: string;
   qty: number;
   price: number;

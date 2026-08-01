@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { CancelButton } from '@/components/admin/CancelButton';
 import { FullRefundButton } from '@/components/admin/FullRefundButton';
 import { OfflineCancelButton } from '@/components/admin/OfflineCancelButton';
+import { OfflineEditForm } from '@/components/admin/OfflineEditForm';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { getBookingDetail } from '@/lib/admin/bookings';
+import { getAddons } from '@/lib/booking/availability';
 import { formatDateKorean, formatDateTimeKorean, formatWon } from '@/lib/format';
 import { refundAmount } from '@/lib/policy/refund';
 import { PARTS } from '@/types/domain';
@@ -54,6 +56,9 @@ export default async function BookingDetailPage({
   const isComp = b.source === 'comp';
   // 결제 없이 등록된 예약(유선·무상) — 취소 시 토스 환불 없이 슬롯만 해제
   const isManual = isOffline || isComp;
+  // 유선 확정 예약은 현장 추가메뉴 반영(내용 변경) 가능 — 추가옵션 목록 조회
+  const editable = isOffline && b.status === 'confirmed';
+  const addonOptions = editable ? await getAddons() : [];
   const refundPreview =
     b.status === 'confirmed' && b.date ? refundAmount(b.amount, b.date, new Date()) : 0;
 
@@ -96,6 +101,25 @@ export default async function BookingDetailPage({
         <Row label="예약 일시" value={formatDateTimeKorean(b.createdAt)} />
         <Row label="최종 변경" value={formatDateTimeKorean(b.updatedAt)} />
       </Card>
+
+      {/* 내용 변경 — 유선 확정 예약만: 현장 추가메뉴 반영해 금액 갱신 */}
+      {editable && addonOptions.length > 0 && (
+        <Card className="space-y-4 p-5">
+          <div>
+            <p className="font-semibold text-ink">내용 변경 · 추가 메뉴</p>
+            <p className="mt-1 text-sm text-muted">
+              현장에서 고기 추가 등이 발생하면 여기서 수량을 조정해 금액을 갱신하세요. 정산 금액에 그대로 반영됩니다.
+            </p>
+          </div>
+          <OfflineEditForm
+            bookingId={b.id}
+            bookingNumber={b.bookingNumber}
+            currentAmount={b.amount}
+            currentAddons={b.addons}
+            addonOptions={addonOptions}
+          />
+        </Card>
+      )}
 
       {/* 취소·환불 */}
       {b.status === 'confirmed' &&

@@ -58,42 +58,6 @@ export type Database = {
         }
         Relationships: []
       }
-      open_dates: {
-        Row: {
-          created_at: string
-          date: string
-          note: string | null
-        }
-        Insert: {
-          created_at?: string
-          date: string
-          note?: string | null
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          note?: string | null
-        }
-        Relationships: []
-      }
-      closed_dates: {
-        Row: {
-          created_at: string
-          date: string
-          note: string | null
-        }
-        Insert: {
-          created_at?: string
-          date: string
-          note?: string | null
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          note?: string | null
-        }
-        Relationships: []
-      }
       admins: {
         Row: {
           created_at: string
@@ -164,6 +128,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      closed_dates: {
+        Row: {
+          created_at: string
+          date: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          note?: string | null
+        }
+        Relationships: []
       }
       facilities: {
         Row: {
@@ -277,6 +259,24 @@ export type Database = {
           },
         ]
       }
+      open_dates: {
+        Row: {
+          created_at: string
+          date: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -373,20 +373,27 @@ export type Database = {
       }
       admin_create_booking: {
         Args: {
-          p_facility_type: string
-          p_date: string
-          p_part: number
-          p_guest_name: string
-          p_guest_phone: string
-          p_guest_count: number
-          p_meat?: string
-          p_note?: string
           p_addons?: Json
           p_amount?: number
+          p_date: string
+          p_facility_type: string
+          p_guest_count: number
+          p_guest_name: string
+          p_guest_phone: string
+          p_meat?: string
+          p_note?: string
+          p_part: number
+          p_source?: string
         }
         Returns: {
           booking_id: string
           booking_number: string
+        }[]
+      }
+      admin_update_offline_booking: {
+        Args: { p_addons: Json; p_booking_id: string }
+        Returns: {
+          amount: number
         }[]
       }
       confirm_booking_tx: {
