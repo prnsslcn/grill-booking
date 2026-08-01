@@ -8,6 +8,7 @@ const NAV = [
   { href: '/admin/sales', label: '매출' },
   { href: '/admin/slots', label: '슬롯 관리' },
   { href: '/admin/facilities', label: '가격 관리' },
+  { href: '/admin/report', label: '월말보고' },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
