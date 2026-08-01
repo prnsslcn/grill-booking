@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Card } from '@/components/ui/Card';
 import { getMonthReport } from '@/lib/admin/report';
 import { defaultReportRange } from '@/lib/admin/report-range';
@@ -5,21 +7,33 @@ import { formatWon } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 export default async function ReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ month?: string }>;
 }) {
   const sp = await searchParams;
-  const def = defaultReportRange();
-  const from = sp.from || def.from;
-  const to = sp.to || def.to;
+
+  // 기준: 이번 달(KST). month=YYYY-MM 로 선택한 달의 1일~말일을 from/to로 사용.
+  const nowMonth = defaultReportRange().from.slice(0, 7); // YYYY-MM
+  const month = sp.month && /^\d{4}-\d{2}$/.test(sp.month) ? sp.month : nowMonth;
+  const [y, m] = month.split('-').map(Number);
+  const from = `${month}-01`;
+  const to = `${month}-${pad(new Date(y, m, 0).getDate())}`;
+
+  // 최근 18개월 목록(현재 달 기준)
+  const [cy, cm] = nowMonth.split('-').map(Number);
+  const months = Array.from({ length: 18 }, (_, i) => {
+    const d = new Date(cy, cm - 1 - i, 1);
+    const value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+    return { value, label: `${d.getFullYear()}년 ${d.getMonth() + 1}월` };
+  });
+  const prevMonth = months[1]?.value ?? nowMonth;
 
   const data = await getMonthReport(from, to);
   const total = data.onlineTotal + data.offlineTotal;
-
-  const inputCls =
-    'h-10 rounded-lg border border-line px-3 text-sm outline-none focus:border-accent';
 
   return (
     <div className="space-y-6">
@@ -31,23 +45,50 @@ export default async function ReportPage({
         </p>
       </div>
 
-      {/* 기간 설정 */}
-      <form action="/admin/report" method="get" className="flex flex-wrap items-end gap-3">
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-ink">시작(이용일)</span>
-          <input type="date" name="from" defaultValue={from} className={inputCls} />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-ink">종료(이용일)</span>
-          <input type="date" name="to" defaultValue={to} className={inputCls} />
-        </label>
-        <button
-          type="submit"
-          className="h-10 rounded-lg border border-line px-4 text-sm font-semibold text-ink hover:bg-line-soft"
-        >
-          조회
-        </button>
-      </form>
+      {/* 월 선택 */}
+      <div className="flex flex-wrap items-end gap-3">
+        <form action="/admin/report" method="get" className="flex items-end gap-2">
+          <label className="text-sm">
+            <span className="mb-1 block font-medium text-ink">보고 월</span>
+            <select
+              name="month"
+              defaultValue={month}
+              className="h-10 rounded-lg border border-line bg-surface px-3 pr-8 text-sm outline-none focus:border-accent"
+            >
+              {months.map((mo) => (
+                <option key={mo.value} value={mo.value}>
+                  {mo.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="submit"
+            className="h-10 rounded-lg border border-line px-4 text-sm font-semibold text-ink hover:bg-line-soft"
+          >
+            조회
+          </button>
+        </form>
+
+        <div className="flex items-center gap-1.5">
+          <Link
+            href="/admin/report"
+            className={`h-10 rounded-lg px-3 text-sm font-medium leading-10 transition-colors ${
+              month === nowMonth ? 'bg-accent text-white' : 'border border-line text-muted hover:bg-line-soft'
+            }`}
+          >
+            이번 달
+          </Link>
+          <Link
+            href={`/admin/report?month=${prevMonth}`}
+            className={`h-10 rounded-lg px-3 text-sm font-medium leading-10 transition-colors ${
+              month === prevMonth ? 'bg-accent text-white' : 'border border-line text-muted hover:bg-line-soft'
+            }`}
+          >
+            지난 달
+          </Link>
+        </div>
+      </div>
 
       {/* 요약 */}
       <div className="grid gap-3 sm:grid-cols-3">
