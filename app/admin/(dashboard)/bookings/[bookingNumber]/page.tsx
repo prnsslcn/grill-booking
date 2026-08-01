@@ -91,6 +91,14 @@ export default async function BookingDetailPage({
         {b.addons.length > 0 && (
           <Row label="추가 메뉴" value={b.addons.map((a) => `${a.label} × ${a.qty}`).join(', ')} />
         )}
+        {b.extras.length > 0 && (
+          <Row
+            label="현장 추가/조정"
+            value={b.extras
+              .map((e) => `${e.label} ${e.amount >= 0 ? '+' : ''}${formatWon(e.amount)}`)
+              .join(', ')}
+          />
+        )}
         <Row
           label="이용 일시"
           value={b.date ? `${formatDateKorean(b.date)} · ${b.part ? PARTS[b.part].label : ''}${b.part ? ` ${PARTS[b.part].start}~${PARTS[b.part].end}` : ''}` : '-'}
@@ -116,6 +124,7 @@ export default async function BookingDetailPage({
             bookingNumber={b.bookingNumber}
             currentAmount={b.amount}
             currentAddons={b.addons}
+            currentExtras={b.extras}
             addonOptions={addonOptions}
           />
         </Card>

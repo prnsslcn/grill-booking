@@ -86,16 +86,23 @@ export async function adminUpdateOfflineBooking(input: {
   bookingId: string;
   bookingNumber: string;
   addons: Record<string, number>;
+  /** 현장 추가/조정 항목(캔음료·생수·임의 금액·할인 등). amount 음수 허용. */
+  extras?: { label: string; amount: number }[];
 }): Promise<ActionResult> {
   await requireAdmin();
   const addons = input.addons ?? {};
   const cleanAddons = BEEF_ENABLED
     ? addons
     : Object.fromEntries(Object.entries(addons).filter(([k]) => !isBeefAddonKey(k)));
+  // 금액이 정수가 아닌/빈 항목 정리
+  const extras = (input.extras ?? [])
+    .map((e) => ({ label: (e.label ?? '').trim(), amount: Math.trunc(Number(e.amount) || 0) }))
+    .filter((e) => e.label !== '' || e.amount !== 0);
   const supabase = createAdminClient();
   const { error } = await supabase.rpc('admin_update_offline_booking', {
     p_booking_id: input.bookingId,
     p_addons: cleanAddons,
+    p_extras: extras,
   });
   if (error) {
     const m = error.message;

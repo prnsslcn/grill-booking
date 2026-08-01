@@ -391,7 +391,7 @@ export type Database = {
         }[]
       }
       admin_update_offline_booking: {
-        Args: { p_addons: Json; p_booking_id: string }
+        Args: { p_addons: Json; p_booking_id: string; p_extras?: Json }
         Returns: {
           amount: number
         }[]

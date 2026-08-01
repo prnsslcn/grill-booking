@@ -38,10 +38,15 @@ interface SnapAddon {
   label: string;
   qty: number;
 }
+interface SnapExtra {
+  label: string;
+  amount: number;
+}
 interface Snap {
   facility_name?: string;
   meat?: string;
   addons?: SnapAddon[];
+  extras?: SnapExtra[];
   note?: string;
 }
 
@@ -64,7 +69,10 @@ export async function getMonthReport(from: string, to: string): Promise<ReportDa
     const snap = (r.facility_snapshot ?? {}) as Snap;
     const meat = snap.meat ? (MEAT_LABEL[snap.meat] ?? snap.meat) : '';
     const addons = (snap.addons ?? []).map((a) => `${a.label}×${a.qty}`).join(', ');
-    const composition = [meat && `${meat} 세트`, addons].filter(Boolean).join(' · ');
+    const extras = (snap.extras ?? [])
+      .map((e) => `${e.label}(${e.amount >= 0 ? '+' : ''}${e.amount.toLocaleString('ko-KR')})`)
+      .join(', ');
+    const composition = [meat && `${meat} 세트`, addons, extras].filter(Boolean).join(' · ');
     const paid = (r.payments ?? []).find((p) => p.status === 'paid') ?? null;
 
     const row: ReportRow = {

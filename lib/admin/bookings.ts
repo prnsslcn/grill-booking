@@ -24,11 +24,16 @@ interface SnapshotAddon {
   qty: number;
   price: number;
 }
+interface SnapshotExtra {
+  label: string;
+  amount: number;
+}
 interface SnapshotShape {
   facility_name?: string;
   unit_label?: string;
   meat?: string;
   addons?: SnapshotAddon[];
+  extras?: SnapshotExtra[];
   note?: string;
 }
 
@@ -46,6 +51,7 @@ export interface BookingDetail {
   unitLabel: string;
   meatLabel: string;
   addons: SnapshotAddon[];
+  extras: SnapshotExtra[];
   note: string | null;
   date: string | null;
   part: Part | null;
@@ -105,6 +111,7 @@ export async function getBookingDetail(bookingNumber: string): Promise<BookingDe
     unitLabel: snapshot.unit_label ?? '',
     meatLabel: snapshot.meat ? (MEAT_LABEL[snapshot.meat] ?? snapshot.meat) : '',
     addons: snapshot.addons ?? [],
+    extras: snapshot.extras ?? [],
     note: snapshot.note ?? null,
     date: data.slots?.date ?? null,
     part: (data.slots?.part as Part) ?? null,
