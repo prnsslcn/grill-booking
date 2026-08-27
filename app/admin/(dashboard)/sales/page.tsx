@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { EphemeralRange } from '@/components/admin/EphemeralRange';
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { getUsageSales } from '@/lib/admin/sales';
@@ -48,6 +49,7 @@ export default async function AdminSalesPage({
 
   return (
     <div>
+      <EphemeralRange deps={`${from}|${to}`} />
       <h1 className="text-xl font-bold text-ink">매출 / 정산</h1>
       <p className="mt-1 text-sm text-muted">
         이용일(KST) 기준. 확정 예약 매출을 토스 온라인 결제와 유선(현금)으로 나눠 합산합니다. 무상·취소·환불은
