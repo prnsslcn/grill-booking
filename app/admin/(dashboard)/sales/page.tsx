@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Card } from '@/components/ui/Card';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { getUsageSales } from '@/lib/admin/sales';
@@ -5,11 +7,27 @@ import { formatDateKorean, formatWon } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 function kstToday(): string {
   return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
-function monthStart(): string {
-  return `${kstToday().slice(0, 8)}01`;
+
+/** 프리셋 기간 계산(KST 오늘 기준). 기본 = 이번 달 전체(1일~말일). */
+function ranges() {
+  const today = kstToday();
+  const [y, m, d] = today.split('-').map(Number);
+  const monthEnd = (yy: number, mm: number) => `${yy}-${pad(mm)}-${pad(new Date(yy, mm, 0).getDate())}`;
+  const lm = m === 1 ? { y: y - 1, m: 12 } : { y, m: m - 1 };
+  const t = new Date(Date.UTC(y, m - 1, d));
+  t.setUTCDate(t.getUTCDate() - 6);
+  const last7 = `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`;
+  return {
+    today,
+    thisMonth: { from: `${y}-${pad(m)}-01`, to: monthEnd(y, m) },
+    lastMonth: { from: `${lm.y}-${pad(lm.m)}-01`, to: monthEnd(lm.y, lm.m) },
+    last7: { from: last7, to: today },
+  };
 }
 
 export default async function AdminSalesPage({
@@ -17,8 +35,16 @@ export default async function AdminSalesPage({
 }: {
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
-  const { from = monthStart(), to = kstToday() } = await searchParams;
+  const r = ranges();
+  const { from = r.thisMonth.from, to = r.thisMonth.to } = await searchParams;
   const s = await getUsageSales(from, to);
+
+  const presets = [
+    { label: '오늘', from: r.today, to: r.today },
+    { label: '최근 7일', from: r.last7.from, to: r.last7.to },
+    { label: '이번 달', from: r.thisMonth.from, to: r.thisMonth.to },
+    { label: '지난 달', from: r.lastMonth.from, to: r.lastMonth.to },
+  ];
 
   return (
     <div>
@@ -28,7 +54,25 @@ export default async function AdminSalesPage({
         제외됩니다.
       </p>
 
-      <form className="mt-5 flex flex-wrap items-end gap-3" method="get">
+      {/* 빠른 프리셋 */}
+      <div className="mt-5 flex flex-wrap gap-1.5">
+        {presets.map((p) => {
+          const active = from === p.from && to === p.to;
+          return (
+            <Link
+              key={p.label}
+              href={`/admin/sales?from=${p.from}&to=${p.to}`}
+              className={`h-9 rounded-lg px-3 text-sm font-medium leading-9 transition-colors ${
+                active ? 'bg-accent text-white' : 'border border-line text-muted hover:bg-line-soft'
+              }`}
+            >
+              {p.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      <form className="mt-3 flex flex-wrap items-end gap-3" method="get">
         <div className="text-sm">
           <span className="mb-1 block font-medium text-ink">시작일(이용일)</span>
           <DatePicker name="from" defaultValue={from} />
