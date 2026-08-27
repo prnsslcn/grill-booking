@@ -66,7 +66,7 @@ export async function getUsageSales(from: string, to: string): Promise<UsageSale
       count: e.onlineCount + e.offlineCount,
       amount: e.onlineAmount + e.offlineAmount,
     }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => b.date.localeCompare(a.date)); // 최신 이용일 먼저(내림차순)
 
   return {
     online,
