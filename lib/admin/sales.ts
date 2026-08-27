@@ -3,103 +3,75 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
- * 매출/정산 집계. 결제 승인일(approved_at, KST) 기준.
- * 순매출 ≈ 유효 결제(paid) 합계. 환불(전액/부분)은 건수로 별도 표기.
+ * 매출 집계 — 이용일(slots.date, KST) 기준. 확정 예약만.
+ * 토스 온라인 결제(source='online')와 유선 현금(source='offline')을 함께 이용일별로 합산한다.
+ * 무상(comp)·취소·환불(결제대기 포함)은 제외 — 실입금 기준. (월말보고와 동일 관점)
  */
 
-export interface SalesSummary {
-  paidCount: number;
-  paidAmount: number;
-  cancelledCount: number;
-  partialCount: number;
-  byMethod: { method: string; count: number; amount: number }[];
-  byDate: { date: string; count: number; amount: number }[];
+export interface UsageSales {
+  online: { count: number; amount: number };
+  offline: { count: number; amount: number };
+  total: { count: number; amount: number };
+  byDate: {
+    date: string;
+    onlineCount: number;
+    onlineAmount: number;
+    offlineCount: number;
+    offlineAmount: number;
+    count: number;
+    amount: number;
+  }[];
 }
 
-/**
- * 유선(오프라인) 예약 매출 집계. 토스 결제가 없어 매출/정산(getSalesSummary)에 안 잡히므로 별도 합산.
- * 대상: source='offline' && status='confirmed'(취소된 유선은 제외). amount는 등록 시 확정 금액.
- *   - total*: 누적(전체 기간)
- *   - period*: 이용일(slot.date) 기준 [from, to] 구간
- */
-export interface OfflineSummary {
-  totalAmount: number;
-  totalCount: number;
-  periodAmount: number;
-  periodCount: number;
-}
-
-export async function getOfflineSummary(from: string, to: string): Promise<OfflineSummary> {
+export async function getUsageSales(from: string, to: string): Promise<UsageSales> {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from('bookings')
-    .select('amount, slots(date)')
-    .eq('source', 'offline')
-    .eq('status', 'confirmed');
+    .select('amount, source, slots!inner(date)')
+    .in('source', ['online', 'offline'])
+    .eq('status', 'confirmed')
+    .gte('slots.date', from)
+    .lte('slots.date', to);
 
-  let totalAmount = 0;
-  let totalCount = 0;
-  let periodAmount = 0;
-  let periodCount = 0;
+  const online = { count: 0, amount: 0 };
+  const offline = { count: 0, amount: 0 };
+  const map = new Map<
+    string,
+    { date: string; onlineCount: number; onlineAmount: number; offlineCount: number; offlineAmount: number }
+  >();
+
   for (const b of data ?? []) {
-    totalAmount += b.amount;
-    totalCount += 1;
     const d = b.slots?.date ?? null;
-    if (d && d >= from && d <= to) {
-      periodAmount += b.amount;
-      periodCount += 1;
+    if (!d) continue;
+    const isOnline = b.source === 'online';
+    const bucket = isOnline ? online : offline;
+    bucket.count += 1;
+    bucket.amount += b.amount;
+
+    const e =
+      map.get(d) ?? { date: d, onlineCount: 0, onlineAmount: 0, offlineCount: 0, offlineAmount: 0 };
+    if (isOnline) {
+      e.onlineCount += 1;
+      e.onlineAmount += b.amount;
+    } else {
+      e.offlineCount += 1;
+      e.offlineAmount += b.amount;
     }
+    map.set(d, e);
   }
-  return { totalAmount, totalCount, periodAmount, periodCount };
-}
 
-function kstDate(iso: string): string {
-  return new Date(new Date(iso).getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-}
-
-export async function getSalesSummary(from: string, to: string): Promise<SalesSummary> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from('payments')
-    .select('status, method, amount, approved_at')
-    .not('approved_at', 'is', null)
-    .gte('approved_at', `${from}T00:00:00+09:00`)
-    .lte('approved_at', `${to}T23:59:59+09:00`);
-
-  let paidCount = 0;
-  let paidAmount = 0;
-  let cancelledCount = 0;
-  let partialCount = 0;
-  const methodMap = new Map<string, { count: number; amount: number }>();
-  const dateMap = new Map<string, { count: number; amount: number }>();
-
-  for (const p of data ?? []) {
-    if (p.status === 'paid') {
-      paidCount += 1;
-      paidAmount += p.amount;
-      const m = p.method ?? '기타';
-      const mm = methodMap.get(m) ?? { count: 0, amount: 0 };
-      methodMap.set(m, { count: mm.count + 1, amount: mm.amount + p.amount });
-      const dk = p.approved_at ? kstDate(p.approved_at) : '-';
-      const dd = dateMap.get(dk) ?? { count: 0, amount: 0 };
-      dateMap.set(dk, { count: dd.count + 1, amount: dd.amount + p.amount });
-    } else if (p.status === 'cancelled') {
-      cancelledCount += 1;
-    } else if (p.status === 'partial_cancelled') {
-      partialCount += 1;
-    }
-  }
+  const byDate = [...map.values()]
+    .map((e) => ({
+      ...e,
+      count: e.onlineCount + e.offlineCount,
+      amount: e.onlineAmount + e.offlineAmount,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   return {
-    paidCount,
-    paidAmount,
-    cancelledCount,
-    partialCount,
-    byMethod: [...methodMap.entries()]
-      .map(([method, v]) => ({ method, ...v }))
-      .sort((a, b) => b.amount - a.amount),
-    byDate: [...dateMap.entries()]
-      .map(([date, v]) => ({ date, ...v }))
-      .sort((a, b) => a.date.localeCompare(b.date)),
+    online,
+    offline,
+    total: { count: online.count + offline.count, amount: online.amount + offline.amount },
+    byDate,
   };
 }
