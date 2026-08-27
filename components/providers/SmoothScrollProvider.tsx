@@ -1,15 +1,20 @@
 'use client';
 
 import Lenis from 'lenis';
+import { usePathname } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 
 /**
  * Lenis 부드러운 스크롤. 앱 전체를 감싸 휠/터치 스크롤을 매끄럽게 보간한다.
  * prefers-reduced-motion이면 활성화하지 않는다(접근성).
+ * 관리자(/admin)는 빠릿한 네이티브 스크롤을 위해 Lenis를 끈다(관성 지연 제거).
  */
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (pathname?.startsWith('/admin')) return; // 관리자: 네이티브 스크롤
 
     const lenis = new Lenis({
       duration: 1.0,
@@ -35,7 +40,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       lenis.destroy();
       delete window.__lenis;
     };
-  }, []);
+  }, [pathname]);
 
   return <>{children}</>;
 }

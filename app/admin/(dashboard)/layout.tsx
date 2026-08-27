@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-[100dvh]">
-      <header className="border-b border-line bg-surface">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
           <div className="flex items-center gap-6">
             <span className="font-bold text-ink">운영 콘솔</span>
